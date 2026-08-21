@@ -22,4 +22,4 @@ npm run dev
 ## Робочий процес
 
 Гілка на задачу → Pull Request → рев'ю → merge у main.
-Задачі — у Trello, дизайн — у Figma.����
+Задачі — у Trello, дизайн — у Figma.
