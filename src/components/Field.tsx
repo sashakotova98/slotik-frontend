@@ -45,7 +45,9 @@ export default function Field({ label, id, name, type = "text", error, ...rest }
           </button>
         ) : null}
       </div>
-      {error ? <p className="mt-1 text-sm text-danger">{error}</p> : null}
+      <p className={`mt-1 text-sm text-danger min-h-5 transition-opacity ${error ? "opacity-100" : "opacity-0"}`}>
+        {error || "\u00A0"}
+      </p>
     </div>
   );
 }

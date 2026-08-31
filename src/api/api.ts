@@ -1,4 +1,5 @@
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5024/api";
+// env-переменная (на Vercel)
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem("token");

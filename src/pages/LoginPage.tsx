@@ -1,14 +1,25 @@
 import { useState, type ChangeEvent } from "react";
-import { validateName, validateEmail, validatePassword, validateConfirmPassword, validatePhone } from "../utils/validation";
+import { validateFirstName, validateLastName, validateEmail, validatePassword, validateConfirmPassword, validatePhone } from "../utils/validation";
 import Field from "../components/Field";
 import { Check } from "lucide-react";
 
+import { useAuth } from "../hooks/useAuth";
+import { apiLogin } from "../api/auth";
+import { useNavigate } from "react-router-dom";
+
 export default function LoginPage() {
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
+
   const [tab, setTab] = useState<"login" | "register">("login");
   const [role, setRole] = useState<"Client" | "Master">("Client");
 
   const [values, setValues] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
     password: "",
@@ -21,12 +32,18 @@ export default function LoginPage() {
 
 
   const validators: Record<string, (value: string) => string> = {
-    name: validateName,
+    firstName: validateFirstName,
+    lastName: validateLastName,
     phone: validatePhone,
     email: validateEmail,
     password: validatePassword,
     confirmPassword: (value) => validateConfirmPassword(value, values.password),
   }
+
+  const regFields = ["firstName", "lastName", "phone", "email", "password", "confirmPassword"];
+  const isRegFormValid = regFields.every(
+    (f) => validators[f](values[f as keyof typeof values] as string) === ""
+  );
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,11 +59,11 @@ export default function LoginPage() {
     setErrors({ ...errors, [name]: validators[name](value) });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const fieldNames = tab === "login"
       ? ["email", "password"]
-      : ["name", "phone", "email", "password", "confirmPassword"];
+      : ["firstName", "lastName", "phone", "email", "password", "confirmPassword"];
 
     const newErrors: Record<string, string> = {};
     for (const f of fieldNames) {
@@ -62,7 +79,21 @@ export default function LoginPage() {
 
     if (Object.values(newErrors).some((err) => err !== "")) return;
     if (tab === "register" && !values.agree) return;
-  }
+
+    setLoading(true);
+    setServerError("");
+    try {
+      const data = await apiLogin(values.email, values.password);
+      login(data.token, data.role);
+      if (data.role === "Superadmin") navigate("/admin", { replace: true });
+      else if (data.role === "Master") navigate("/cabinet", { replace: true });
+      else navigate("/", { replace: true });
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Помилка сервера");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const shownError = (field: string) => {
     if (!touched[field]) return "";
@@ -75,7 +106,14 @@ export default function LoginPage() {
 
         <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
           <button
-            onClick={() => setTab("login")}
+            // onClick={() => setTab("login")}
+            onClick={() => {
+              setTab("login");
+              setValues({ firstName: "", lastName: "", phone: "", email: "", password: "", confirmPassword: "", agree: false });
+              setErrors({});
+              setTouched({});
+              setServerError("");
+            }}
             className={`py-2.5 text-sm font-medium ${tab === "login" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}>
             Вхід
           </button>
@@ -99,8 +137,10 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <Field id="reg-name" name="name" label="Ім'я" type="text"
-                value={values.name} onChange={handleInputChange} onBlur={handleBlur} error={shownError("name")} />
+              <Field id="reg-firstName" name="firstName" label="Ім'я" type="text"
+                value={values.firstName} onChange={handleInputChange} onBlur={handleBlur} error={shownError("firstName")} />
+              <Field id="reg-lastName" name="lastName" label="Прізвище" type="text"
+                value={values.lastName} onChange={handleInputChange} onBlur={handleBlur} error={shownError("lastName")} />
               <Field id="reg-phone" name="phone" label="Телефон" type="tel" placeholder="+380XXXXXXXXX"
                 value={values.phone} onChange={handleInputChange} onBlur={handleBlur} error={shownError("phone")} />
               <Field id="reg-email" name="email" label="Email" type="email" placeholder="oksana@gmail.com"
@@ -110,15 +150,19 @@ export default function LoginPage() {
               <Field id="reg-confirmPassword" name="confirmPassword" label="Підтвердити пароль" type="password"
                 value={values.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} error={shownError("confirmPassword")} />
 
-              <label className="flex items-start gap-2 my-4 text-sm text-muted">
+              <label className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
                 <input
                   type="checkbox"
                   checked={values.agree}
+                  disabled={!isRegFormValid}
                   onChange={(e) => setValues({ ...values, agree: e.target.checked })}
                   className="mt-0.5"
                 />
                 <span>Погоджуюсь з умовами користування та обробкою персональних даних</span>
               </label>
+              {!isRegFormValid && (
+                <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>
+              )}
 
               <div className="grid grid-cols-2 gap-3 my-4">
                 <button
@@ -142,16 +186,17 @@ export default function LoginPage() {
               </div>
             </>
           )}
-
+          {serverError && <p className="text-sm text-danger mb-2 text-center">{serverError}</p>}
           <button
             type="submit"
-            disabled={tab === "register" && !values.agree}
+            disabled={loading || (tab === "register" && !values.agree)}
             className="w-full bg-accent text-on-accent rounded-field py-3 font-medium mt-2 disabled:opacity-50">
-            {tab === "login" ? "Увійти" : "Створити акаунт"}
+            {loading ? "Зачекайте..." : tab === "login" ? "Увійти" : "Створити акаунт"}
           </button>
         </form>
-
       </div>
     </div>
   );
 }
+
+

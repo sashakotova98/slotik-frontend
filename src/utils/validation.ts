@@ -1,10 +1,18 @@
-export function validateName(value: string): string {
+function validatePersonName(value: string, lower: string, upper: string): string {
   const v = value.trim();
-  if (!v) return "Вкажіть ім'я";
-  if (v.length < 2) return "Занадто коротке ім'я";
-  if (v.length > 60) return "Занадто довге ім'я";
-  if (/\d/.test(v)) return "Ім'я не може містити цифри";
+  if (!v) return `Вкажіть ${lower}`;
+  if (v.length < 2) return `Занадто коротке ${lower}`;
+  if (v.length > 60) return `Занадто довге ${lower}`;
+  if (/\d/.test(v)) return `${upper} не може містити цифри`;
   return "";
+}
+
+export function validateFirstName(value: string): string {
+  return validatePersonName(value, "ім'я", "Ім'я");
+}
+
+export function validateLastName(value: string): string {
+  return validatePersonName(value, "прізвище", "Прізвище");
 }
 
 export function validateEmail(value: string): string {
