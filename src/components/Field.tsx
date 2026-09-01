@@ -21,7 +21,7 @@ export default function Field({ label, id, name, type = "text", error, ...rest }
 
 
   return (
-    <div className="mb-3">
+    <div className="mb-2">
       <label htmlFor={id} className="block text-sm text-muted">
         {label}
       </label>
@@ -45,7 +45,7 @@ export default function Field({ label, id, name, type = "text", error, ...rest }
           </button>
         ) : null}
       </div>
-      <p className={`mt-1 text-sm text-danger min-h-5 transition-opacity ${error ? "opacity-100" : "opacity-0"}`}>
+      <p className={`mt-1 text-xs text-danger min-h-4 transition-opacity ${error ? "opacity-100" : "opacity-0"}`}>
         {error || "\u00A0"}
       </p>
     </div>

@@ -9,6 +9,22 @@ export async function apiLogin(email: string, password: string): Promise<AuthRes
   });
 }
 
+export type RegisterData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  password: string;
+  role: "Client" | "Master";
+};
+
+export async function apiRegister(data: RegisterData): Promise<AuthResponse> {
+  return api<AuthResponse>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 // superadmin@slotik.local / SuperAdmin123!
 
 // 409  "User with the same Email already exists"

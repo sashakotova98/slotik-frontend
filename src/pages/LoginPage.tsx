@@ -4,7 +4,7 @@ import Field from "../components/Field";
 import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
-import { apiLogin } from "../api/auth";
+import { apiLogin, apiRegister } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
@@ -83,7 +83,17 @@ export default function LoginPage() {
     setLoading(true);
     setServerError("");
     try {
-      const data = await apiLogin(values.email, values.password);
+      const data = tab === "login"
+        ? await apiLogin(values.email, values.password)
+        : await apiRegister({
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+          role,
+        });
+
       login(data.token, data.role);
       if (data.role === "Superadmin") navigate("/admin", { replace: true });
       else if (data.role === "Master") navigate("/cabinet", { replace: true });
