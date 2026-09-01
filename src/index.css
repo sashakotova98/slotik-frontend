@@ -13,6 +13,8 @@
 
   --radius-card: 2.3125rem;
   --radius-field: 0.625rem;
+
+   --color-danger: #dc2626;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -24,6 +26,7 @@
     --color-accent: #f2f1ee;
     --color-on-accent: #121212;
     --color-border: #33322f;
+    --color-danger: #f87171;
   }
 }
 
@@ -35,6 +38,7 @@
   --color-accent: #000000;
   --color-on-accent: #FFFFFF;
   --color-border: #949494;
+  --color-danger: #dc2626;
 }
 
 :root[data-theme="dark"] {
@@ -45,6 +49,7 @@
   --color-accent: #f2f1ee;
   --color-on-accent: #121212;
   --color-border: #33322f;
+  --color-danger: #f87171;
 }
 
 body {

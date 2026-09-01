@@ -9,21 +9,25 @@ import MasterCabinetPage from "./pages/MasterCabinetPage";
 import AdminPage from "./pages/AdminPage";
 
 function App() {
-  const { token } = useAuth();
+  const { token, role } = useAuth();
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={token ? <ClientHomePage /> : <SplashPage />} />
+        <Route path="/" element={
+          !token ? <SplashPage />
+            : role === "Master" ? <Navigate to="/cabinet" replace />
+              : role === "Superadmin" ? <Navigate to="/admin" replace />
+                : <ClientHomePage />
+        } />
         <Route path="/catalog" element={<CatalogPage />} />
 
         <Route path="/m/:slug" element={<MasterProfilePage />} />
 
-
         <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginPage />} />
 
 
-        <Route path="/cabinet" element={token ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
-        <Route path="/admin" element={token ? <AdminPage /> : <Navigate to="/login" replace />} />
+        <Route path="/cabinet" element={token && role === "Master" ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
+        <Route path="/admin" element={token && role === "Superadmin" ? <AdminPage /> : <Navigate to="/login" replace />} />
 
 
         <Route path="*" element={<Navigate to="/" replace />} />
