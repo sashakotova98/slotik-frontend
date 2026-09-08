@@ -26,6 +26,11 @@ export async function apiRegister(data: RegisterData): Promise<AuthResponse> {
 }
 
 // superadmin@slotik.local / SuperAdmin123!
+//localStorage.setItem("token", "test"); localStorage.setItem("role", "Client"); location.reload();
+//localStorage.setItem("token", "test"); localStorage.setItem("role", "Master"); location.reload();
+//localStorage.clear(); location.reload();
+
+//console.log(localStorage.getItem("token"), localStorage.getItem("role"));
 
 // 409  "User with the same Email already exists"
 // 409  "User with the same Phone already exists"

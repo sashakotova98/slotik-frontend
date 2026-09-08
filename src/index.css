@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
-  --color-bg: #AEAEAE;
-  --color-surface: #FFFFFF;
-  --color-text: #4D4F4D;
+  /* --color-bg: #AEAEAE; */
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  /* --color-text: #4D4F4D; */
+  --color-text: #000000;
   --color-muted: #8a8a86;
   --color-accent: #000000;
-  --color-on-accent: #FFFFFF;
-  --color-border: #949494;
-
+  --color-on-accent: #ffffff;
+  /* --color-border: #949494; */
+  --color-border: #d9d9d9;
   --radius-card: 2.3125rem;
   --radius-field: 0.625rem;
-
-   --color-danger: #dc2626;
+  --color-selected: #eeeeee;
+  --color-danger: #dc2626;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,18 +29,23 @@
     --color-on-accent: #121212;
     --color-border: #33322f;
     --color-danger: #f87171;
+    --color-selected: #333333;
   }
 }
 
 :root[data-theme="light"] {
-  --color-bg: #AEAEAE;
-  --color-surface: #FFFFFF;
-  --color-text: #4D4F4D;
+  /* --color-bg: #AEAEAE; */
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  /* --color-text: #4D4F4D; */
+  --color-text: #000000;
   --color-muted: #8a8a86;
   --color-accent: #000000;
-  --color-on-accent: #FFFFFF;
-  --color-border: #949494;
+  --color-on-accent: #ffffff;
+  /* --color-border: #949494; */
+  --color-border: #d9d9d9;
   --color-danger: #dc2626;
+  --color-selected: #eeeeee;
 }
 
 :root[data-theme="dark"] {
@@ -50,6 +57,7 @@
   --color-on-accent: #121212;
   --color-border: #33322f;
   --color-danger: #f87171;
+  --color-selected: #333333;
 }
 
 body {
