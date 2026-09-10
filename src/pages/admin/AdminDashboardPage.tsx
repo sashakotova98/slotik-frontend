@@ -2,11 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-// import { mockStats } from "../../mocks/admin";
-// import { mockMasters } from "../../mocks/admin";
 import { getAdminStats } from "../../api/stats";
 import type { AdminStats } from "../../api/stats";
-// import type { AdminMasterCard } from "../../api/stats";
 
 
 export default function AdminDashboardPage() {

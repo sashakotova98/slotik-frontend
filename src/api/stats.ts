@@ -14,14 +14,14 @@ export function getAdminStats(): Promise<AdminStats> {
 
 
 export type FinanceStats = {
-  monthlyIncome: number; // дохід за місяць
-  monthlyIncomeChange: number; // % зміни до минулого місяця
-  newMasters: number; // нових майстрів за місяць
-  newMastersChange: number; // %
-  newClients: number; // нових клієнтів за місяць
+  monthlyIncome: number;
+  monthlyIncomeChange: number;
+  newMasters: number; 
+  newMastersChange: number;
+  newClients: number; 
   newClientsChange: number;
-  paidSubscriptions: number; // перейшли на платний тариф
-  dailyRevenue: { day: number; amount: number }[]; // графік по днях
+  paidSubscriptions: number;
+  dailyRevenue: { day: number; amount: number }[]; 
 };
 
 // GET /api/Admin/finance

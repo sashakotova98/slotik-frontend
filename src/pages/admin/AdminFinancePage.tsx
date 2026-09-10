@@ -93,7 +93,7 @@ export default function AdminFinancePage() {
           </p>
 
           <div className="mt-10 grid grid-cols-2 gap-x-4 gap-y-7 sm:gap-x-8">
-            {/* Доход */}
+
             <div className="relative flex min-h-28 flex-col justify-center rounded-2xl bg-surface p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:p-5">
               <span
                 className={`absolute -top-3 right-0 rounded-full px-2 py-1 text-sm ${changeClasses(
@@ -112,7 +112,6 @@ export default function AdminFinancePage() {
               </p>
             </div>
 
-            {/* Новые мастера */}
             <div className="relative flex min-h-28 flex-col justify-center rounded-2xl bg-surface p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:p-5">
               <span
                 className={`absolute -top-3 right-0 rounded-full px-2 py-1 text-sm ${changeClasses(
@@ -132,7 +131,6 @@ export default function AdminFinancePage() {
               </p>
             </div>
 
-            {/* Переходы на платный тариф */}
             <div className="relative flex min-h-28 flex-col justify-center rounded-2xl bg-surface p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:p-5">
               <p className="text-3xl font-semibold leading-tight text-text sm:text-4xl">
                 {financeStats.paidSubscriptions > 0 ? "+" : ""}
@@ -146,7 +144,6 @@ export default function AdminFinancePage() {
               </p>
             </div>
 
-            {/* Новые клиенты */}
             <div className="relative flex min-h-28 flex-col justify-center rounded-2xl bg-surface p-4 shadow-[0_8px_24px_rgba(0,0,0,0.18)] sm:p-5">
               <span
                 className={`absolute -top-3 right-0 rounded-full px-2 py-1 text-sm ${changeClasses(

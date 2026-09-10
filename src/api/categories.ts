@@ -1,4 +1,3 @@
-// getCategories, createCategory, updateCategory, deleteCategory
 import { api } from "./api";
 
 export type Category = {
