@@ -10,10 +10,10 @@ type Props = {
 
 export function CategoryActions({ onRename, onHide, onDelete, disabled = false, deleteDisabled = false, }: Props) {
   const buttonClasses =
-    "flex min-h-14 w-full items-center gap-4 px-5 py-3 text-left text-sm transition-colors hover:bg-selected disabled:cursor-not-allowed disabled:opacity-50";
+    "flex min-h-14 w-full items-center gap-4 px-5 py-3 text-left text-sm transition-colors hover:bg-selected disabled:cursor-not-allowed disabled:opacity-50 sm:text-base";
 
   return (
-    <div className="mt-3 border-t border-border">
+    <div className="mt-3 overflow-hidden rounded-b-xl border-t border-border">
       <button
         type="button"
         onClick={onRename}

@@ -1,19 +1,17 @@
-// // getMasters, getMasterBySlug, blockMaster, extendSubscription
+import { api } from "./api";
 
-// import { api } from "./api";
 
-// export type MasterStatus = "active" | "expired" | "blocked";
+export type Master = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  category: string;
+  city: string;
+  status: "active" | "expired";
+  subscriptionUntil: string | null;
+  tariff: "free" | "basic" | "pro";
+};
 
-// export type Master = {
-//   id: number;
-//   firstName: string;
-//   lastName: string;
-//   slug: string;
-//   categoryName: string;
-//   cityName: string;
-//   status: MasterStatus;
-//   tariff: "free" | "base" | "pro";
-//   subscriptionUntil: string;
-//   clientsCount: number;
-//   rating: number;
-// };
+export function getMasters(): Promise<Master[]> {
+  return api<Master[]>("/Master");
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shapes, EllipsisVertical, Plus } from "lucide-react";
+import { Shapes, EllipsisVertical, Plus, } from "lucide-react";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { CategoryModal } from "../../components/admin/CategoryModal";
@@ -137,31 +137,17 @@ export default function AdminCategoriesPage() {
         <ul className="space-y-3">
           {categories.map((category) => {
             const Icon = categoryIcons[category.icon] ?? Shapes;
+            const isOpen = openedCategoryId === category.id;
 
             return (
               <li
                 key={category.id}
-                className="flex items-center gap-3"
+                className={`rounded-2xl p-2 ${isOpen
+                  ? "bg-surface shadow-[0_4px_12px_rgba(0,0,0,0.18)]"
+                  : ""
+                  }`}
               >
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-border bg-selected">
-                  <Icon
-                    size={28}
-                    strokeWidth={1.25}
-                    className="text-text"
-                    aria-hidden="true"
-                  />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-text">
-                    {category.name}
-                  </p>
-
-                  <p className="mt-1 text-xs text-muted">
-                    Майстрів: {category.mastersCount}
-                  </p>
-                </div>
-
+                {/* Верхняя строка категории */}
                 <button
                   type="button"
                   onClick={() => {
@@ -169,21 +155,46 @@ export default function AdminCategoriesPage() {
                       previous === category.id ? null : category.id
                     );
                   }}
-                  aria-label={`Дії для категорії «${category.name}»`}
-                  aria-expanded={openedCategoryId === category.id}
-                  title="Дії категорії"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-text hover:bg-selected transition-colors"
+                  aria-expanded={isOpen}
+                  aria-controls={`category-actions-${category.id}`}
+                  className="flex w-full items-center gap-3 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
                 >
-                  <EllipsisVertical size={20} aria-hidden="true" />
+                  <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-border bg-selected">
+                    <Icon
+                      size={32}
+                      strokeWidth={1.25}
+                      className="text-text"
+                      aria-hidden="true"
+                    />
+                  </span>
+
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-medium text-text sm:text-base">
+                      {category.name}
+                    </span>
+
+                    <span className="mt-1 block text-xs text-muted sm:text-sm">
+                      Майстрів: {category.mastersCount}
+                    </span>
+                  </span>
+
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center text-text">
+                    <EllipsisVertical size={20} aria-hidden="true" />
+                  </span>
                 </button>
-                {openedCategoryId === category.id && (
+
+                {/* Меню под категорией */}
+                <div
+                  id={`category-actions-${category.id}`}
+                  hidden={!isOpen}
+                >
                   <CategoryActions
                     disabled={deleting}
                     deleteDisabled={category.mastersCount > 0}
                     onRename={() => handleRename(category)}
                     onDelete={() => handleDelete(category)}
                   />
-                )}
+                </div>
               </li>
             );
           })}
