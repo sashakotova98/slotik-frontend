@@ -1,12 +1,12 @@
-// тут 
+import { useEffect, useRef, useState } from "react";
+import { X, FileText } from "lucide-react";
+import { type Master, type MasterDetails, getMasterDetails, toggleMasterBlock, } from "../../api/masters";
 
-import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
-import type { Master } from "../../api/masters";
 
 type Props = {
   master: Master;
   onClose: () => void;
+  onBlockChange: (id: number, isBlocked: boolean) => void;
 };
 
 const tariffLabels: Record<"free" | "basic" | "pro", string> = {
@@ -15,12 +15,36 @@ const tariffLabels: Record<"free" | "basic" | "pro", string> = {
   pro: "Професійний",
 };
 
-export function MasterDetailsModal({ master, onClose }: Props) {
+export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
 
-  // const [saving, setSaving] = useState(false);// запрос выполняется, кнопку временно отключаем.
+  const [masterDetails, setMasterDetails] = useState<MasterDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(true);
+  const [detailsError, setDetailsError] = useState("");
 
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [savingBlock, setSavingBlock] = useState(false);
+  const [blockError, setBlockError] = useState("");
 
-  // состояния и useEffect setSaving(true); Перед запросом
+  useEffect(() => {
+    async function fetchDetails() {
+      setDetailsLoading(true);
+      setDetailsError("");
+      setMasterDetails(null);
+
+      try {
+        const data = await getMasterDetails(master.id);
+        setMasterDetails(data);
+      } catch (err) {
+        console.error(err);
+        setDetailsError("Не вдалося завантажити подробиці майстра.");
+      } finally {
+        setDetailsLoading(false);
+      }
+    }
+
+    void fetchDetails();
+  }, [master.id]);
+
 
   // function handleChangeTariff() {
   //   // открыть выбор тарифа
@@ -30,10 +54,38 @@ export function MasterDetailsModal({ master, onClose }: Props) {
   //   // перейти в профиль мастера
   // }
 
-  // function handleBlockMaster() { }
+  function handleBlockMaster() {
+    setBlockError("");
+    setShowBlockConfirm(true);
+  }
+
+  async function handleConfirmBlock() {
+    if (savingBlock || detailsLoading) return;
+
+    setSavingBlock(true);
+    setBlockError("");
+
+    try {
+      const result = await toggleMasterBlock(master.id);
+
+      setMasterDetails((previous) =>
+        previous
+          ? { ...previous, isBlocked: result.isBlocked }
+          : previous
+      );
+
+      onBlockChange(master.id, result.isBlocked);
+      setShowBlockConfirm(false);
+    } catch (error) {
+      console.error(error);
+      setBlockError("Не вдалося змінити блокування майстра.");
+    } finally {
+      setSavingBlock(false);
+    }
+  }
 
   // function handleExtendSubscription() {
-  //   // Здесь откроем окно выбора срока продления.
+  //
   // }
 
 
@@ -56,159 +108,260 @@ export function MasterDetailsModal({ master, onClose }: Props) {
     dialogRef.current?.close();
     onClose();
   }
+  const currentMaster = masterDetails ?? master;
 
-  const isActive = master.status === "active";
+  const isFree = currentMaster.tariff === "free";
+  const isActive = currentMaster.status === "active";
+  const isExpired = currentMaster.status === "expired";
+  const isBlocked = currentMaster.isBlocked;
 
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="master-details-title"
+      aria-labelledby={showBlockConfirm ? "block-confirm-title" : "master-details-title"}
       onCancel={(event) => {
         event.preventDefault();
-        handleClose();
+        if (savingBlock) return;
+        if (showBlockConfirm) {
+          setShowBlockConfirm(false);
+        } else {
+          handleClose();
+        }
       }}
       className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-105 overflow-y-auto rounded-[40px] border-0 bg-surface p-5 text-text shadow-xl backdrop:bg-black/40 sm:p-6"
     >
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleClose}
-          aria-label="Закрити подробиці майстра"
-          className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-selected"
-        >
-          <X size={28} strokeWidth={2} aria-hidden="true" />
-        </button>
-      </div>
+      {showBlockConfirm ? (
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowBlockConfirm(false)}
+              disabled={savingBlock}
+              aria-label="Скасувати"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-muted hover:bg-selected disabled:opacity-50"
+            >
+              <X size={28} aria-hidden="true" />
+            </button>
+          </div>
 
-      <div className="mt-1 flex items-center gap-3">
-        <div
-          aria-hidden="true"
-          className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-selected text-2xl text-muted"
-        >
-          {initials}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <h2
-            id="master-details-title"
-            className="wrap-break-word text-base font-medium"
-          >
-            {master.firstName} {master.lastName}
+          <h2 id="block-confirm-title" className="text-lg font-medium">
+            {isBlocked
+              ? "Ви точно хочете розблокувати майстра?"
+              : "Ви точно хочете заблокувати майстра?"}
           </h2>
-          <div className="mt-1 flex w-full items-center justify-between gap-2">
-            <p className="min-w-0 rounded-full bg-selected px-2 py-0.5 text-xs">
-              {master.category}
-            </p>
 
-            <span
-              className={`inline-block rounded-full px-3 py-0.5 text-xs ${isActive
-                ? "bg-[#d5edce] text-[#47783b]"
-                : "bg-[#ffd5dd] text-[#a71930]"
+          {blockError && (
+            <p className="mt-3 text-sm text-danger" role="alert">
+              {blockError}
+            </p>
+          )}
+
+          <button
+            type="button"
+            onClick={handleConfirmBlock}
+            disabled={savingBlock}
+            className="mt-5 min-h-12 w-full rounded-2xl border border-border bg-selected px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {savingBlock
+              ? "Збереження…"
+              : isBlocked
+                ? "Так, розблокувати"
+                : "Так, заблокувати"}
+          </button>
+        </>
+      ) : (
+        <>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Закрити подробиці майстра"
+              className="flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors hover:bg-selected"
+            >
+              <X size={28} strokeWidth={2} aria-hidden="true" />
+            </button>
+          </div>
+
+          <div className="mt-1 flex items-center gap-3">
+            <div
+              aria-hidden="true"
+              className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-selected text-2xl text-muted"
+            >
+              {initials}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h2
+                id="master-details-title"
+                className="wrap-break-word text-base font-medium"
+              >
+                {currentMaster.firstName} {currentMaster.lastName}
+              </h2>
+              <div className="mt-1 flex w-full items-center justify-between gap-2">
+                <p className="min-w-0 rounded-full bg-selected px-2 py-0.5 text-xs">
+                  {currentMaster.category}
+                </p>
+
+                <span
+                  className={`inline-block shrink-0 rounded-full px-3 py-0.5 text-xs ${isBlocked
+                    ? "bg-[#e8e8e8] text-[#666666]"
+                    : isActive
+                      ? "bg-[#d5edce] text-[#47783b]"
+                      : "bg-[#ffd5dd] text-[#a71930]"
+                    }`}
+                >
+                  {isBlocked
+                    ? "Заблокований"
+                    : isActive
+                      ? "Активна"
+                      : "Прострочено"}
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-muted">
+                На платформі з{" "}
+                {currentMaster.createdAt
+                  ? new Date(currentMaster.createdAt).toLocaleDateString("uk-UA")
+                  : "—"}
+              </p>
+            </div>
+          </div>
+
+          {detailsLoading && (
+            <p className="mt-4 text-sm text-muted" role="status">
+              Завантаження подробиць…
+            </p>
+          )}
+
+          {detailsError && (
+            <p className="mt-4 text-sm text-danger" role="alert">
+              {detailsError}
+            </p>
+          )}
+
+          {masterDetails && (
+            <dl className="mt-6 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 rounded-2xl border border-border p-4 text-sm">
+              <dt className="text-muted">Email</dt>
+              <dd className="wrap-break-word text-right">
+                {masterDetails.email || "Не вказано"}
+              </dd>
+
+              <dt className="text-muted">Телефон</dt>
+              <dd className="wrap-break-word text-right">
+                {masterDetails.phone || "Не вказано"}
+              </dd>
+              <dt className="text-muted">Тариф</dt>
+              <dd className="wrap-break-word text-right">
+                {tariffLabels[masterDetails.tariff]}
+
+                {masterDetails.tariffPrice != null && (
+                  <span>
+                    {" "}• {masterDetails.tariffPrice} ₴
+                    {masterDetails.billingPeriod === "month" ? "/міс" : ""}
+                  </span>
+                )}
+              </dd>
+
+              <dt className="text-muted">
+                {isFree ? "Термін" : isExpired ? "Закінчилась" : "Діє до"}
+              </dt>
+
+              <dd className="text-right">
+                {isFree
+                  ? "Безстроково"
+                  : currentMaster.subscriptionUntil
+                    ? new Date(
+                      currentMaster.subscriptionUntil
+                    ).toLocaleDateString("uk-UA")
+                    : "Не вказано"}
+              </dd>
+
+              <dt className="text-muted">Записів за весь час</dt>
+              <dd className="text-right">
+                {masterDetails.bookingsCount ?? "Не вказано"}
+              </dd>
+            </dl>
+          )}
+
+
+          <section className="mt-4" aria-label="Історія оплат">
+            <h3 className="text-sm text-muted">
+              Історія оплат
+            </h3>
+
+            {
+              detailsLoading ? (
+                <p className="mt-3 text-sm text-muted" role="status">
+                  Завантаження історії…
+                </p>
+              ) : !masterDetails || masterDetails.payments === null ? (
+                <p className="mt-3 text-sm text-muted">
+                  Історія оплат поки недоступна.
+                </p>
+              ) : masterDetails.payments.length === 0 ? (
+                <div className="mt-3 flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-border p-4 text-muted">
+                  <FileText size={24} strokeWidth={1.5} aria-hidden="true" />
+                  <p className="text-sm">Оплат ще немає</p>
+                </div>
+              ) : (
+                <div className="mt-3 rounded-2xl border border-border px-3 py-1">
+                  {masterDetails.payments.map((payment) => (
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
+                    >
+                      <span>
+                        {new Date(payment.paidAt).toLocaleDateString("uk-UA")}
+                      </span>
+
+                      <span className="shrink-0">
+                        {payment.amount} ₴
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+          </section>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            {!isFree && (
+              <button
+                type="button"
+                disabled
+                className="min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isExpired ? "Поновити підписку" : "Продовжити підписку"}
+              </button>
+            )}
+
+            <button
+              type="button"
+              disabled
+              className={`min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50 ${isFree ? "col-span-2" : ""
                 }`}
             >
-              {isActive ? "Активна" : "Прострочено"}
-            </span>
+              Змінити тариф
+            </button>
+
+            <button
+              type="button"
+              disabled
+              className="min-h-12 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Відкрити профіль
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBlockMaster}
+              disabled={detailsLoading || savingBlock}
+              className="min-h-12 rounded-2xl border border-danger px-3 py-2 text-sm text-danger disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isBlocked ? "Розблокувати" : "Заблокувати"}
+            </button>
           </div>
-          <p className="mt-1 text-sm text-muted">
-            На платформі з —
-          </p>
-        </div>
-      </div>
-
-      <dl className="mt-6 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 rounded-2xl border border-border p-4 text-sm">
-        <dt className="text-muted">Email</dt>
-        <dd className="wrap-break-word text-right">
-          {/* {master.email} */}
-        </dd>
-
-        <dt className="text-muted">Телефон</dt>
-        <dd className="wrap-break-word text-right">
-          {/* {master.phone ? `+${master.phone}` : "Не вказано"} */}
-        </dd>
-
-        <dt className="text-muted">Тариф</dt>
-        <dd className="wrap-break-word text-right">
-          {tariffLabels[master.tariff]}
-          {master.tariff !== "free" && (
-            <span> • — ₴/міс</span>
-          )}
-        </dd>
-
-        <dt className="text-muted">Наступна оплата</dt>
-        <dd className="text-right">—</dd>
-
-        <dt className="text-muted">Записів за весь час</dt>
-        <dd className="text-right">—</dd>
-      </dl>
-
-      {/* <section className="mt-4" aria-label="Історія оплат">
-        <h3 className="text-sm text-muted">
-          Історія оплат
-        </h3>
-  // тут просто master 
-        {masterDetails && (
-          masterDetails.payments.length > 0 ? (
-            <div className="mt-3 rounded-2xl border border-border px-3 py-1">
-              {masterDetails.payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
-                >
-                  <span>
-                    {new Date(payment.paidAt).toLocaleDateString("uk-UA")}
-                  </span>
-
-                  <span className="shrink-0">
-                    {payment.amount} ₴
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-sm text-muted">
-              Оплат ще немає.
-            </p>
-          )
-        )}
-      </section> */}
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          disabled
-
-          className="min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Продовжити підписку
-        </button>
-
-        <button
-          type="button"
-          // onClick={handleExtendSubscription}
-          // disabled={saving}
-          className="min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Змінити тариф
-        </button>
-
-        <button
-          type="button"
-          disabled
-          // onClick={handleOpenProfile}
-          className="min-h-12 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Відкрити профіль
-        </button>
-
-        <button
-          type="button"
-          disabled
-          // onClick={handleBlockMaster}
-          className="min-h-12 rounded-2xl border border-danger px-3 py-2 text-sm text-danger disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Заблокувати
-        </button>
-      </div>
+        </>
+      )}
     </dialog>
   );
 }

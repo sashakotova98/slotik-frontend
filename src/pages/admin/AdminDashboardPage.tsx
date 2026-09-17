@@ -8,7 +8,7 @@ import type { Master } from "../../api/masters";
 import { MasterCard } from "../../components/admin/MasterCard";
 import { getMasters } from "../../api/masters";
 import { LayoutGrid, ChevronRight } from "lucide-react";
-import { getCategories } from "../../api/categories";
+import { getAdminCategories } from "../../api/categories";
 import { MasterDetailsModal } from "../../components/admin/MasterDetailsModal";
 
 
@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchCategoriesCount = async () => {
       try {
-        const data = await getCategories();
+        const data = await getAdminCategories();
         setCategoriesCount(data.length);
       } catch (err) {
         console.error(err);
@@ -74,10 +74,54 @@ export default function AdminDashboardPage() {
     fetchCategoriesCount();
   }, []);
 
+  function handleMasterBlockChange(id: number, isBlocked: boolean) {
+    setMasters((previous) =>
+      previous.map((item) => item.id === id ? { ...item, isBlocked } : item)
+    );
+    setSelectedMaster((previous) =>
+      previous?.id === id ? { ...previous, isBlocked } : previous
+    );
+  }
+
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
   };
+
+
+  const now = Date.now();
+  const day = 1000 * 60 * 60 * 24; //24 години 60 хвилин 60 секунд 1000 мілісекунд
+
+  // «Нові» тільки перші 7 днів після реєстрації
+
+  const newMasters = masters.filter((master) => {
+    const createdAt = new Date(master.createdAt).getTime();
+    return createdAt <= now && createdAt >= now - 7 * day;
+  })
+    .sort((a, b) => {
+      return (
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    });
+
+  // ПІДПИСКА ЗАВЕРШУЄТЬСЯ коли до поточного терміну залишається 48 годин.
+
+  const expiringMasters = masters.filter((master) => {
+    if (
+      master.isBlocked ||
+      master.tariff === "free" ||
+      !master.subscriptionUntil
+    ) {
+      return false;
+    }
+
+    const expiresAt = new Date(master.subscriptionUntil).getTime();
+    return expiresAt > now && expiresAt <= now + 2 * day;
+  }).sort(
+    (a, b) =>
+      new Date(a.subscriptionUntil!).getTime() - new Date(b.subscriptionUntil!).getTime()
+  );
+
 
   return (
     <AdminLayout
@@ -157,22 +201,51 @@ export default function AdminDashboardPage() {
           )}
 
           {!mastersLoading && !mastersError && (
-            masters.length > 0 ? (
-              <ul className="mt-7 space-y-9">
-                {masters.map((master) => (
-                  <li key={master.id}>
-                    <MasterCard
-                      master={master}
-                      onOpen={() => setSelectedMaster(master)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="py-6 text-sm text-muted">
-                Майстрів поки немає.
-              </p>
-            )
+            <>
+              <h3 className="mt-3 inline-block rounded-full bg-selected px-3 py-0.5 text-xs font-normal uppercase text-text lg:mt-4 lg:px-4 lg:py-1 lg:text-base">
+                Нові
+              </h3>
+
+              {newMasters.length > 0 ? (
+                <ul className="mt-7 space-y-9">
+                  {newMasters.map((master) => (
+                    <li key={master.id}>
+                      <MasterCard
+                        master={master}
+                        showCreatedAt
+                        onOpen={() => setSelectedMaster(master)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="py-6 text-sm text-muted">
+                  Нових майстрів за останні 7 днів немає.
+                </p>
+              )}
+
+              <h3 className="mt-8 inline-block rounded-full bg-selected px-3 py-0.5 text-xs font-normal uppercase text-text lg:mt-10 lg:px-4 lg:py-1 lg:text-base">
+                Підписка завершується
+              </h3>
+
+              {expiringMasters.length > 0 ? (
+                <ul className="mt-7 space-y-9">
+                  {expiringMasters.map((master) => (
+                    <li key={master.id}>
+                      <MasterCard
+                        master={master}
+                        showRemainingTime
+                        onOpen={() => setSelectedMaster(master)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="py-6 text-sm text-muted">
+                  Немає підписок, які завершуються протягом 48 годин.
+                </p>
+              )}
+            </>
           )}
         </section>
         <div className="mt-8 border-t border-border pt-6 pb-12">
@@ -209,6 +282,7 @@ export default function AdminDashboardPage() {
           {selectedMaster && (
             <MasterDetailsModal
               master={selectedMaster}
+              onBlockChange={handleMasterBlockChange}
               onClose={() => setSelectedMaster(null)}
             />
           )}

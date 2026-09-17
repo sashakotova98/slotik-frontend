@@ -8,8 +8,9 @@ import { categoryIcons } from "../../components/admin/categoryIcons";
 import { useAuth } from "../../hooks/useAuth";
 
 import type { Category } from "../../api/categories";
-import { getCategories, deleteCategory } from "../../api/categories";
+import { getAdminCategories, deleteCategory } from "../../api/categories";
 import { CategoryActions } from "../../components/admin/CategoryActions";
+import { setCategoryVisibility } from "../../api/categories";
 
 export default function AdminCategoriesPage() {
 
@@ -22,11 +23,13 @@ export default function AdminCategoriesPage() {
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState("");
 
+  const [savingVisibility, setSavingVisibility] = useState(false);
+
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await getCategories();
+        const data = await getAdminCategories();
         setCategories(data);
       } catch (err) {
         console.error(err);
@@ -89,11 +92,43 @@ export default function AdminCategoriesPage() {
     }
   }
 
+  async function handleHide(category: Category) {
+    if (savingVisibility) return;
+
+    setActionError("");
+
+    const newVisibility = !category.isHiddenFromCatalog;
+
+    if (newVisibility && category.mastersCount > 0) {
+      setActionError(
+        "Не можна приховати категорію, до якої прив’язані майстри."
+      );
+      return;
+    }
+
+    setSavingVisibility(true);
+
+    try {
+      const updatedCategory = await setCategoryVisibility(category.id, newVisibility);
+      setCategories((previous) =>
+        previous.map((item) =>
+          item.id === category.id ? { ...item, isHiddenFromCatalog: updatedCategory.isHiddenFromCatalog } : item
+        )
+      );
+      setOpenedCategoryId(null);
+    } catch (err) {
+      console.error(err);
+      setActionError("Не вдалося оновити видимість категорії.");
+    } finally {
+      setSavingVisibility(false);
+    }
+  }
+
   async function refreshCategoriesAfterSave() {
     setActionError("");
 
     try {
-      const data = await getCategories();
+      const data = await getAdminCategories();
       setCategories(data);
     } catch (err) {
       console.error(err);
@@ -183,7 +218,6 @@ export default function AdminCategoriesPage() {
                   </span>
                 </button>
 
-                {/* Меню под категорией */}
                 <div
                   id={`category-actions-${category.id}`}
                   hidden={!isOpen}
@@ -193,6 +227,9 @@ export default function AdminCategoriesPage() {
                     deleteDisabled={category.mastersCount > 0}
                     onRename={() => handleRename(category)}
                     onDelete={() => handleDelete(category)}
+                    onHide={category.isHiddenFromCatalog || category.mastersCount === 0
+                      ? () => handleHide(category)
+                      : undefined}
                   />
                 </div>
               </li>
