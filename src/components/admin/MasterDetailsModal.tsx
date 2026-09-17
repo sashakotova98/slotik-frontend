@@ -115,6 +115,18 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
   const isExpired = currentMaster.status === "expired";
   const isBlocked = currentMaster.isBlocked;
 
+  function formatDate(value: string | null | undefined): string {
+    if (!value) return "Не вказано";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Не вказано";
+    }
+
+    return date.toLocaleDateString("uk-UA");
+  }
+
   return (
     <dialog
       ref={dialogRef}
@@ -218,10 +230,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted">
-                На платформі з{" "}
-                {currentMaster.createdAt
-                  ? new Date(currentMaster.createdAt).toLocaleDateString("uk-UA")
-                  : "—"}
+                На платформі з {formatDate(currentMaster.createdAt)}
               </p>
             </div>
           </div>
@@ -253,7 +262,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
               <dd className="wrap-break-word text-right">
                 {tariffLabels[masterDetails.tariff]}
 
-                {masterDetails.tariffPrice != null && (
+                {!isFree && masterDetails.tariffPrice != null && (
                   <span>
                     {" "}• {masterDetails.tariffPrice} ₴
                     {masterDetails.billingPeriod === "month" ? "/міс" : ""}
@@ -268,11 +277,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
               <dd className="text-right">
                 {isFree
                   ? "Безстроково"
-                  : currentMaster.subscriptionUntil
-                    ? new Date(
-                      currentMaster.subscriptionUntil
-                    ).toLocaleDateString("uk-UA")
-                    : "Не вказано"}
+                  : formatDate(currentMaster.subscriptionUntil)}
               </dd>
 
               <dt className="text-muted">Записів за весь час</dt>
@@ -309,9 +314,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
                       key={payment.id}
                       className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
                     >
-                      <span>
-                        {new Date(payment.paidAt).toLocaleDateString("uk-UA")}
-                      </span>
+                      <span>{formatDate(payment.paidAt)}</span>
 
                       <span className="shrink-0">
                         {payment.amount} ₴
