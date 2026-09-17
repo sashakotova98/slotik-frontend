@@ -1,6 +1,4 @@
-import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { getMasters, type Master } from "../../api/masters";
 import { MasterCard } from "../../components/admin/MasterCard";
@@ -13,7 +11,6 @@ type FilterButton = {
   label: string;
   count: number;
 };
-// - открытие существующего MasterDetailsModal по стрелке.
 
 export default function AdminMastersPage() {
 
@@ -42,9 +39,6 @@ export default function AdminMastersPage() {
   }, []);
 
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
   function handleMasterBlockChange(id: number, isBlocked: boolean) {
     setMasters((previous) =>
       previous.map((item) => item.id === id ? { ...item, isBlocked } : item)
@@ -53,11 +47,6 @@ export default function AdminMastersPage() {
       previous?.id === id ? { ...previous, isBlocked } : previous
     );
   }
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
 
   const query = search.trim().toLocaleLowerCase("uk-UA");
 
@@ -98,17 +87,7 @@ export default function AdminMastersPage() {
 
 
   return (
-    <AdminLayout title="Майстри"
-      action={
-        <button type="button" aria-label="Вийти" title="Вийти" onClick={handleLogout}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field hover:bg-selected transition-colors">
-          <img
-            src="/icons/logout.svg"
-            alt=""
-            className="h-5.25 w-5.25"
-          />
-        </button>
-      }>
+    <AdminLayout title="Майстри">
       <input
         type="text"
         placeholder="Ім’я, прізвище або категорія..."

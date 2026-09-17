@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { useAuth } from "../../hooks/useAuth";
 import type { FinanceStats } from "../../api/stats";
 import { getFinanceStats } from "../../api/stats";
 import RevenueChart from "../../components/admin/RevenueChart";
 
 export default function AdminFinancePage() {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
 
   const [financeStats, setFinanceStats] = useState<FinanceStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,12 +24,6 @@ export default function AdminFinancePage() {
     };
     fetchFinanceStats();
   }, []);
-
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
 
   const formatChange = (value: number) => {
     return `${value > 0 ? "+" : ""}${value}%`;
@@ -60,17 +50,7 @@ export default function AdminFinancePage() {
     .toUpperCase();
 
   return (
-    <AdminLayout title="Доходи"
-      action={
-        <button type="button" aria-label="Вийти" title="Вийти" onClick={handleLogout}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field hover:bg-selected transition-colors">
-          <img
-            src="/icons/logout.svg"
-            alt=""
-            className="h-5.25 w-5.25"
-          />
-        </button>
-      }>
+    <AdminLayout title="Доходи">
       {loading && (
         <p className="py-8 text-muted" role="status">
           Завантаження статистики…

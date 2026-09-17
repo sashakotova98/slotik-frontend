@@ -46,3 +46,5 @@ export const categoryIcons: Record<string, LucideIcon> =
   Object.fromEntries(
     categoryIconOptions.map(({ value, Icon }) => [value, Icon])
   );
+
+  

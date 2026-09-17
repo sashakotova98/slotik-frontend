@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Shapes, EllipsisVertical, Plus, } from "lucide-react";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { CategoryModal } from "../../components/admin/CategoryModal";
 import { categoryIcons } from "../../components/admin/categoryIcons";
-import { useAuth } from "../../hooks/useAuth";
 
 import type { Category } from "../../api/categories";
 import { getAdminCategories, deleteCategory } from "../../api/categories";
@@ -42,13 +40,6 @@ export default function AdminCategoriesPage() {
     fetchCategories();
   }, []);
 
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login", { replace: true });
-  };
 
   function handleRename(category: Category) {
     setEditingCategory(category);
@@ -139,17 +130,7 @@ export default function AdminCategoriesPage() {
   }
 
   return (
-    <AdminLayout title="Категорії"
-      action={
-        <button type="button" aria-label="Вийти" title="Вийти" onClick={handleLogout}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-field hover:bg-selected transition-colors">
-          <img
-            src="/icons/logout.svg"
-            alt=""
-            className="h-5.25 w-5.25"
-          />
-        </button>
-      }>
+    <AdminLayout title="Категорії">
       {loading && (
         <p className="py-8 text-muted" role="status">
           Завантаження категорій…
