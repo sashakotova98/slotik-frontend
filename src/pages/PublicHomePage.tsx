@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Menu, CircleUserRound, Search, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
@@ -26,10 +27,21 @@ const categories = [
 export default function PublicHomePage() {
   // const [search, setSearch] = setState<string>(null);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-bg text-text">
-      <header className="relative z-10 flex items-center justify-between bg-surface px-4 py-6">
-        <button type="button" aria-label="Відкрити меню">
+      {menuOpen && (
+        <div
+          aria-hidden="true"
+          onClick={() => setMenuOpen(false)}
+          className="fixed inset-0 z-20 bg-bg"
+        />
+      )}
+      <header onKeyDown={(event) => {
+        if (event.key === "Escape") setMenuOpen(false);
+      }} className="relative z-30 flex items-center justify-between bg-surface px-4 py-6">
+        <button type="button" aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"} aria-expanded={menuOpen} aria-controls="home-menu" onClick={() => setMenuOpen((previous) => !previous)} >
           <Menu aria-hidden="true" className="h-6 w-6" />
         </button>
 
@@ -43,6 +55,44 @@ export default function PublicHomePage() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 top-full h-10 bg-linear-to-b from-surface to-transparent"
         />
+
+        {menuOpen && (
+          <nav
+            id="home-menu"
+            aria-label="Головна навігація"
+
+            className="absolute left-3 top-full z-40 w-[calc(100%-24px)] max-w-72 rounded-b-4xl bg-[#f5f5f5] px-3 pb-4 shadow-[0_20px_30px_rgba(0,0,0,0.25)] lg:left-6 lg:max-w-80"
+          >
+            <ul className="divide-y divide-border">
+              <li>
+                <Link
+                  to="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                >
+                  Увійти / зареєструватися
+                </Link>
+              </li>
+
+              {[
+                { href: "#about", label: "Про нас" },
+                { href: "#services", label: "Послуги" },
+                { href: "#offers", label: "Пропозиції" },
+                { href: "#socials", label: "Соцмережі" },
+              ].map(({ href, label }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                  >
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </header>
 
       <main>
@@ -139,15 +189,9 @@ export default function PublicHomePage() {
           </div>
         </section>
 
-        <section
-          aria-labelledby="masters-preview-title"
-          className="px-4 py-8 lg:py-12"
-        >
+        <section aria-labelledby="masters-preview-title" className="px-4 py-8 lg:py-12">
           <div className="mx-auto max-w-2xl rounded-4xl bg-surface px-6 py-8 text-center shadow-md lg:py-12">
-            <h2
-              id="masters-preview-title"
-              className="text-xl font-semibold text-text lg:text-3xl"
-            >
+            <h2 id="masters-preview-title" className="text-xl font-semibold text-text lg:text-3xl">
               Знайдіть свого майстра
             </h2>
 
@@ -155,38 +199,25 @@ export default function PublicHomePage() {
               Незабаром тут з’являться профілі майстрів та фотографії їхніх робіт.
             </p>
 
-            <span className="mt-5 inline-block rounded-full bg-[#eeeeee] px-4 py-2 text-xs text-muted lg:text-sm">
-              Готуємо до запуску
-            </span>
+            <span className="mt-5 inline-block rounded-full bg-[#eeeeee] px-4 py-2 text-xs text-muted lg:text-sm">Готуємо до запуску</span>
           </div>
         </section>
 
-        <section
-          aria-label="Пропозиція для майстрів"
-          className="px-3 py-2 lg:pt-4 lg:pb-6"
-        >
+        <section id="offers" aria-label="Пропозиція для майстрів" className="px-3 py-2 lg:pt-4 lg:pb-6">
           <div className="relative mx-auto max-w-2xl">
             <div className="flex items-stretch rounded-[40px] bg-[#f5f5f5] px-4 py-3 text-black shadow-[0_16px_30px_rgba(0,0,0,0.25)] lg:rounded-[56px] lg:px-7 lg:py-5">
               <div className="flex shrink-0 items-center border-r border-border pr-3 lg:pr-6">
-                <span className="text-[28px] font-medium leading-none lg:text-5xl">
-                  -100%
-                </span>
+                <span className="text-[28px] font-medium leading-none lg:text-5xl">-100%</span>
               </div>
 
               <div className="min-w-0 py-2 pl-3 lg:py-3 lg:pl-6">
                 <div className="flex flex-wrap items-baseline gap-2 lg:gap-3">
-                  <span className="text-xl text-border line-through lg:text-3xl">
-                    200₴
-                  </span>
+                  <span className="text-xl text-border line-through lg:text-3xl">200₴</span>
 
-                  <span className="text-xl font-semibold lg:text-3xl">
-                    0₴
-                  </span>
+                  <span className="text-xl font-semibold lg:text-3xl">0₴</span>
                 </div>
 
-                <p className="mt-1 text-xs leading-snug lg:text-lg">
-                  1 тиждень Професійної підписки
-                </p>
+                <p className="mt-1 text-xs leading-snug lg:text-lg">1 тиждень Професійної підписки</p>
               </div>
             </div>
 
@@ -201,97 +232,62 @@ export default function PublicHomePage() {
           </div>
         </section>
 
-        <section
-          aria-labelledby="join-title"
-          className="bg-linear-to-b from-transparent to-white px-2 lg:px-6 lg:pt-4"
-        >
+        <section aria-labelledby="join-title" className="bg-linear-to-b from-transparent to-white px-2 lg:px-6 lg:pt-4">
           <div className="mx-auto grid min-h-45 w-full max-w-105 grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)_minmax(0,1fr)] items-end gap-1 sm:gap-2 lg:min-h-75 lg:max-w-225 lg:grid-cols-[1fr_1.4fr_1fr] lg:gap-6">
-            <img
-              src={joinMasterLeft}
-              alt=""
-              className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70"
-            />
+            <img src={joinMasterLeft} alt="" className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70" />
 
             <div className="relative z-10 mb-9 min-w-0 rounded-xl bg-white px-2 py-3 text-black shadow-[0_12px_24px_rgba(0,0,0,0.25)] sm:px-3 lg:mb-16 lg:rounded-3xl lg:px-6 lg:py-7">
-              <h2
-                id="join-title"
-                className="text-xs font-bold leading-snug sm:text-sm lg:text-xl"
-              >
+              <h2 id="join-title" className="text-xs font-bold leading-snug sm:text-sm lg:text-xl">
                 Ви майстер?
               </h2>
 
               <p className="mt-1 text-xs leading-snug sm:text-sm lg:mt-2 lg:text-lg">
-                Приєднуйтесь до{" "}
-                <span className="font-bold italic">Slotik!</span>
+                Приєднуйтесь до <span className="font-bold italic">Slotik!</span>
               </p>
 
-              <button
-                type="button"
-                disabled
-                title="Реєстрація майстрів незабаром стане доступною"
-                className="mt-3 min-h-11 w-full rounded-full bg-black px-2 py-2 text-[11px] font-medium text-white disabled:cursor-not-allowed sm:text-xs lg:mt-5 lg:min-h-12 lg:px-4 lg:text-base"
+              <Link
+                to="/login?tab=register"
+                className="mt-3 flex min-h-11 w-full items-center justify-center rounded-full bg-black px-2 py-2 text-center text-[11px] font-medium text-white transition-colors hover:bg-black/80 sm:text-xs lg:mt-5 lg:min-h-12 lg:px-4 lg:text-base"
               >
                 Зареєструватися
-              </button>
+              </Link>
             </div>
 
-            <img
-              src={joinMasterRight}
-              alt=""
-              className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70"
-            />
+            <img src={joinMasterRight} alt="" className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70" />
           </div>
         </section>
       </main>
 
-      <footer className="bg-white px-4 pb-6 pt-4 text-black lg:pb-10 lg:pt-6">
+      <footer id="socials" className="bg-white px-4 pb-6 pt-4 text-black lg:pb-10 lg:pt-6">
         <nav aria-label="Посилання в підвалі">
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs lg:gap-x-8 lg:text-base">
             <li>
-              <button
-                type="button"
-                disabled
-                className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]"
-              >
+              <button type="button" disabled className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]">
                 FAQ
               </button>
             </li>
 
             <li>
-              <a
-                href="#about"
-                className="inline-flex min-h-11 items-center hover:underline"
-              >
+              <a href="#about" className="inline-flex min-h-11 items-center hover:underline">
                 Про нас
               </a>
             </li>
 
             <li>
-              <button
-                type="button"
-                disabled
-                className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]"
-              >
+              <button type="button" disabled className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]">
                 Підтримка
               </button>
             </li>
 
             <li>
-              <a
-                href="#services"
-                className="inline-flex min-h-11 items-center hover:underline"
-              >
+              <a href="#services" className="inline-flex min-h-11 items-center hover:underline">
                 Послуги
               </a>
             </li>
           </ul>
         </nav>
 
-        <div
-          role="group"
-          aria-label="Соціальні мережі"
-          className="flex items-center justify-center gap-1 lg:gap-3"
-        >
+        <div role="group" aria-label="Соціальні мережі" className="flex items-center justify-center gap-1 lg:gap-3">
           {[
             { label: "Telegram", icon: telegramIcon },
             { label: "Instagram", icon: instagramIcon },
@@ -310,6 +306,6 @@ export default function PublicHomePage() {
           ))}
         </div>
       </footer>
-    </div >
+    </div>
   );
 }
