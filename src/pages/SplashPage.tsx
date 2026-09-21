@@ -10,7 +10,7 @@ export default function SplashPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (done) return <Navigate to="/catalog" replace />;
+  if (done) return <Navigate to="/home" replace />;
 
   return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
