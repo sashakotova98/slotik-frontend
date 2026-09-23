@@ -12,6 +12,8 @@ import joinMasterRight from "../assets/public-home/join-master-right.svg";
 import telegramIcon from "../assets/social/telegram.svg";
 import instagramIcon from "../assets/social/instagram.svg";
 import facebookIcon from "../assets/social/facebook.svg";
+import { useNavigate } from "react-router-dom";
+// import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 
 const categories = [
   { icon: "manicure-pedicure", title: "Манікюр / Педикюр" },
@@ -25,7 +27,22 @@ const categories = [
 ];
 
 export default function PublicHomePage() {
-  // const [search, setSearch] = setState<string>(null);
+
+  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const query = search.trim();
+
+    if (!query) return;
+
+    const params = new URLSearchParams();
+    params.set("search", query);
+
+    navigate(`/catalog?${params.toString()}`);
+  }
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -106,14 +123,28 @@ export default function PublicHomePage() {
           <p className="mt-1 text-[15px] leading-snug lg:mt-2 lg:text-xl">з краси і здоров’я поруч із вами</p>
 
           <div className="relative z-10 mx-auto mt-6 w-full max-w-2xl lg:mt-8">
-            <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-black" />
+            <form
+              onSubmit={handleSearch}
+              role="search"
+              className="relative z-10 mx-auto mt-6 w-full max-w-2xl lg:mt-8"
+            >
+              <button
+                type="submit"
+                aria-label="Знайти"
+                className="absolute left-1 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+              >
+                <Search aria-hidden="true" className="size-5" />
+              </button>
 
-            <input
-              type="search"
-              aria-label="Пошук послуги або майстра"
-              placeholder="Послуга або майстер..."
-              className="block h-14 w-full rounded-[47px] bg-white pl-12 pr-5 text-sm text-black placeholder:text-border shadow-[0_5px_8px_rgba(0,0,0,0.2)] outline-none focus-visible:ring-2 focus-visible:ring-black lg:h-16 lg:text-base"
-            />
+              <input
+                type="search"
+                aria-label="Пошук послуги або майстра"
+                placeholder="Послуга або майстер..."
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                className="block h-14 w-full rounded-full bg-white pl-12 pr-5 text-sm text-black placeholder:text-border shadow-[0_5px_8px_rgba(0,0,0,0.2)] outline-none focus-visible:ring-2 focus-visible:ring-black lg:h-16 lg:text-base"
+              />
+            </form>
           </div>
 
           {/* <CategoryIcon name={category.icon} /> */}
