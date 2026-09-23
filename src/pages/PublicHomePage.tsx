@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Menu, CircleUserRound, Search, ChevronRight } from "lucide-react";
+import { Menu, Search, ChevronRight } from "lucide-react";
+import Header from "../components/Header";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
 import chooseTime from "../assets/public-home/choose-time.svg";
 import chooseBook from "../assets/public-home/book.svg";
 import bookingGirl from "../assets/public-home/booking-person.svg";
-import logo from "../assets/logo.svg";
 import { CategoryIcon } from "../components/categories/CategoryIcon";
 import joinMasterLeft from "../assets/public-home/join-master-left.svg";
 import joinMasterRight from "../assets/public-home/join-master-right.svg";
@@ -31,69 +31,66 @@ export default function PublicHomePage() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      {menuOpen && (
-        <div
-          aria-hidden="true"
-          onClick={() => setMenuOpen(false)}
-          className="fixed inset-0 z-20 bg-bg"
-        />
-      )}
-      <header onKeyDown={(event) => {
-        if (event.key === "Escape") setMenuOpen(false);
-      }} className="relative z-30 flex items-center justify-between bg-surface px-4 py-6">
-        <button type="button" aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"} aria-expanded={menuOpen} aria-controls="home-menu" onClick={() => setMenuOpen((previous) => !previous)} >
-          <Menu aria-hidden="true" className="h-6 w-6" />
-        </button>
-
-        <img src={logo} alt="Slotik" className="h-8 w-auto lg:h-10" />
-
-        <Link to="/login" aria-label="Увійти">
-          <CircleUserRound aria-hidden="true" className="h-6 w-6" />
-        </Link>
-
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-full h-10 bg-linear-to-b from-surface to-transparent"
-        />
-
-        {menuOpen && (
-          <nav
-            id="home-menu"
-            aria-label="Головна навігація"
-
-            className="absolute left-3 top-full z-40 w-[calc(100%-24px)] max-w-72 rounded-b-4xl bg-[#f5f5f5] px-3 pb-4 shadow-[0_20px_30px_rgba(0,0,0,0.25)] lg:left-6 lg:max-w-80"
+      {menuOpen && <div aria-hidden="true" onClick={() => setMenuOpen(false)} className="fixed inset-0 z-20 bg-bg" />}
+      <Header
+        menu={
+          <div
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setMenuOpen(false);
+              }
+            }}
           >
-            <ul className="divide-y divide-border">
-              <li>
-                <Link
-                  to="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
-                >
-                  Увійти / зареєструватися
-                </Link>
-              </li>
+            <button
+              type="button"
+              aria-label={menuOpen ? "Закрити меню" : "Відкрити меню"}
+              aria-expanded={menuOpen}
+              aria-controls="home-menu"
+              onClick={() => setMenuOpen((previous) => !previous)}
+              className="flex size-11 items-center justify-center rounded-lg focus-visible:outline-2"
+            >
+              <Menu aria-hidden="true" className="size-6" />
+            </button>
 
-              {[
-                { href: "#about", label: "Про нас" },
-                { href: "#services", label: "Послуги" },
-                { href: "#offers", label: "Пропозиції" },
-                { href: "#socials", label: "Соцмережі" },
-              ].map(({ href, label }) => (
-                <li key={href}>
-                  <a
-                    href={href}
-                    onClick={() => setMenuOpen(false)}
-                    className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-      </header>
+            {menuOpen && (
+              <nav
+                id="home-menu"
+                aria-label="Головна навігація"
+                className="absolute left-3 top-full z-40 w-[calc(100%-24px)] max-w-72 rounded-b-4xl bg-[#f5f5f5] px-3 pb-4 shadow-[0_20px_30px_rgba(0,0,0,0.25)] lg:left-6 lg:max-w-80"
+              >
+                <ul className="divide-y divide-border">
+                  <li>
+                    <Link
+                      to="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                    >
+                      Увійти / зареєструватися
+                    </Link>
+                  </li>
+
+                  {[
+                    { href: "#about", label: "Про нас" },
+                    { href: "#services", label: "Послуги" },
+                    { href: "#offers", label: "Пропозиції" },
+                    { href: "#socials", label: "Соцмережі" },
+                  ].map(({ href, label }) => (
+                    <li key={href}>
+                      <a
+                        href={href}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                      >
+                        {label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </div>
+        }
+      />
 
       <main>
         <section aria-labelledby="hero-title" className="px-4 pt-8 text-center text-black lg:pt-12">
@@ -262,9 +259,9 @@ export default function PublicHomePage() {
         <nav aria-label="Посилання в підвалі">
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs lg:gap-x-8 lg:text-base">
             <li>
-              <button type="button" disabled className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]">
+              <Link to="/faq" className="inline-flex min-h-11 items-center hover:underline">
                 FAQ
-              </button>
+              </Link>
             </li>
 
             <li>
@@ -274,9 +271,9 @@ export default function PublicHomePage() {
             </li>
 
             <li>
-              <button type="button" disabled className="min-h-11 disabled:cursor-not-allowed disabled:text-[#777]">
+              <Link to="/support" className="inline-flex min-h-11 items-center hover:underline">
                 Підтримка
-              </button>
+              </Link>
             </li>
 
             <li>

@@ -8,6 +8,9 @@ import MasterProfilePage from "./pages/MasterProfilePage";
 import MasterCabinetPage from "./pages/MasterCabinetPage";
 import AdminPage from "./pages/AdminPage";
 import CatalogPage from "./pages/CatalogPage";
+import TermsPage from "./pages/info/TermsPage";
+import FaqPage from "./pages/info/FaqPage";
+import SupportPage from "./pages/info/SupportPage";
 
 function App() {
   const { token, role } = useAuth();
@@ -22,6 +25,10 @@ function App() {
         } />
         <Route path="/home" element={<PublicHomePage />} />
         <Route path="/catalog" element={<CatalogPage />} />
+
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/faq" element={<FaqPage />} />
+        <Route path="/support" element={<SupportPage />} />
 
         <Route path="/m/:slug" element={<MasterProfilePage />} />
 
