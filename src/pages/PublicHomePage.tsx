@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, CircleUserRound, Search, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
@@ -13,23 +13,47 @@ import telegramIcon from "../assets/social/telegram.svg";
 import instagramIcon from "../assets/social/instagram.svg";
 import facebookIcon from "../assets/social/facebook.svg";
 import { useNavigate } from "react-router-dom";
-// import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
+import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 
-const categories = [
-  { icon: "manicure-pedicure", title: "Манікюр / Педикюр" },
-  { icon: "massage", title: "Масаж" },
-  { icon: "haircut-styling", title: "Зачіски та стрижки" },
-  { icon: "hair-coloring", title: "Фарбування волосся" },
-  { icon: "brows-lashes", title: "Брови та вії" },
-  { icon: "makeup", title: "Макіяж" },
-  { icon: "cosmetology", title: "Косметологія" },
-  { icon: "depilation", title: "Депіляція" },
-];
+// const categories = [
+//   { icon: "manicure-pedicure", title: "Манікюр / Педикюр" },
+//   { icon: "massage", title: "Масаж" },
+//   { icon: "haircut-styling", title: "Зачіски та стрижки" },
+//   { icon: "hair-coloring", title: "Фарбування волосся" },
+//   { icon: "brows-lashes", title: "Брови та вії" },
+//   { icon: "makeup", title: "Макіяж" },
+//   { icon: "cosmetology", title: "Косметологія" },
+//   { icon: "depilation", title: "Депіляція" },
+// ];
 
 export default function PublicHomePage() {
 
+  const [categories, setCategories] = useState<HomeCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState("");
+
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    async function loadCategories() {
+      setCategoriesLoading(true);
+      setCategoriesError("");
+      setCategories([]);
+
+      try {
+        const data = await getHomeCategories();
+        setCategories(data);
+      } catch {
+        setCategoriesError("Не вдалося завантажити категорії.");
+      } finally {
+        setCategoriesLoading(false);
+      }
+    } loadCategories();
+  }, []);
+
+
 
   function handleSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -138,8 +162,8 @@ export default function PublicHomePage() {
 
               <input
                 type="search"
-                aria-label="Пошук послуги або майстра"
-                placeholder="Послуга або майстер..."
+                aria-label="Пошук категорії послуги або майстра"
+                placeholder="Послуга, категорія або майстер..."
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="block h-14 w-full rounded-full bg-white pl-12 pr-5 text-sm text-black placeholder:text-border shadow-[0_5px_8px_rgba(0,0,0,0.2)] outline-none focus-visible:ring-2 focus-visible:ring-black lg:h-16 lg:text-base"
@@ -147,29 +171,48 @@ export default function PublicHomePage() {
             </form>
           </div>
 
-          {/* <CategoryIcon name={category.icon} /> */}
-          {/* category.icon здесь — пример: нужно использовать реальное название поля из API. 
-          В CategoryIconPicker заменишь вывод Lucide: <Icon size={22} strokeWidth={1.25} aria-hidden="true" /> на общий компонент: <CategoryIcon name={optionValue} />  */}
-
-          {/* категории и то не все где у нас не 0 мастеров и ве кликабельны выборка мастеров и вопрос у меня картинки с lucide-react  */}
-
           <nav
             id="services"
             aria-label="Категорії послуг"
             className="mx-auto -mt-7 w-[calc(100%-16px)] max-w-164 rounded-b-[36px] bg-[#f5f5f5] px-3 pb-8 pt-13 lg:px-6 lg:pb-10"
           >
+
+            {categoriesLoading && (
+              <p role="status" className="py-4 text-center text-sm">
+                Завантаження категорій…
+              </p>
+            )}
+
+            {!categoriesLoading && categoriesError && (
+              <p
+                role="alert"
+                className="py-4 text-center text-sm text-danger"
+              >
+                {categoriesError}
+              </p>
+            )}
+
+            {!categoriesLoading &&
+              !categoriesError &&
+              categories.length === 0 && (
+                <p className="py-4 text-center text-sm text-muted">
+                  Категорій поки немає.
+                </p>
+              )}
             <ul className="grid grid-cols-4 gap-x-2 gap-y-5 lg:gap-6">
               {categories.map((category) => (
-                <li key={category.icon} className="min-w-0">
+                <li key={category.id} className="min-w-0">
                   <Link
-                    to={`/catalog?category=${category.icon}`}
+                    to={`/catalog?categoryId=${category.id}`}
                     className="group flex h-full flex-col items-center gap-2 rounded-xl text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
                     <span className="flex h-14.5 w-14.5 items-center justify-center rounded-[17px] border border-border/11 bg-[#f5f5f5] transition-colors group-hover:bg-white lg:h-20 lg:w-20">
                       <CategoryIcon name={category.icon} className="h-9 w-9 object-contain lg:h-12 lg:w-12" />
                     </span>
 
-                    <span className="text-center text-[11px] leading-tight lg:text-sm">{category.title}</span>
+                    <span className="text-center text-xs lg:text-sm">
+                      {category.name}
+                    </span>
                   </Link>
                 </li>
               ))}

@@ -14,15 +14,29 @@ export type CatalogMaster = {
   clientsCount: number;
 };
 
-export function getCatalogMasters(categoryId?: number, signal?: AbortSignal): Promise<CatalogMaster[]> {
+export function getCatalogMasters(categoryId?: number, cityId?: number, search: string = "",  districtId?: number): Promise<CatalogMaster[]> {
   const params = new URLSearchParams();
+
   params.set("status", "active");
 
   if (categoryId !== undefined) {
     params.set("categoryId", String(categoryId));
   }
 
-  const query = params.toString();
+   if (cityId !== undefined) {
+    params.set("cityId", String(cityId));
+  }
 
-  return api<CatalogMaster[]>(query ? `/Master?${query}` : "/Master", { signal });
+
+  if (districtId !== undefined) {
+    params.set("districtId", String(districtId));
+  }
+
+   const query = search.trim();
+
+    if (query) {
+    params.set("search", query);
+  }
+
+   return api<CatalogMaster[]>(`/Master?${params.toString()}`);
 }
