@@ -93,11 +93,10 @@ export default function FaqPage() {
             <p className="mt-3 text-sm leading-relaxed text-neutral-600 sm:text-base">
               Напишіть нам — команда підтримки допоможе із записом, оплатою або роботою профілю.
             </p>
-            <a href="mailto:support@slotik.ua" className="mt-2 inline-flex min-h-11 items-center break-all text-sm text-blue-600 hover:underline sm:text-base">support@slotik.ua</a>
+            <a href="https://t.me/Slotik_Supportik_bot" target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-11 items-center break-all text-sm text-blue-600 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-base">Написати в Telegram</a>
             <Link to="/support" className="mt-1 flex min-h-12 items-center justify-center rounded-xl bg-neutral-200 px-4 py-3 text-center text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black sm:text-base">
               Перейти до підтримки
             </Link>
-            <p className="mt-3 text-xs text-neutral-500">Середній час відповіді — до 24 годин</p>
           </section>
         </section>
       </main>

@@ -26,8 +26,3 @@ export async function apiRegister(data: RegisterData): Promise<AuthResponse> {
 }
 
 // superadmin@slotik.local / SuperAdmin123!
-
-// 409  "User with the same Email already exists"
-// 409  "User with the same Phone already exists"
-// 400  ошибки валидации DTO (если бек строже фронта)
-//{serverError && <p className="text-sm text-danger mb-2 text-center">{serverError}</p>}

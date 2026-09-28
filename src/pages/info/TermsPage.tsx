@@ -50,7 +50,7 @@ export default function TermsPage() {
             Умови користування та обробка персональних даних
           </h1>
           <p className="mt-4 text-[11px] text-neutral-400 sm:text-sm">
-            Останнє оновлення: <time dateTime={dateTime}>{formattedDate}</time>
+            Поточна дата: <time dateTime={dateTime}>{formattedDate}</time>
           </p>
           <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-6">
             {sections.map(({ title, text }) => (

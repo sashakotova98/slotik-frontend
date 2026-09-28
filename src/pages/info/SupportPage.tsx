@@ -1,7 +1,6 @@
 import Header from "../../components/Header";
 
 const contacts = [
-  { title: "Telegram", value: "@slotik_support" },
   { title: "Email", value: "support@slotik.ua" },
   { title: "Графік роботи", value: "Пн–Пт, 09:00–18:00" },
 ];
@@ -24,7 +23,7 @@ export default function SupportPage() {
         <section aria-labelledby="support-title" className="mx-auto max-w-2xl rounded-2xl bg-white p-5 shadow-lg sm:rounded-3xl sm:p-8">
           <h1 id="support-title" className="text-2xl font-bold sm:text-3xl">Підтримка</h1>
           <p className="mt-3 text-sm leading-snug text-neutral-500 sm:text-base">
-            Оберіть зручний спосіб зв’язку або надішліть звернення
+            Напишіть нам у Telegram — допоможемо з вашим запитанням.
           </p>
 
           <section aria-labelledby="contact-title" className="mt-3 rounded-xl border border-neutral-400 p-4 sm:p-5">
@@ -32,6 +31,19 @@ export default function SupportPage() {
             <p className="mt-3 text-sm leading-relaxed text-neutral-600 sm:text-base">
               Ми допоможемо із записом, оплатою або налаштуваннями профілю.
             </p>
+            <a
+              href="https://t.me/Slotik_Supportik_bot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block rounded-xl bg-neutral-100 px-4 py-3 transition-colors hover:bg-neutral-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+            >
+              <span className="block text-base font-semibold sm:text-lg">
+                Telegram
+              </span>
+              <span className="mt-0.5 block wrap-break-word text-sm text-neutral-600 sm:text-base">
+                @Slotik_Supportik_bot
+              </span>
+            </a>
             <dl className="mt-3 space-y-3">
               {contacts.map(({ title, value }) => (
                 <div key={title} className="rounded-xl bg-neutral-100 px-4 py-3">
@@ -45,6 +57,7 @@ export default function SupportPage() {
           <section aria-labelledby="message-title" className="mt-3 rounded-xl border border-neutral-400 p-4 sm:p-5">
             <h2 id="message-title" className="text-xl font-bold sm:text-2xl">Надіслати звернення</h2>
             <form aria-labelledby="message-title" aria-describedby="support-form-notice" onSubmit={(event) => event.preventDefault()} className="mt-3 space-y-3">
+              <fieldset disabled aria-describedby="support-form-notice" className="space-y-3">
               <div>
                 <label htmlFor="support-topic" className="text-sm text-neutral-600">Тема звернення</label>
                 <select id="support-topic" name="topic" defaultValue="" required className={`${fieldClassName} invalid:text-neutral-400`}>
@@ -65,8 +78,9 @@ export default function SupportPage() {
               <button type="submit" disabled aria-describedby="support-form-notice" className="flex min-h-12 w-full items-center justify-center rounded-xl bg-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 disabled:cursor-not-allowed sm:text-base">
                 Надіслати
               </button>
+              </fieldset>
               <p id="support-form-notice" className="text-xs leading-relaxed text-neutral-500">
-                Надсилання звернень поки недоступне. Незабаром тут можна буде написати підтримці.
+                Надсилання через форму тимчасово недоступне. Напишіть нам у Telegram.
               </p>
             </form>
           </section>

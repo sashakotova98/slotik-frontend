@@ -173,7 +173,7 @@ export default function LoginPage() {
                   onChange={(e) => setValues({ ...values, agree: e.target.checked })}
                   className="mt-0.5"
                 />
-                <span>Погоджуюсь з <Link to="/terms" className="underline underline-offset-2 hover:text-black" aria-label="Умови користування та обробка персональних даних (у новій вкладці)">умовами користування та обробкою персональних даних</Link></span>
+                <span>Погоджуюсь з <Link to="/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-black" aria-label="Умови користування та обробка персональних даних (у новій вкладці)">умовами користування та обробкою персональних даних</Link></span>
               </label>
               {!isRegFormValid && (
                 <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>
