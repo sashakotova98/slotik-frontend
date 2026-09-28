@@ -1,16 +1,27 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CircleUserRound, LogOut } from "lucide-react";
+import { ChevronLeft, CircleUserRound, LogOut } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import logo from "../assets/logo.svg";
 
 type HeaderProps = {
   menu?: ReactNode;
+  showBack?: boolean;
+  backFallback?: string;
 };
 
-export default function Header({ menu }: HeaderProps) {
+export default function Header({ menu, showBack = false, backFallback = "/home" }: HeaderProps) {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+
+  function handleBack() {
+    const historyIndex = window.history.state?.idx;
+    if (typeof historyIndex === "number" && historyIndex > 0) {
+      navigate(-1);
+    } else {
+      navigate(backFallback, { replace: true });
+    }
+  }
 
   function handleLogout() {
     logout();
@@ -20,7 +31,19 @@ export default function Header({ menu }: HeaderProps) {
   return (
     <header className="relative z-30 bg-white text-black">
       <div className="relative mx-auto grid max-w-6xl grid-cols-[44px_1fr_44px] items-center gap-3 px-3 py-4 sm:px-6 sm:py-5">
-        <div>{menu}</div>
+        <div>
+          {showBack ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              aria-label="Повернутися назад"
+              title="Повернутися назад"
+              className="flex size-11 items-center justify-center rounded-lg text-neutral-500 hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <ChevronLeft aria-hidden="true" className="size-6" />
+            </button>
+          ) : menu}
+        </div>
 
         <Link
           to="/home"

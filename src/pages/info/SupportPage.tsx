@@ -18,7 +18,7 @@ const fieldClassName = "mt-2 min-h-12 w-full rounded-lg border border-neutral-40
 export default function SupportPage() {
   return (
     <div className="min-h-screen bg-bg text-black">
-      <Header />
+      <Header showBack />
       <main className="px-3 pb-8 pt-5 sm:px-6 sm:py-8">
         <section aria-labelledby="support-title" className="mx-auto max-w-2xl rounded-2xl bg-white p-5 shadow-lg sm:rounded-3xl sm:p-8">
           <h1 id="support-title" className="text-2xl font-bold sm:text-3xl">Підтримка</h1>

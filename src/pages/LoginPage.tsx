@@ -1,11 +1,12 @@
 import { useState, type ChangeEvent } from "react";
 import { validateFirstName, validateLastName, validateEmail, validatePassword, validateConfirmPassword, validatePhone } from "../utils/validation";
 import Field from "../components/Field";
+import TermsModal from "../components/TermsModal";
 import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 
 export default function LoginPage() {
@@ -14,6 +15,7 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [showTerms, setShowTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -165,16 +167,30 @@ export default function LoginPage() {
               <Field id="reg-confirmPassword" name="confirmPassword" label="Підтвердити пароль" type="password"
                 value={values.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} error={shownError("confirmPassword")} />
 
-              <label className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
+              <div className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
                 <input
+                  id="registration-agree"
                   type="checkbox"
                   checked={values.agree}
                   disabled={!isRegFormValid}
                   onChange={(e) => setValues({ ...values, agree: e.target.checked })}
-                  className="mt-0.5"
+                  className="mt-0.5 size-4 shrink-0"
                 />
-                <span>Погоджуюсь з <Link to="/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-black" aria-label="Умови користування та обробка персональних даних (у новій вкладці)">умовами користування та обробкою персональних даних</Link></span>
-              </label>
+                <span>
+                  <label htmlFor="registration-agree">Погоджуюсь з</label>{" "}
+                  <a
+                    href="/terms"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setShowTerms(true);
+                    }}
+                    aria-haspopup="dialog"
+                    className="inline underline underline-offset-2 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    умовами користування та обробкою персональних даних
+                  </a>
+                </span>
+              </div>
               {!isRegFormValid && (
                 <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>
               )}
@@ -210,6 +226,7 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
     </div>
   );
 }
