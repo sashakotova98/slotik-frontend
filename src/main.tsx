@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/inter'
 import './index.css'
 import App from './App.tsx'
-import { AuthProvider } from './hooks/useAuth'
+import { AuthProvider } from './context/AuthProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
