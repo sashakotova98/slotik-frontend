@@ -6,7 +6,7 @@ import { getAdminStats } from "../../api/stats";
 import type { AdminStats } from "../../api/stats";
 import type { Master } from "../../api/masters";
 import { MasterCard } from "../../components/admin/MasterCard";
-import { getMasters } from "../../api/masters";
+import { isSubscriptionExpiring, getMasters } from "../../api/masters";
 import { LayoutGrid, ChevronRight } from "lucide-react";
 import { getAdminCategories } from "../../api/categories";
 import { MasterDetailsModal } from "../../components/admin/MasterDetailsModal";
@@ -74,12 +74,23 @@ export default function AdminDashboardPage() {
     fetchCategoriesCount();
   }, []);
 
-  function handleMasterBlockChange(id: number, isBlocked: boolean) {
+  function handleMasterUpdated(updatedMaster: Master) {
     setMasters((previous) =>
-      previous.map((item) => item.id === id ? { ...item, isBlocked } : item)
+      previous.map((item) =>
+        item.id === updatedMaster.id ? { ...item, ...updatedMaster } : item
+      )
     );
     setSelectedMaster((previous) =>
-      previous?.id === id ? { ...previous, isBlocked } : previous
+      previous?.id === updatedMaster.id ? { ...previous, ...updatedMaster } : previous
+    );
+  }
+
+  function handleMasterBlockChange(id: number, isBlocked: boolean) {
+    setMasters((previous) =>
+      previous.map((item) => item.id === id ? { ...item, isBlocked, status: isBlocked ? "blocked" : "active" } : item)
+    );
+    setSelectedMaster((previous) =>
+      previous?.id === id ? { ...previous, isBlocked, status: isBlocked ? "blocked" : "active" } : previous
     );
   }
 
@@ -89,7 +100,7 @@ export default function AdminDashboardPage() {
   };
 
 
-  const now = Date.now();
+  const [now] = useState(Date.now);
   const day = 1000 * 60 * 60 * 24; //24 години 60 хвилин 60 секунд 1000 мілісекунд
 
   // «Нові» тільки перші 7 днів після реєстрації
@@ -104,20 +115,9 @@ export default function AdminDashboardPage() {
       );
     });
 
-  // ПІДПИСКА ЗАВЕРШУЄТЬСЯ коли до поточного терміну залишається 48 годин.
+  // ПІДПИСКА ЗАВЕРШУЄТЬСЯ коли до поточного терміну залишається 27 годин.
 
-  const expiringMasters = masters.filter((master) => {
-    if (
-      master.isBlocked ||
-      master.tariff === "free" ||
-      !master.subscriptionUntil
-    ) {
-      return false;
-    }
-
-    const expiresAt = new Date(master.subscriptionUntil).getTime();
-    return expiresAt > now && expiresAt <= now + 2 * day;
-  }).sort(
+  const expiringMasters = masters.filter((master) => isSubscriptionExpiring(master, now)).sort(
     (a, b) =>
       new Date(a.subscriptionUntil!).getTime() - new Date(b.subscriptionUntil!).getTime()
   );
@@ -242,7 +242,7 @@ export default function AdminDashboardPage() {
                 </ul>
               ) : (
                 <p className="py-6 text-sm text-muted">
-                  Немає підписок, які завершуються протягом 48 годин.
+                  Немає підписок, які завершуються протягом 27 годин.
                 </p>
               )}
             </>
@@ -282,6 +282,7 @@ export default function AdminDashboardPage() {
           {selectedMaster && (
             <MasterDetailsModal
               master={selectedMaster}
+              onMasterUpdated={handleMasterUpdated}
               onBlockChange={handleMasterBlockChange}
               onClose={() => setSelectedMaster(null)}
             />

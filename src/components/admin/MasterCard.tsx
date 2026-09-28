@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import type { Master } from "../../api/masters";
 
@@ -22,6 +23,8 @@ const tariffStyles: Record<Master["tariff"], string> = {
 };
 
 export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirationDate = false, showRemainingTime = false, }: Props) {
+
+  const [now] = useState(Date.now);
 
   const initials =
     `${master.firstName.charAt(0)}${master.lastName.charAt(0)}`.toUpperCase();
@@ -49,19 +52,7 @@ export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirati
     })
     : null;
 
-  const expiredDays =
-    master.status === "expired" &&
-      hasValidDate &&
-      expiresAt.getTime() < Date.now()
-      ? Math.max(
-        1,
-        Math.ceil(
-          (Date.now() - expiresAt.getTime()) / (1000 * 60 * 60 * 24)
-        )
-      )
-      : null;
-
-  const remainingMs = master.subscriptionUntil ? new Date(master.subscriptionUntil).getTime() - Date.now() : 0;
+  const remainingMs = master.subscriptionUntil ? new Date(master.subscriptionUntil).getTime() - now : 0;
 
   let remainingText = "";
 
@@ -84,18 +75,12 @@ export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirati
       <span
         className={`absolute -top-2 right-0 rounded-full px-3 py-1 text-sm ${master.isBlocked
           ? "bg-[#e8e8e8] text-[#666666]"
-          : master.status === "expired"
-            ? "bg-[#ffd5dd] text-[#a71930]"
-            : tariffStyles[master.tariff]
+          : tariffStyles[master.tariff]
           }`}
       >
         {master.isBlocked
           ? "Заблокований"
-          : master.status === "expired"
-            ? expiredDays !== null
-              ? `${expiredDays} Д`
-              : "Прострочено"
-            : tariffLabels[master.tariff]}
+          : tariffLabels[master.tariff]}
       </span>
 
       <div className="flex items-center gap-3">
@@ -139,7 +124,7 @@ export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirati
       {showExpirationDate &&
         expirationDate &&
         master.tariff !== "free" &&
-        master.status === "active" && (
+        !master.isBlocked && (
           <span
             className={`absolute -bottom-2 rounded-full bg-surface px-3 py-0.5 text-[11px] text-muted shadow-[0_3px_8px_rgba(0,0,0,0.20)] ${onOpen ? "right-12" : "right-3"
               }`}

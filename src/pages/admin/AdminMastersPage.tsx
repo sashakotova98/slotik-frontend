@@ -1,10 +1,10 @@
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useEffect, useState } from "react";
-import { getMasters, type Master } from "../../api/masters";
+import { isSubscriptionExpiring, getMasters, type Master } from "../../api/masters";
 import { MasterCard } from "../../components/admin/MasterCard";
 import { MasterDetailsModal } from "../../components/admin/MasterDetailsModal";
 
-type MasterFilter = "all" | "active" | "expired" | "blocked";
+type MasterFilter = "all" | "active" | "expiring" | "blocked";
 
 type FilterButton = {
   value: MasterFilter;
@@ -14,6 +14,7 @@ type FilterButton = {
 
 export default function AdminMastersPage() {
 
+  const [now] = useState(Date.now);
   const [search, setSearch] = useState("");
 
   const [masters, setMasters] = useState<Master[]>([]);
@@ -39,12 +40,23 @@ export default function AdminMastersPage() {
   }, []);
 
 
-  function handleMasterBlockChange(id: number, isBlocked: boolean) {
+  function handleMasterUpdated(updatedMaster: Master) {
     setMasters((previous) =>
-      previous.map((item) => item.id === id ? { ...item, isBlocked } : item)
+      previous.map((item) =>
+        item.id === updatedMaster.id ? { ...item, ...updatedMaster } : item
+      )
     );
     setSelectedMaster((previous) =>
-      previous?.id === id ? { ...previous, isBlocked } : previous
+      previous?.id === updatedMaster.id ? { ...previous, ...updatedMaster } : previous
+    );
+  }
+
+  function handleMasterBlockChange(id: number, isBlocked: boolean) {
+    setMasters((previous) =>
+      previous.map((item) => item.id === id ? { ...item, isBlocked, status: isBlocked ? "blocked" : "active" } : item)
+    );
+    setSelectedMaster((previous) =>
+      previous?.id === id ? { ...previous, isBlocked, status: isBlocked ? "blocked" : "active" } : previous
     );
   }
 
@@ -65,9 +77,9 @@ export default function AdminMastersPage() {
       case "all":
         return true;
       case "active":
-        return !master.isBlocked && master.status === "active";
-      case "expired":
-        return !master.isBlocked && master.status === "expired";
+        return !master.isBlocked;
+      case "expiring":
+        return isSubscriptionExpiring(master, now);
       case "blocked":
         return master.isBlocked;
       default:
@@ -75,12 +87,12 @@ export default function AdminMastersPage() {
     }
   });
 
-  //describe 4 buttons with counts of masters in each category: all, active, expired, blocked
+  //describe 4 buttons with counts of masters in each category: all, active, expiring, blocked
 
   const filters: FilterButton[] = [
     { value: "all", label: "Всі", count: masters.length },
-    { value: "active", label: "Активні", count: masters.filter((m) => !m.isBlocked && m.status === "active").length },
-    { value: "expired", label: "Прострочені", count: masters.filter((m) => !m.isBlocked && m.status === "expired").length },
+    { value: "active", label: "Активні", count: masters.filter((m) => !m.isBlocked).length },
+    { value: "expiring", label: "Підписка завершується", count: masters.filter((m) => isSubscriptionExpiring(m, now)).length },
     { value: "blocked", label: "Заблоковані", count: masters.filter((m) => m.isBlocked).length },
   ];
 
@@ -152,7 +164,8 @@ export default function AdminMastersPage() {
       {selectedMaster && (
         <MasterDetailsModal
           master={selectedMaster}
-          onBlockChange={handleMasterBlockChange}
+          onMasterUpdated={handleMasterUpdated}
+              onBlockChange={handleMasterBlockChange}
           onClose={() => setSelectedMaster(null)}
         />
       )}

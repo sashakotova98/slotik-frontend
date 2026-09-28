@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { X, FileText } from "lucide-react";
 import { type Master, type MasterDetails, getMasterDetails, toggleMasterBlock, } from "../../api/masters";
-
+import { ExtendSubscriptionForm } from "./ExtendSubscriptionForm";
+import { updateMasterSubscription } from "../../api/masters";
+import { ChangeTariffForm } from "./ChangeTariffForm";
+import type { SubscriptionPlan } from "../../api/masters";
 
 type Props = {
   master: Master;
   onClose: () => void;
+  onMasterUpdated: (master: Master) => void;
   onBlockChange: (id: number, isBlocked: boolean) => void;
 };
 
@@ -15,7 +19,7 @@ const tariffLabels: Record<"free" | "basic" | "pro", string> = {
   pro: "Професійний",
 };
 
-export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
+export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpdated }: Props) {
 
   const [masterDetails, setMasterDetails] = useState<MasterDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(true);
@@ -24,6 +28,13 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [savingBlock, setSavingBlock] = useState(false);
   const [blockError, setBlockError] = useState("");
+
+  type ModalView = "details" | "extend" | "changeTariff";
+
+  const [view, setView] = useState<ModalView>("details");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
 
   useEffect(() => {
     async function fetchDetails() {
@@ -46,14 +57,6 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
   }, [master.id]);
 
 
-  // function handleChangeTariff() {
-  //   // открыть выбор тарифа
-  // }
-
-  // function handleOpenProfile() {
-  //   // перейти в профиль мастера
-  // }
-
   function handleBlockMaster() {
     setBlockError("");
     setShowBlockConfirm(true);
@@ -70,7 +73,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
 
       setMasterDetails((previous) =>
         previous
-          ? { ...previous, isBlocked: result.isBlocked }
+          ? { ...previous, isBlocked: result.isBlocked, status: result.isBlocked ? "blocked" : "active" }
           : previous
       );
 
@@ -84,11 +87,71 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
     }
   }
 
-  // function handleExtendSubscription() {
-  //
-  // }
+  async function handleExtendSubscription(days: number) {
+    if (saving) return;
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await updateMasterSubscription(master.id, { days });
+    } catch {
+      setError("Не вдалося продовжити підписку.");
+      setSaving(false);
+      return;
+    }
+
+    setView("details");
+    setDetailsLoading(true);
+    setDetailsError("");
+
+    try {
+      const updatedMaster = await getMasterDetails(master.id);
+      setMasterDetails(updatedMaster);
+      onMasterUpdated(updatedMaster);
+    } catch {
+      setDetailsError(
+        "Підписку продовжено, але не вдалося оновити дані. Відкрийте вікно повторно.",
+      );
+    } finally {
+      setDetailsLoading(false);
+      setSaving(false);
+    }
+  }
+
+  async function handleChangeTariff(plan: SubscriptionPlan) {
+    if (saving) return;
+
+    setSaving(true);
+    setError("");
+
+    try {
+      await updateMasterSubscription(master.id, { plan });
+    } catch {
+      setError("Не вдалося змінити тариф.");
+      setSaving(false);
+      return;
+    }
+
+    setView("details");
+    setDetailsLoading(true);
+    setDetailsError("");
+
+    try {
+      const updatedMaster = await getMasterDetails(master.id);
+      setMasterDetails(updatedMaster);
+      onMasterUpdated(updatedMaster);
+    } catch {
+      setDetailsError(
+        "Тариф змінено, але не вдалося оновити дані. Відкрийте вікно повторно.",
+      );
+    } finally {
+      setDetailsLoading(false);
+      setSaving(false);
+    }
 
 
+  }
 
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -105,14 +168,13 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
   }, []);
 
   function handleClose() {
+    if (savingBlock || saving) return;
     dialogRef.current?.close();
     onClose();
   }
   const currentMaster = masterDetails ?? master;
 
   const isFree = currentMaster.tariff === "free";
-  const isActive = currentMaster.status === "active";
-  const isExpired = currentMaster.status === "expired";
   const isBlocked = currentMaster.isBlocked;
 
   function formatDate(value: string | null | undefined): string {
@@ -130,10 +192,11 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby={showBlockConfirm ? "block-confirm-title" : "master-details-title"}
+      aria-label={!showBlockConfirm && view === "extend" ? "Продовжити підписку" : undefined}
+      aria-labelledby={showBlockConfirm ? "block-confirm-title" : view === "extend" ? undefined : view === "changeTariff" ? "change-tariff-title" : "master-details-title"}
       onCancel={(event) => {
         event.preventDefault();
-        if (savingBlock) return;
+        if (savingBlock || saving) return;
         if (showBlockConfirm) {
           setShowBlockConfirm(false);
         } else {
@@ -181,6 +244,27 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
                 : "Так, заблокувати"}
           </button>
         </>
+      ) : view === "extend" ? (
+        <ExtendSubscriptionForm
+          saving={saving}
+          error={error}
+          onBack={() => {
+            setError("");
+            setView("details");
+          }}
+          onSubmit={handleExtendSubscription}
+        />
+      ) : view === "changeTariff" ? (
+        <ChangeTariffForm
+          currentTariff={currentMaster.tariff}
+          saving={saving}
+          error={error}
+          onBack={() => {
+            setError("");
+            setView("details");
+          }}
+          onSubmit={handleChangeTariff}
+        />
       ) : (
         <>
           <div className="flex justify-end">
@@ -217,16 +301,12 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
                 <span
                   className={`inline-block shrink-0 rounded-full px-3 py-0.5 text-xs ${isBlocked
                     ? "bg-[#e8e8e8] text-[#666666]"
-                    : isActive
-                      ? "bg-[#d5edce] text-[#47783b]"
-                      : "bg-[#ffd5dd] text-[#a71930]"
+                    : "bg-[#d5edce] text-[#47783b]"
                     }`}
                 >
                   {isBlocked
                     ? "Заблокований"
-                    : isActive
-                      ? "Активна"
-                      : "Прострочено"}
+                    : "Активний"}
                 </span>
               </div>
               <p className="mt-1 text-sm text-muted">
@@ -271,7 +351,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
               </dd>
 
               <dt className="text-muted">
-                {isFree ? "Термін" : isExpired ? "Закінчилась" : "Діє до"}
+                {isFree ? "Термін" : "Діє до"}
               </dt>
 
               <dd className="text-right">
@@ -330,16 +410,24 @@ export function MasterDetailsModal({ master, onClose, onBlockChange }: Props) {
             {!isFree && (
               <button
                 type="button"
-                disabled
+                disabled={detailsLoading || Boolean(detailsError) || isFree}
+                onClick={() => {
+                  setError("");
+                  setView("extend");
+                }}
                 className="min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isExpired ? "Поновити підписку" : "Продовжити підписку"}
+                Продовжити підписку
               </button>
             )}
 
             <button
               type="button"
-              disabled
+              disabled={detailsLoading || Boolean(detailsError) || saving}
+              onClick={() => {
+                setError("");
+                setView("changeTariff");
+              }}
               className={`min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50 ${isFree ? "col-span-2" : ""
                 }`}
             >
