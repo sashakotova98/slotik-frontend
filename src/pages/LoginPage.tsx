@@ -6,15 +6,20 @@ import { Check } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
 import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 export default function LoginPage() {
+
+  const [searchParams] = useSearchParams();
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  const [tab, setTab] = useState<"login" | "register">("login");
+  const [tab, setTab] = useState<"login" | "register">(
+    () => searchParams.get("tab") === "register" ? "register" : "login"
+  );
   const [role, setRole] = useState<"Client" | "Master">("Client");
 
   const [values, setValues] = useState({
