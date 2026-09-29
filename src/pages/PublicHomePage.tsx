@@ -15,17 +15,6 @@ import facebookIcon from "../assets/social/facebook.svg";
 import { useNavigate } from "react-router-dom";
 import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 
-// const categories = [
-//   { icon: "manicure-pedicure", title: "Манікюр / Педикюр" },
-//   { icon: "massage", title: "Масаж" },
-//   { icon: "haircut-styling", title: "Зачіски та стрижки" },
-//   { icon: "hair-coloring", title: "Фарбування волосся" },
-//   { icon: "brows-lashes", title: "Брови та вії" },
-//   { icon: "makeup", title: "Макіяж" },
-//   { icon: "cosmetology", title: "Косметологія" },
-//   { icon: "depilation", title: "Депіляція" },
-// ];
-
 export default function PublicHomePage() {
 
   const [categories, setCategories] = useState<HomeCategory[]>([]);
