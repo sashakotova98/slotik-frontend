@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Shapes, EllipsisVertical, Plus, } from "lucide-react";
+import { EllipsisVertical, Plus } from "lucide-react";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { CategoryModal } from "../../components/admin/CategoryModal";
-import { categoryIcons } from "../../components/admin/categoryIcons";
+import { CategoryIcon } from "../../components/categories/CategoryIcon";
 
 import type { Category } from "../../api/categories";
 import { getAdminCategories, deleteCategory } from "../../api/categories";
@@ -152,7 +152,6 @@ export default function AdminCategoriesPage() {
       {!loading && !error && (
         <ul className="space-y-3">
           {categories.map((category) => {
-            const Icon = categoryIcons[category.icon] ?? Shapes;
             const isOpen = openedCategoryId === category.id;
 
             return (
@@ -176,12 +175,7 @@ export default function AdminCategoriesPage() {
                   className="flex w-full items-center gap-3 rounded-xl text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
                 >
                   <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-border bg-selected">
-                    <Icon
-                      size={32}
-                      strokeWidth={1.25}
-                      className="text-text"
-                      aria-hidden="true"
-                    />
+                    <CategoryIcon name={category.icon} className="h-9 w-9" />
                   </span>
 
                   <span className="min-w-0 flex-1">
