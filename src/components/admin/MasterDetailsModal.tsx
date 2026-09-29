@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { X, FileText } from "lucide-react";
 import { type Master, type MasterDetails, getMasterDetails, toggleMasterBlock, } from "../../api/masters";
 import { ExtendSubscriptionForm } from "./ExtendSubscriptionForm";
@@ -434,13 +435,14 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
               Змінити тариф
             </button>
 
-            <button
-              type="button"
-              disabled
-              className="min-h-12 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Відкрити профіль
-            </button>
+            {masterDetails?.slug && (
+              <Link
+                to={`/m/${encodeURIComponent(masterDetails.slug)}`}
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-border px-3 py-2 text-sm text-text"
+              >
+                Відкрити профіль
+              </Link>
+            )}
 
             <button
               type="button"

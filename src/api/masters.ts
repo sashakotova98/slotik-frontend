@@ -85,3 +85,35 @@ export async function updateMasterSubscription(
     method: "PATCH",
   });
 }
+
+
+//frontend/master-profile GET /api/Master/slug/{slug}
+//GET /api/Service?masterId=900001 services.ts id, serviceId, photoUrl, sortOrder
+//src/api/servicePhotos.ts
+
+
+export type PublicMasterProfile = {
+  id: number;
+  slug: string;
+  about: string | null;
+  experienceYears: number;
+  slotStepMin: number;
+  isBlocked: boolean;
+  categoryId: number;
+  categoryName: string | null;
+  districtId: number;
+  districtName: string | null;
+  cityName: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+
+  user: {
+    firstName: string;
+    lastName: string;
+    createdAt?: string | null;
+  };
+};
+export function getMasterBySlug(slug: string): Promise<PublicMasterProfile> {
+  return api<PublicMasterProfile>(`/Master/slug/${encodeURIComponent(slug)}`);
+}
