@@ -7,6 +7,7 @@ import makeup from "../../assets/categories/makeup.svg";
 import manicurePedicure from "../../assets/categories/manicure-pedicure.svg";
 import massage from "../../assets/categories/massage.svg";
 import { Brush, Paintbrush, Droplets, Flower2, Leaf, Gem, Sun, Smile, Shapes } from "lucide-react";
+
 import type { LucideIcon } from "lucide-react";
 
 const icons: Record<string, string> = {

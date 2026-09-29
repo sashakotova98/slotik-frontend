@@ -1,6 +1,7 @@
 import { useId, useState } from "react";
 import { Plus, Minus } from "lucide-react";
 import { categoryIconOptions } from "./categoryIcons";
+import { CategoryIcon } from "../categories/CategoryIcon";
 
 type Props = {
   value: string; //код выбранной иконки, например "scissors"
@@ -25,7 +26,7 @@ export function CategoryIconPicker({ value, onChange, disabled = false, }: Props
       </legend>
 
       <div className="flex flex-wrap gap-2">
-        {visibleOptions.map(({ value: optionValue, label, Icon }) => (
+        {visibleOptions.map(({ value: optionValue, label }) => (
           <label
             key={optionValue}
             title={label}
@@ -41,11 +42,7 @@ export function CategoryIconPicker({ value, onChange, disabled = false, }: Props
             />
 
             <span className="flex h-11 w-11 items-center justify-center rounded-field border border-border text-muted transition-colors peer-checked:border-text peer-checked:bg-selected peer-checked:text-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-text peer-disabled:opacity-50">
-              <Icon
-                size={22}
-                strokeWidth={1.25}
-                aria-hidden="true"
-              />
+              <CategoryIcon name={optionValue} className="h-6 w-6" />
 
               <span className="sr-only">{label}</span>
             </span>

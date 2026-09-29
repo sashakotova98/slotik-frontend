@@ -1,50 +1,28 @@
-import {
-  Scissors,
-  Sparkles,
-  Eye,
-  Hand,
-  Brush,
-  Paintbrush,
-  Palette,
-  Droplets,
-  Flower2,
-  Leaf,
-  Heart,
-  Gem,
-  Sun,
-  Smile,
-  Shapes,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-
 type CategoryIconOption = {
   value: string;
   label: string;
-  Icon: LucideIcon;
 };
 
 export const categoryIconOptions: CategoryIconOption[] = [
-  { value: "scissors", label: "Зачіски та стрижки", Icon: Scissors },
-  { value: "sparkles", label: "Візаж", Icon: Sparkles },
-  { value: "eye", label: "Брови та вії", Icon: Eye },
-  { value: "hand-finger", label: "Манікюр та догляд за руками", Icon: Hand },
+  // SVG
+  { value: "scissors", label: "Зачіски та стрижки" },
+  { value: "sparkles", label: "Візаж" },
+  { value: "eye", label: "Брови та вії" },
+  { value: "hand-finger", label: "Манікюр та педикюр" },
+  { value: "palette", label: "Фарбування волосся" },
+  { value: "heart", label: "Масаж" },
+  { value: "cosmetology", label: "Косметологія" },
+  { value: "depilation", label: "Депіляція" },
 
-  { value: "brush", label: "Укладання волосся", Icon: Brush },
-  { value: "paintbrush", label: "Дизайн нігтів", Icon: Paintbrush },
-  { value: "palette", label: "Фарбування та колористика", Icon: Palette },
-  { value: "droplets", label: "Догляд за шкірою", Icon: Droplets },
-  { value: "flower", label: "Спа та релакс", Icon: Flower2 },
-  { value: "leaf", label: "Натуральний догляд", Icon: Leaf },
-  { value: "heart", label: "Масаж та догляд за тілом", Icon: Heart },
-  { value: "gem", label: "Прикраси та пірсинг", Icon: Gem },
-  { value: "sun", label: "Засмага", Icon: Sun },
-  { value: "smile", label: "Догляд за обличчям", Icon: Smile },
-  { value: "shapes", label: "Інше", Icon: Shapes },
+  //Lucide
+  { value: "brush", label: "Укладання волосся" },
+  { value: "paintbrush", label: "Дизайн нігтів" },
+  { value: "droplets", label: "Догляд за шкірою" },
+  { value: "flower", label: "Спа та релакс" },
+  { value: "leaf", label: "Натуральний догляд" },
+  { value: "gem", label: "Прикраси та пірсинг" },
+  { value: "sun", label: "Засмага" },
+  { value: "smile", label: "Догляд за обличчям" },
+  { value: "shapes", label: "Інше" },
 ];
-
-export const categoryIcons: Record<string, LucideIcon> =
-  Object.fromEntries(
-    categoryIconOptions.map(({ value, Icon }) => [value, Icon])
-  );
-
   
