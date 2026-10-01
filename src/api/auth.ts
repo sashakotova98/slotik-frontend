@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { api,apiText } from "./api";
 
 export type AuthResponse = { token: string; role: "Client" | "Master" | "Superadmin" };
 
@@ -18,10 +18,22 @@ export type RegisterData = {
   role: "Client" | "Master";
 };
 
-export async function apiRegister(data: RegisterData): Promise<AuthResponse> {
-  return api<AuthResponse>("/auth/register", {
+export async function apiRegister(
+  data: RegisterData
+): Promise<string> {
+  return apiText("/auth/register", {
     method: "POST",
     body: JSON.stringify(data),
+  });
+}
+
+export async function apiConfirmEmail(token: string): Promise<string> {
+  const params = new URLSearchParams({
+    token,
+  });
+
+  return apiText(`/auth/confirm?${params.toString()}`, {
+    method: "GET",
   });
 }
 

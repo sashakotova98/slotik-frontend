@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from "react";
 import { validateFirstName, validateLastName, validateEmail, validatePassword, validateConfirmPassword, validatePhone } from "../utils/validation";
 import Field from "../components/Field";
 import TermsModal from "../components/TermsModal";
+import RegistrationSuccessModal from "../components/RegistrationSuccessModal";
 import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
+  const [showRegistrationSuccess, setShowRegistrationSuccess] =useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -89,27 +91,47 @@ export default function LoginPage() {
 
     setLoading(true);
     setServerError("");
-    try {
-      const data = tab === "login"
-        ? await apiLogin(values.email, values.password)
-        : await apiRegister({
-          firstName: values.firstName.trim(),
-          lastName: values.lastName.trim(),
-          email: values.email,
-          phone: values.phone,
-          password: values.password,
-          role,
-        });
+   try {
+  if (tab === "login") {
+    const data = await apiLogin(
+      values.email,
+      values.password
+    );
 
-      login(data.token, data.role);
-      if (data.role === "Superadmin") navigate("/admin", { replace: true });
-      else if (data.role === "Master") navigate("/cabinet", { replace: true });
-      else navigate("/", { replace: true });
-    } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Помилка сервера");
-    } finally {
-      setLoading(false);
+    login(data.token, data.role);
+
+    if (data.role === "Superadmin") {
+      navigate("/admin", { replace: true });
+    } else if (data.role === "Master") {
+      navigate("/cabinet", { replace: true });
+    } else {
+      navigate("/", { replace: true });
     }
+
+    return;
+  }
+
+  
+  await apiRegister({
+    firstName: values.firstName.trim(),
+    lastName: values.lastName.trim(),
+    email: values.email,
+    phone: values.phone,
+    password: values.password,
+    role,
+  });
+
+  setShowRegistrationSuccess(true);
+
+} catch (err) {
+  setServerError(
+    err instanceof Error
+      ? err.message
+      : "Помилка сервера"
+  );
+} finally {
+  setLoading(false);
+}
   };
 
   const shownError = (field: string) => {
@@ -227,6 +249,30 @@ export default function LoginPage() {
         </form>
       </div>
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+      {showRegistrationSuccess && (
+  <RegistrationSuccessModal
+    onClose={() => setShowRegistrationSuccess(false)}
+    onGoToLogin={() => {
+      setShowRegistrationSuccess(false);
+
+      setTab("login");
+
+      setValues({
+        firstName: "",
+        lastName: "",
+        phone: "",
+        email: values.email,
+        password: "",
+        confirmPassword: "",
+        agree: false,
+      });
+
+      setErrors({});
+      setTouched({});
+      setServerError("");
+    }}
+  />
+)}
     </div>
   );
 }
