@@ -1,12 +1,14 @@
 import { useEffect, useRef } from "react";
-import { CheckCircle2, X } from "lucide-react";
+import { Mail, X } from "lucide-react";
 
 type Props = {
+  email: string;
   onClose: () => void;
   onGoToLogin: () => void;
 };
 
 export default function RegistrationSuccessModal({
+  email,
   onClose,
   onGoToLogin,
 }: Props) {
@@ -28,18 +30,17 @@ export default function RegistrationSuccessModal({
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="registration-success-title"
       onCancel={(event) => {
         event.preventDefault();
         onClose();
       }}
       className="
         fixed inset-0 m-auto
-        w-[calc(100%-24px)] max-w-sm
-        rounded-2xl border-0 bg-white
-        p-5 text-black shadow-xl
-        backdrop:bg-black/40
-        sm:rounded-3xl sm:p-8
+        w-[calc(100%-32px)] max-w-[360px]
+        rounded-[24px] border-0 bg-white
+        px-7 py-6 text-black
+        shadow-2xl
+        backdrop:bg-black/35
       "
     >
       <div className="flex justify-end">
@@ -48,51 +49,67 @@ export default function RegistrationSuccessModal({
           onClick={onClose}
           aria-label="Закрити"
           className="
-            flex size-10 items-center justify-center
+            flex size-9 items-center justify-center
             rounded-lg text-neutral-500
-            hover:bg-neutral-100
+            transition hover:bg-neutral-100
           "
         >
-          <X className="size-5" />
+          <X size={20} />
         </button>
       </div>
 
-      <div className="flex flex-col items-center text-center px-2 pb-2">
-        <div className="
-          mb-4 flex size-14 items-center justify-center
-          rounded-full bg-green-100
-        ">
-          <CheckCircle2 className="size-8 text-green-600" />
+      <div className="text-center">
+        {/* Logo */}
+        <div className="mt-1">
+          <div className="text-[18px] font-semibold tracking-[0.32em]">
+            SLOTIK
+          </div>
+
+          <div className="mt-1 text-[7px] tracking-[0.24em] text-neutral-400">
+            КРАСА МАЄ СВІЙ ЧАС
+          </div>
         </div>
 
-        <h2
-          id="registration-success-title"
-          className="text-xl font-semibold"
-        >
-          Готово!
+        {/* Icon */}
+        <div className="mx-auto mt-8 flex size-[72px] items-center justify-center rounded-full bg-neutral-100">
+          <Mail size={34} strokeWidth={1.6} />
+        </div>
+
+        <h2 className="mt-6 text-[22px] font-semibold">
+          Перевірте пошту
         </h2>
 
-        <p className="mt-3 text-sm text-neutral-600">
-          Реєстрацію розпочато.
-          Ми надіслали лист на вашу електронну пошту.
+        <p className="mt-3 text-[14px] leading-6 text-neutral-600">
+          Ми надіслали лист із посиланням
+          <br />
+          для підтвердження email.
         </p>
 
-        <p className="mt-2 text-sm text-neutral-600">
-          Перейдіть за посиланням у листі, щоб підтвердити Email.
+        <p className="mt-3 break-all text-[13px] font-medium text-neutral-800">
+          {email}
+        </p>
+
+        <p className="mt-4 text-[12px] text-neutral-400">
+          Перевірте також папку «Спам».
         </p>
 
         <button
           type="button"
           onClick={onGoToLogin}
           className="
-            mt-6 w-full rounded-lg
-            bg-black px-4 py-3
-            text-sm font-medium text-white
-            hover:bg-neutral-800
+            mt-7 w-full rounded-[12px]
+            border border-black
+            bg-white px-4 py-3
+            text-sm font-medium text-black
+            transition hover:bg-neutral-50
           "
         >
-          Перейти до входу
+          Повернутися до входу
         </button>
+
+        <div className="mt-8 text-[7px] tracking-[0.24em] text-neutral-400">
+          КРАСИВІ ЛЮДИ — БЛИЖЧЕ
+        </div>
       </div>
     </dialog>
   );

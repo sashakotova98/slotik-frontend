@@ -248,33 +248,38 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
-      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+                  {showTerms && (
+        <TermsModal
+          onClose={() => setShowTerms(false)}
+        />
+      )}
+
       {showRegistrationSuccess && (
-  <RegistrationSuccessModal
-    onClose={() => setShowRegistrationSuccess(false)}
-    onGoToLogin={() => {
-      setShowRegistrationSuccess(false);
+        <RegistrationSuccessModal
+          email={values.email}
+          onClose={() => setShowRegistrationSuccess(false)}
+          onGoToLogin={() => {
+            const registeredEmail = values.email;
 
-      setTab("login");
+            setShowRegistrationSuccess(false);
+            setTab("login");
 
-      setValues({
-        firstName: "",
-        lastName: "",
-        phone: "",
-        email: values.email,
-        password: "",
-        confirmPassword: "",
-        agree: false,
-      });
+            setValues({
+              firstName: "",
+              lastName: "",
+              phone: "",
+              email: registeredEmail,
+              password: "",
+              confirmPassword: "",
+              agree: false,
+            });
 
-      setErrors({});
-      setTouched({});
-      setServerError("");
-    }}
-  />
-)}
+            setErrors({});
+            setTouched({});
+            setServerError("");
+          }}
+        />
+      )}
     </div>
   );
 }
-
-

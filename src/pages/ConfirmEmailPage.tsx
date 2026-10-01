@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  CheckCircle2,
-  CircleX,
+  Check,
+  TriangleAlert,
   LoaderCircle,
 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { apiConfirmEmail } from "../api/auth";
 
-type ConfirmStatus = "loading" | "success" | "error";
+type ConfirmStatus =
+  | "loading"
+  | "success"
+  | "error";
 
 export default function ConfirmEmailPage() {
   const [searchParams] = useSearchParams();
@@ -19,129 +22,187 @@ export default function ConfirmEmailPage() {
   const [status, setStatus] =
     useState<ConfirmStatus>("loading");
 
-  const [message, setMessage] = useState(
-    "Підтверджуємо вашу електронну пошту..."
-  );
+  const [message, setMessage] = useState("");
 
- 
   const processedToken = useRef<string | null>(null);
 
   useEffect(() => {
     if (!token) {
       setStatus("error");
-      setMessage("Токен підтвердження відсутній.");
+      setMessage(
+        "Посилання не містить токена підтвердження."
+      );
       return;
     }
 
+    // React StrictMode може двічі викликати effect
     if (processedToken.current === token) {
       return;
     }
 
     processedToken.current = token;
 
-    const confirmEmail = async () => {
+    const confirm = async () => {
       try {
         await apiConfirmEmail(token);
 
         setStatus("success");
-        setMessage("Email успішно підтверджено!");
       } catch (error) {
         setStatus("error");
 
         setMessage(
           error instanceof Error
             ? error.message
-            : "Не вдалося підтвердити Email."
+            : "Не вдалося підтвердити email."
         );
       }
     };
 
-    confirmEmail();
+    confirm();
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-[#d4d4d4] flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-xl">
-
-        <h1 className="text-xl font-semibold text-center mb-6">
-          Підтвердження Email
-        </h1>
-
-        {status === "loading" && (
-          <div className="flex flex-col items-center py-6">
-            <LoaderCircle
-              size={42}
-              className="animate-spin mb-4"
-            />
-
-            <p className="text-sm text-muted text-center">
-              {message}
-            </p>
+    <div className="min-h-screen bg-[#f3f3f3] flex items-center justify-center p-4">
+      <div
+        className="
+          w-full max-w-[330px]
+          min-h-[520px]
+          rounded-[24px]
+          border border-neutral-200
+          bg-white
+          px-7 py-6
+          shadow-sm
+          flex flex-col
+        "
+      >
+        {/* LOGO */}
+        <div className="text-center">
+          <div className="text-[18px] font-semibold tracking-[0.32em]">
+            SLOTIK
           </div>
-        )}
 
-        {status === "success" && (
-          <>
-            <div className="flex items-center gap-3 rounded-2xl bg-green-100 border border-green-200 px-4 py-4 mb-6">
-              <CheckCircle2
-                size={28}
-                className="text-green-700 shrink-0"
-              />
+          <div className="mt-1 text-[7px] tracking-[0.24em] text-neutral-400">
+            КРАСА МАЄ СВІЙ ЧАС
+          </div>
+        </div>
 
-              <div>
-                <p className="font-semibold text-green-900">
-                  Готово!
-                </p>
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
 
-                <p className="text-sm text-green-800">
+          {/* LOADING */}
+          {status === "loading" && (
+            <>
+              <div className="flex size-[72px] items-center justify-center rounded-full bg-neutral-100">
+                <LoaderCircle
+                  size={34}
+                  strokeWidth={1.6}
+                  className="animate-spin"
+                />
+              </div>
+
+              <h1 className="mt-6 text-[21px] font-semibold">
+                Підтвердження email
+              </h1>
+
+              <p className="mt-3 text-[14px] leading-6 text-neutral-600">
+                Зачекайте, перевіряємо посилання...
+              </p>
+            </>
+          )}
+
+          {/* SUCCESS */}
+          {status === "success" && (
+            <>
+              <div className="flex size-[72px] items-center justify-center rounded-full bg-[#dcf8df]">
+                <Check
+                  size={36}
+                  strokeWidth={1.8}
+                  className="text-black"
+                />
+              </div>
+
+              <h1 className="mt-6 text-[22px] font-semibold">
+                Email підтверджено
+              </h1>
+
+              <p className="mt-3 text-[14px] leading-6 text-neutral-600">
+                Акаунт створено.
+                <br />
+                Увійдіть, щоб продовжити.
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate("/login", { replace: true })
+                }
+                className="
+                  mt-7 w-full
+                  rounded-[12px]
+                  bg-black
+                  px-4 py-3
+                  text-sm font-medium text-white
+                  transition hover:bg-neutral-800
+                "
+              >
+                Перейти до входу
+              </button>
+            </>
+          )}
+
+          {/* ERROR */}
+          {status === "error" && (
+            <>
+              <div className="flex size-[72px] items-center justify-center rounded-full bg-neutral-100">
+                <TriangleAlert
+                  size={36}
+                  strokeWidth={1.6}
+                />
+              </div>
+
+              <h1 className="mt-6 text-[22px] font-semibold">
+                Посилання недійсне
+              </h1>
+
+              <p className="mt-3 text-[14px] leading-6 text-neutral-600">
+                Можливо, термін дії минув
+                <br />
+                або ви вже підтвердили email.
+              </p>
+
+              {message && (
+                <p className="mt-3 text-[12px] text-neutral-400">
                   {message}
                 </p>
-              </div>
-            </div>
+              )}
 
-            <button
-              type="button"
-              onClick={() =>
-                navigate("/login", { replace: true })
-              }
-              className="w-full bg-accent text-on-accent rounded-field py-3 font-medium"
-            >
-              Увійти
-            </button>
-          </>
-        )}
+              <button
+                type="button"
+                onClick={() =>
+                  navigate("/login", { replace: true })
+                }
+                className="
+                  mt-7 w-full
+                  rounded-[12px]
+                  bg-black
+                  px-4 py-3
+                  text-sm font-medium text-white
+                  transition hover:bg-neutral-800
+                "
+              >
+                Перейти до входу
+              </button>
 
-        {status === "error" && (
-          <>
-            <div className="flex items-start gap-3 rounded-2xl bg-red-50 border border-red-200 px-4 py-4 mb-6">
-              <CircleX
-                size={28}
-                className="text-red-600 shrink-0"
-              />
+              <p className="mt-4 text-[11px] text-neutral-400">
+                Якщо підтвердження не вдалося —
+                зверніться до підтримки.
+              </p>
+            </>
+          )}
+        </div>
 
-              <div>
-                <p className="font-semibold text-red-800">
-                  Помилка
-                </p>
-
-                <p className="text-sm text-red-700">
-                  {message}
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() =>
-                navigate("/login", { replace: true })
-              }
-              className="w-full border border-border rounded-field py-3 font-medium"
-            >
-              До входу
-            </button>
-          </>
-        )}
-
+        <div className="text-center text-[7px] tracking-[0.24em] text-neutral-400">
+          КРАСИВІ ЛЮДИ — БЛИЖЧЕ
+        </div>
       </div>
     </div>
   );
