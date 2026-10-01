@@ -3,14 +3,26 @@ import { validateFirstName, validateLastName, validateEmail, validatePassword, v
 import Field from "../components/Field";
 import TermsModal from "../components/TermsModal";
 import RegistrationSuccessModal from "../components/RegistrationSuccessModal";
+import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
 import { useNavigate } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams,useLocation } from "react-router-dom";
+
+
 
 export default function LoginPage() {
+
+  const location = useLocation();
+
+const passwordChanged =
+  (
+    location.state as
+      | { passwordChanged?: boolean }
+      | null
+  )?.passwordChanged === true;
 
   const [searchParams] = useSearchParams();
 
@@ -18,6 +30,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
   const [showRegistrationSuccess, setShowRegistrationSuccess] =useState(false);
+  const [showForgotPassword, setShowForgotPassword] =useState(() => searchParams.get("forgot") === "1");
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -163,6 +176,18 @@ export default function LoginPage() {
           </button>
         </div>
 
+        {tab === "login" && passwordChanged && (
+          <div className="mb-4 rounded-[14px] border border-green-200 bg-green-100 px-4 py-3 text-sm text-green-800">
+            <div className="font-semibold">
+              Готово!
+            </div>
+
+            <div>
+              Новий пароль успішно збережено.
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} noValidate>
           {tab === "login" ? (
             <>
@@ -171,7 +196,16 @@ export default function LoginPage() {
               <Field id="password" name="password" label="Пароль" type="password"
                 value={values.password} onChange={handleInputChange} onBlur={handleBlur} error={shownError("password")} />
               <p className="text-right mb-4">
-                <a href="#" className="text-sm text-accent underline">Забули пароль?</a>
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowForgotPassword(true);
+                  }}
+                  className="text-sm text-accent underline"
+                >
+                  Забули пароль?
+                </a>
               </p>
             </>
           ) : (
@@ -254,6 +288,14 @@ export default function LoginPage() {
         />
       )}
 
+      {showForgotPassword && (
+      <ForgotPasswordModal
+        onClose={() =>
+          setShowForgotPassword(false)
+        }
+      />
+    )}
+
       {showRegistrationSuccess && (
         <RegistrationSuccessModal
           email={values.email}
@@ -282,4 +324,8 @@ export default function LoginPage() {
       )}
     </div>
   );
+
+  
 }
+
+
