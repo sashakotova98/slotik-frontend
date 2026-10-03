@@ -14,6 +14,7 @@ import CatalogPage from "./pages/CatalogPage";
 import TermsPage from "./pages/info/TermsPage";
 import FaqPage from "./pages/info/FaqPage";
 import SupportPage from "./pages/info/SupportPage";
+import ConfirmEmailPage from "./pages/ConfirmEmailPage";
 
 function App() {
   const { token, role } = useAuth();
@@ -38,6 +39,8 @@ function App() {
         <Route path="/m/:slug" element={<MasterProfilePage />} />
 
         <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginPage />} />
+
+        <Route path="/confirm-email" element={<ConfirmEmailPage />}/>
 
         <Route path="/cabinet" element={token && role === "Master" ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
 

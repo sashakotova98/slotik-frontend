@@ -1,7 +1,15 @@
 import { useState, type ChangeEvent } from "react";
-import { validateFirstName, validateLastName, validateEmail, validatePassword, validateConfirmPassword, validatePhone } from "../utils/validation";
+import {
+  validateFirstName,
+  validateLastName,
+  validateEmail,
+  validatePassword,
+  validateConfirmPassword,
+  validatePhone,
+} from "../utils/validation";
 import Field from "../components/Field";
 import TermsModal from "../components/TermsModal";
+import RegistrationSuccessModal from "../components/RegistrationSuccessModal";
 import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
@@ -10,18 +18,16 @@ import { useNavigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 
 export default function LoginPage() {
-
   const [searchParams] = useSearchParams();
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
-  const [tab, setTab] = useState<"login" | "register">(
-    () => searchParams.get("tab") === "register" ? "register" : "login"
-  );
+  const [tab, setTab] = useState<"login" | "register">(() => (searchParams.get("tab") === "register" ? "register" : "login"));
   const [role, setRole] = useState<"Client" | "Master">("Client");
 
   const [values, setValues] = useState({
@@ -32,11 +38,10 @@ export default function LoginPage() {
     password: "",
     confirmPassword: "",
     agree: false,
-  })
+  });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-
 
   const validators: Record<string, (value: string) => string> = {
     firstName: validateFirstName,
@@ -45,12 +50,10 @@ export default function LoginPage() {
     email: validateEmail,
     password: validatePassword,
     confirmPassword: (value) => validateConfirmPassword(value, values.password),
-  }
+  };
 
   const regFields = ["firstName", "lastName", "phone", "email", "password", "confirmPassword"];
-  const isRegFormValid = regFields.every(
-    (f) => validators[f](values[f as keyof typeof values] as string) === ""
-  );
+  const isRegFormValid = regFields.every((f) => validators[f](values[f as keyof typeof values] as string) === "");
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -58,7 +61,7 @@ export default function LoginPage() {
     if (touched[name]) {
       setErrors({ ...errors, [name]: validators[name](value) });
     }
-  }
+  };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -68,9 +71,7 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const fieldNames = tab === "login"
-      ? ["email", "password"]
-      : ["firstName", "lastName", "phone", "email", "password", "confirmPassword"];
+    const fieldNames = tab === "login" ? ["email", "password"] : ["firstName", "lastName", "phone", "email", "password", "confirmPassword"];
 
     const newErrors: Record<string, string> = {};
     for (const f of fieldNames) {
@@ -90,21 +91,32 @@ export default function LoginPage() {
     setLoading(true);
     setServerError("");
     try {
-      const data = tab === "login"
-        ? await apiLogin(values.email, values.password)
-        : await apiRegister({
-          firstName: values.firstName.trim(),
-          lastName: values.lastName.trim(),
-          email: values.email,
-          phone: values.phone,
-          password: values.password,
-          role,
-        });
+      if (tab === "login") {
+        const data = await apiLogin(values.email, values.password);
 
-      login(data.token, data.role);
-      if (data.role === "Superadmin") navigate("/admin", { replace: true });
-      else if (data.role === "Master") navigate("/cabinet", { replace: true });
-      else navigate("/", { replace: true });
+        login(data.token, data.role);
+
+        if (data.role === "Superadmin") {
+          navigate("/admin", { replace: true });
+        } else if (data.role === "Master") {
+          navigate("/cabinet", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+
+        return;
+      }
+
+      await apiRegister({
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        email: values.email,
+        phone: values.phone,
+        password: values.password,
+        role,
+      });
+
+      setShowRegistrationSuccess(true);
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Помилка сервера");
     } finally {
@@ -120,7 +132,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center p-4">
       <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-sm">
-
         <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
           <button
             // onClick={() => setTab("login")}
@@ -131,12 +142,14 @@ export default function LoginPage() {
               setTouched({});
               setServerError("");
             }}
-            className={`py-2.5 text-sm font-medium ${tab === "login" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}>
+            className={`py-2.5 text-sm font-medium ${tab === "login" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
+          >
             Вхід
           </button>
           <button
             onClick={() => setTab("register")}
-            className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}>
+            className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
+          >
             Реєстрація
           </button>
         </div>
@@ -144,28 +157,98 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} noValidate>
           {tab === "login" ? (
             <>
-              <Field id="email" name="email" label="Email" type="email" placeholder="oksana@gmail.com"
-                value={values.email} onChange={handleInputChange} onBlur={handleBlur} error={shownError("email")} />
-              <Field id="password" name="password" label="Пароль" type="password"
-                value={values.password} onChange={handleInputChange} onBlur={handleBlur} error={shownError("password")} />
+              <Field
+                id="email"
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="oksana@gmail.com"
+                value={values.email}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("email")}
+              />
+              <Field
+                id="password"
+                name="password"
+                label="Пароль"
+                type="password"
+                value={values.password}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("password")}
+              />
               <p className="text-right mb-4">
-                <a href="#" className="text-sm text-accent underline">Забули пароль?</a>
+                <a href="#" className="text-sm text-accent underline">
+                  Забули пароль?
+                </a>
               </p>
             </>
           ) : (
             <>
-              <Field id="reg-firstName" name="firstName" label="Ім'я" type="text"
-                value={values.firstName} onChange={handleInputChange} onBlur={handleBlur} error={shownError("firstName")} />
-              <Field id="reg-lastName" name="lastName" label="Прізвище" type="text"
-                value={values.lastName} onChange={handleInputChange} onBlur={handleBlur} error={shownError("lastName")} />
-              <Field id="reg-phone" name="phone" label="Телефон" type="tel" placeholder="+380XXXXXXXXX"
-                value={values.phone} onChange={handleInputChange} onBlur={handleBlur} error={shownError("phone")} />
-              <Field id="reg-email" name="email" label="Email" type="email" placeholder="oksana@gmail.com"
-                value={values.email} onChange={handleInputChange} onBlur={handleBlur} error={shownError("email")} />
-              <Field id="reg-password" name="password" label="Пароль" type="password" placeholder="мінімум 8 символів"
-                value={values.password} onChange={handleInputChange} onBlur={handleBlur} error={shownError("password")} />
-              <Field id="reg-confirmPassword" name="confirmPassword" label="Підтвердити пароль" type="password"
-                value={values.confirmPassword} onChange={handleInputChange} onBlur={handleBlur} error={shownError("confirmPassword")} />
+              <Field
+                id="reg-firstName"
+                name="firstName"
+                label="Ім'я"
+                type="text"
+                value={values.firstName}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("firstName")}
+              />
+              <Field
+                id="reg-lastName"
+                name="lastName"
+                label="Прізвище"
+                type="text"
+                value={values.lastName}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("lastName")}
+              />
+              <Field
+                id="reg-phone"
+                name="phone"
+                label="Телефон"
+                type="tel"
+                placeholder="+380XXXXXXXXX"
+                value={values.phone}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("phone")}
+              />
+              <Field
+                id="reg-email"
+                name="email"
+                label="Email"
+                type="email"
+                placeholder="oksana@gmail.com"
+                value={values.email}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("email")}
+              />
+              <Field
+                id="reg-password"
+                name="password"
+                label="Пароль"
+                type="password"
+                placeholder="мінімум 8 символів"
+                value={values.password}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("password")}
+              />
+              <Field
+                id="reg-confirmPassword"
+                name="confirmPassword"
+                label="Підтвердити пароль"
+                type="password"
+                value={values.confirmPassword}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                error={shownError("confirmPassword")}
+              />
 
               <div className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
                 <input
@@ -191,28 +274,22 @@ export default function LoginPage() {
                   </a>
                 </span>
               </div>
-              {!isRegFormValid && (
-                <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>
-              )}
+              {!isRegFormValid && <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>}
 
               <div className="grid grid-cols-2 gap-3 my-4">
                 <button
                   type="button"
                   onClick={() => setRole("Client")}
-                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Client" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}>
-                  <span className="flex items-center justify-center gap-1.5">
-                    {role === "Client" && <Check size={16} />}
-                    Я клієнт
-                  </span>
+                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Client" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
+                >
+                  <span className="flex items-center justify-center gap-1.5">{role === "Client" && <Check size={16} />}Я клієнт</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setRole("Master")}
-                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Master" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}>
-                  <span className="flex items-center justify-center gap-1.5">
-                    {role === "Master" && <Check size={16} />}
-                    Я майстер
-                  </span>
+                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Master" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
+                >
+                  <span className="flex items-center justify-center gap-1.5">{role === "Master" && <Check size={16} />}Я майстер</span>
                 </button>
               </div>
             </>
@@ -221,14 +298,40 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading || (tab === "register" && !values.agree)}
-            className="w-full bg-accent text-on-accent rounded-field py-3 font-medium mt-2 disabled:opacity-50">
+            className="w-full bg-accent text-on-accent rounded-field py-3 font-medium mt-2 disabled:opacity-50"
+          >
             {loading ? "Зачекайте..." : tab === "login" ? "Увійти" : "Створити акаунт"}
           </button>
         </form>
       </div>
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+
+      {showRegistrationSuccess && (
+        <RegistrationSuccessModal
+          email={values.email}
+          onClose={() => setShowRegistrationSuccess(false)}
+          onGoToLogin={() => {
+            const registeredEmail = values.email;
+
+            setShowRegistrationSuccess(false);
+            setTab("login");
+
+            setValues({
+              firstName: "",
+              lastName: "",
+              phone: "",
+              email: registeredEmail,
+              password: "",
+              confirmPassword: "",
+              agree: false,
+            });
+
+            setErrors({});
+            setTouched({});
+            setServerError("");
+          }}
+        />
+      )}
     </div>
   );
 }
-
-
