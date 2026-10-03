@@ -1,6 +1,10 @@
-import { api,apiText } from "./api";
+import { api } from "./api";
 
 export type AuthResponse = { token: string; role: "Client" | "Master" | "Superadmin" };
+
+export type MessageResponse = {
+  message: string;  // "message": "Email confirmed! You can now log in."
+};
 
 export async function apiLogin(email: string, password: string): Promise<AuthResponse> {
   return api<AuthResponse>("/auth/login", {
@@ -18,21 +22,17 @@ export type RegisterData = {
   role: "Client" | "Master";
 };
 
-export async function apiRegister(
-  data: RegisterData
-): Promise<string> {
-  return apiText("/auth/register", {
+export async function apiRegister(data: RegisterData): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export async function apiConfirmEmail(token: string): Promise<string> {
-  const params = new URLSearchParams({
-    token,
-  });
+export async function apiConfirmEmail(token: string): Promise<MessageResponse> {
+  const params = new URLSearchParams({ token });
 
-  return apiText(`/auth/confirm?${params.toString()}`, {
+  return api<MessageResponse>(`/auth/confirm?${params.toString()}`, {
     method: "GET",
   });
 }

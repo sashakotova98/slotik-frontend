@@ -14,51 +14,27 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   });
 
   if (!res.ok) {
-    const text = await res.text();
+    let message = "Не вдалося виконати запит.";
+
     try {
-      const j = JSON.parse(text);
-      throw new Error(j.error ?? JSON.stringify(j.errors ?? j));
+      const data = await res.json();
+
+      if (typeof data.message === "string") {
+        message = data.message;
+      } else if (typeof data.error === "string") {
+        message = data.error;
+      }
     } catch {
-      throw new Error(text || `HTTP ${res.status}`);
+       // Якщо відповідь не JSON, залишаємо загальне повідомлення.
     }
-  }
 
-  return res.json();
-}
-
-export async function apiText(
-  path: string,
-  options: RequestInit = {}
-): Promise<string> {
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
-
-  const text = await res.text();
-
-  if (!res.ok) {
-    let message = text || `HTTP ${res.status}`;
-
-    try {
-      const json = JSON.parse(text);
-
-      message =
-        json.error ??
-        json.message ??
-        JSON.stringify(json.errors ?? json);
-    } catch {
-      
+    if (res.status >= 500) {
+      message = "Помилка сервера. Спробуйте пізніше.";
     }
 
     throw new Error(message);
   }
 
-  return text;
+  return res.json();
 }
+
