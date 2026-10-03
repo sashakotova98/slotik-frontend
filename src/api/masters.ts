@@ -94,6 +94,7 @@ export async function updateMasterSubscription(
 
 export type PublicMasterProfile = {
   id: number;
+  avatarUrl: string | null;
   slug: string;
   about: string | null;
   experienceYears: number;

@@ -131,12 +131,20 @@ export default function MasterProfilePage() {
 
         <main className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:items-stretch lg:bg-neutral-100 xl:grid-cols-[320px_minmax(0,1fr)]">
           <section aria-labelledby="master-name" className="px-6 pb-8 text-center lg:px-7 lg:py-8 lg:text-left">
-            <div
-              role="img"
-              aria-label={"Профіль: " + fullName}
-              className="mx-auto flex size-24 items-center justify-center rounded-full bg-neutral-100 text-3xl font-medium text-neutral-500 lg:mx-0 lg:h-36 lg:w-28 lg:rounded-lg lg:bg-white lg:text-4xl"
-            >
-              {initials || "М"}
+            <div className="relative mx-auto flex size-24 items-center justify-center overflow-hidden rounded-full bg-neutral-100 text-3xl font-medium text-neutral-500 lg:mx-0 lg:h-36 lg:w-28 lg:rounded-lg lg:bg-white lg:text-4xl">
+              <span aria-hidden="true">{initials || "М"}</span>
+
+              {masterProfile.avatarUrl && (
+                <img
+                  key={masterProfile.avatarUrl}
+                  src={masterProfile.avatarUrl}
+                  alt={`Фото майстра ${fullName}`}
+                  className="absolute inset-0 size-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.hidden = true;
+                  }}
+                />
+              )}
             </div>
             <h1 id="master-name" className="mt-3 wrap-break-word text-2xl font-semibold tracking-tight lg:mt-5 lg:text-2xl">
               {fullName}
