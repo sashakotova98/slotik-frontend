@@ -37,4 +37,37 @@ export async function apiConfirmEmail(token: string): Promise<MessageResponse> {
   });
 }
 
+export async function apiForgotPassword(email: string): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/forgotPassword", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+type ConfirmResetResponse = {
+  token: string;
+};
+
+export async function apiConfirmReset(token: string): Promise<string> {
+  const params = new URLSearchParams({
+    token,
+  });
+
+  const result = await api<ConfirmResetResponse>(`/auth/confirmReset?${params.toString()}`, {
+    method: "GET",
+  });
+
+  return result.token;
+}
+
+export async function apiResetPassword(token: string, newPassword: string): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/resetPassword", {
+    method: "POST",
+    body: JSON.stringify({
+      token,
+      newPassword,
+    }),
+  });
+}
+
 // superadmin@slotik.local / SuperAdmin123!
