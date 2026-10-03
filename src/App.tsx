@@ -16,6 +16,8 @@ import FaqPage from "./pages/info/FaqPage";
 import SupportPage from "./pages/info/SupportPage";
 import MasterOnboardingPage from "./pages/master/MasterOnboardingPage";
 import MasterPlansPage from "./pages/master/MasterPlansPage";
+import ConfirmEmailPage from "./pages/ConfirmEmailPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 function App() {
   const { token, role } = useAuth();
@@ -48,6 +50,10 @@ function App() {
         <Route path="/m/:slug" element={<MasterProfilePage />} />
 
         <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginPage />} />
+
+        <Route path="/confirm-email" element={<ConfirmEmailPage />}/>
+
+        <Route path="/reset-password" element={<ResetPasswordPage />}/>
 
         <Route path="/cabinet" element={token && role === "Master" ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
 

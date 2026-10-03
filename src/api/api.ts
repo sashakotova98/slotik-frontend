@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5024/api";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "https://localhost:7041/api";
 // env-переменная (на Vercel)
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -14,14 +14,27 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   });
 
   if (!res.ok) {
-    const text = await res.text();
+    let message = "Не вдалося виконати запит.";
+
     try {
-      const j = JSON.parse(text);
-      throw new Error(j.error ?? JSON.stringify(j.errors ?? j));
+      const data = await res.json();
+
+      if (typeof data.message === "string") {
+        message = data.message;
+      } else if (typeof data.error === "string") {
+        message = data.error;
+      }
     } catch {
-      throw new Error(text || `HTTP ${res.status}`);
+       // Якщо відповідь не JSON, залишаємо загальне повідомлення.
     }
+
+    if (res.status >= 500) {
+      message = "Помилка сервера. Спробуйте пізніше.";
+    }
+
+    throw new Error(message);
   }
 
   return res.json();
 }
+
