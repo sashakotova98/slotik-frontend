@@ -103,7 +103,9 @@ export default function LoginPage() {
 
       login(data.token, data.role);
       if (data.role === "Superadmin") navigate("/admin", { replace: true });
-      else if (data.role === "Master") navigate("/cabinet", { replace: true });
+      else if (data.role === "Master") {
+        navigate("/cabinet/setup", { replace: true });
+      }
       else navigate("/", { replace: true });
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Помилка сервера");
