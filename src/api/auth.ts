@@ -1,6 +1,10 @@
-import { api,apiText } from "./api";
+import { api } from "./api";
 
 export type AuthResponse = { token: string; role: "Client" | "Master" | "Superadmin" };
+
+export type MessageResponse = {
+  message: string;  // "message": "Email confirmed! You can now log in."
+};
 
 export async function apiLogin(email: string, password: string): Promise<AuthResponse> {
   return api<AuthResponse>("/auth/login", {
@@ -18,29 +22,23 @@ export type RegisterData = {
   role: "Client" | "Master";
 };
 
-export async function apiRegister(
-  data: RegisterData
-): Promise<string> {
-  return apiText("/auth/register", {
+export async function apiRegister(data: RegisterData): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export async function apiConfirmEmail(token: string): Promise<string> {
-  const params = new URLSearchParams({
-    token,
-  });
+export async function apiConfirmEmail(token: string): Promise<MessageResponse> {
+  const params = new URLSearchParams({ token });
 
-  return apiText(`/auth/confirm?${params.toString()}`, {
+  return api<MessageResponse>(`/auth/confirm?${params.toString()}`, {
     method: "GET",
   });
 }
 
-export async function apiForgotPassword(
-  email: string
-): Promise<string> {
-  return apiText("/auth/forgotPassword", {
+export async function apiForgotPassword(email: string): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/forgotPassword", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
@@ -50,28 +48,20 @@ type ConfirmResetResponse = {
   token: string;
 };
 
-export async function apiConfirmReset(
-  token: string
-): Promise<string> {
+export async function apiConfirmReset(token: string): Promise<string> {
   const params = new URLSearchParams({
     token,
   });
 
-  const result = await api<ConfirmResetResponse>(
-    `/auth/confirmReset?${params.toString()}`,
-    {
-      method: "GET",
-    }
-  );
+  const result = await api<ConfirmResetResponse>(`/auth/confirmReset?${params.toString()}`, {
+    method: "GET",
+  });
 
   return result.token;
 }
 
-export async function apiResetPassword(
-  token: string,
-  newPassword: string
-): Promise<string> {
-  return apiText("/auth/resetPassword", {
+export async function apiResetPassword(token: string, newPassword: string): Promise<MessageResponse> {
+  return api<MessageResponse>("/auth/resetPassword", {
     method: "POST",
     body: JSON.stringify({
       token,
