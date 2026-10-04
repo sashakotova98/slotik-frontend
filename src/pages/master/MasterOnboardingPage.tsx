@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createMasterProfile, saveMasterProfile, getOwnProfile, type MasterProfileData } from "../../api/masters";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -8,9 +10,11 @@ import type { UploadedPhoto } from "../../api/photos";
 import Header from "../../components/Header";
 import MasterProfileStep, { type ProfileFields } from "../../components/master/MasterProfileStep";
 import { getCities } from "../../api/cities";
-import { getMasterPortfolio, type PortfolioPhoto } from "../../api/masters";
+import { deletePortfolioPhoto, getMasterPortfolio, type PortfolioPhoto } from "../../api/masters";
 
 export default function MasterOnboardingPage() {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [step, setStep] = useState(1);
 
   const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
@@ -39,6 +43,28 @@ export default function MasterOnboardingPage() {
   const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
   const [portfolioFiles, setPortfolioFiles] = useState<File[]>([]);
   const [portfolioError, setPortfolioError] = useState("");
+  const [deletingPhotoId, setDeletingPhotoId] = useState<number | null>(null);
+  const deletingPhotoRef = useRef(false);
+
+  const handlePortfolioDelete = async (id: number) => {
+    if (savingRef.current || deletingPhotoRef.current || photoUploading) return;
+
+    deletingPhotoRef.current = true;
+    setDeletingPhotoId(id);
+    setPortfolioError("");
+
+    try {
+      await deletePortfolioPhoto(id);
+      setPortfolioPhotos((photos) => photos.filter((photo) => photo.id !== id));
+    } catch (error) {
+      setPortfolioError(
+        error instanceof Error ? error.message : "Не вдалося видалити фото. Спробуйте ще раз."
+      );
+    } finally {
+      deletingPhotoRef.current = false;
+      setDeletingPhotoId(null);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -52,7 +78,6 @@ export default function MasterOnboardingPage() {
 
         if (!active) return;
 
-        // Фото принадлежит пользователю — оно может быть и без master.
         setPhoto(
           user.avatarUrl
             ? {
@@ -111,7 +136,7 @@ export default function MasterOnboardingPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (savingRef.current || photoUploading || profileLoading || profileLoadError) {
+    if (savingRef.current || deletingPhotoRef.current || photoUploading || profileLoading || profileLoadError) {
       return;
     }
 
@@ -124,6 +149,11 @@ export default function MasterOnboardingPage() {
 
     if (!profile.address.trim() || !profile.about.trim()) {
       setSaveError("Заповніть адресу та інформацію про себе.");
+      return;
+    }
+
+    if (portfolioFiles.length > 0 && portfolioPhotos.length + portfolioFiles.length > 10) {
+      setSaveError("У портфоліо може бути не більше 10 фотографій.");
       return;
     }
 
@@ -195,10 +225,13 @@ export default function MasterOnboardingPage() {
 
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={() => {
+                  logout();
+                  navigate("/login", { replace: true });
+                }}
                 className="mt-4 rounded-xl bg-black px-5 py-2 text-white"
               >
-                Спробувати знову
+                Увійти
               </button>
             </>
           )}
@@ -222,7 +255,7 @@ export default function MasterOnboardingPage() {
 
           {step === 1 && (
             <form id="master-profile-form" onSubmit={handleSubmit} aria-busy={saving}>
-              <fieldset disabled={saving} className="m-0 min-w-0 border-0 p-0">
+              <fieldset disabled={saving || deletingPhotoId !== null} className="m-0 min-w-0 border-0 p-0">
                 <MasterProfileStep
                   photo={photo}
                   onPhotoChange={setPhoto}
@@ -235,6 +268,8 @@ export default function MasterOnboardingPage() {
                   portfolioPhotos={portfolioPhotos}
                   portfolioFiles={portfolioFiles}
                   onPortfolioChange={setPortfolioFiles}
+                  onPortfolioDelete={handlePortfolioDelete}
+                  deletingPhotoId={deletingPhotoId}
                 />
               </fieldset>
               {saveError && (
@@ -258,9 +293,9 @@ export default function MasterOnboardingPage() {
             <button
               type="button"
               aria-label="Попередній крок"
-              disabled={saving || photoUploading}
+              disabled={saving || photoUploading || deletingPhotoId !== null}
               onClick={() => {
-                if (savingRef.current || photoUploading) return;
+                if (savingRef.current || deletingPhotoRef.current || photoUploading) return;
                 setSaveError("");
                 setStep((prev) => Math.max(prev - 1, 1));
               }}
@@ -274,7 +309,7 @@ export default function MasterOnboardingPage() {
             type={step === 1 ? "submit" : "button"}
             form={step === 1 ? "master-profile-form" : undefined}
             aria-label={saving ? "Збереження профілю" : "Наступний крок"}
-            disabled={step === 3 || photoUploading || saving}
+            disabled={step === 3 || photoUploading || saving || deletingPhotoId !== null}
             onClick={step === 2 ? () => setStep(3) : undefined}
             className="absolute bottom-0 right-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-neutral-500/80"
           >

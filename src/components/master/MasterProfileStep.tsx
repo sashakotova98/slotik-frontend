@@ -1,5 +1,5 @@
 import type { PortfolioPhoto } from "../../api/masters";
-import { useEffect, useRef, useState, type ChangeEvent} from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Camera, LoaderCircle, ChevronDown, Check } from "lucide-react";
 import { apiUploadPhoto, type UploadedPhoto } from "../../api/photos";
 import { type CategoryOption, getCategoryOptions } from "../../api/categories";
@@ -16,6 +16,8 @@ type Props = {
   portfolioPhotos: PortfolioPhoto[];
   portfolioFiles: File[];
   onPortfolioChange: (files: File[]) => void;
+  onPortfolioDelete: (id: number) => Promise<void>;
+  deletingPhotoId: number | null;
   photo: UploadedPhoto | null;
   onPhotoChange: (photo: UploadedPhoto) => void;
   uploading: boolean;
@@ -26,7 +28,7 @@ type Props = {
   onProfileChange: (profile: ProfileFields) => void;
 };
 
-export default function MasterProfileStep({ photo, onPhotoChange, uploading, onUploadingChange, categoryId, onCategoryChange, profile, onProfileChange, portfolioPhotos, portfolioFiles, onPortfolioChange }: Props) {
+export default function MasterProfileStep({ photo, onPhotoChange, uploading, onUploadingChange, categoryId, onCategoryChange, profile, onProfileChange, portfolioPhotos, portfolioFiles, onPortfolioChange, onPortfolioDelete, deletingPhotoId }: Props) {
   const [photoError, setPhotoError] = useState("");
   const [portfolioError, setPortfolioError] = useState("");
 
@@ -38,8 +40,8 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
     setPortfolioError("");
     const files = [...portfolioFiles, ...selectedFiles];
 
-    if (files.length > 10) {
-      setPortfolioError("Можна обрати не більше 10 фотографій.");
+    if (portfolioPhotos.length + files.length > 10) {
+      setPortfolioError("У портфоліо може бути не більше 10 фотографій.");
       return;
     }
     if (files.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
@@ -453,14 +455,28 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
           {portfolioPhotos.length > 0 && (
             <div className="mb-3 grid grid-cols-3 gap-2">
               {portfolioPhotos.map((item, index) => (
-                <img key={item.id} src={item.photoUrl} alt={`Збережена робота майстра ${index + 1}`} className="aspect-square w-full rounded-xl object-cover" />
+                <div key={item.id} className="relative">
+                  <img src={item.photoUrl} alt={`Збережена робота майстра ${index + 1}`} className="aspect-square w-full rounded-xl object-cover" />
+                  <button
+                    type="button"
+                    aria-label={`Видалити збережене фото ${index + 1}`}
+                    disabled={deletingPhotoId !== null || uploading}
+                    onClick={() => {
+                      setPortfolioError("");
+                      void onPortfolioDelete(item.id);
+                    }}
+                    className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-black/70 text-xl text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-50"
+                  >
+                    {deletingPhotoId === item.id ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : "×"}
+                  </button>
+                </div>
               ))}
             </div>
           )}
 
           {portfolioFiles.length > 0 && (
             <>
-              <p className="mb-2 text-sm text-neutral-600">Нові фото — ще не збережені ({portfolioFiles.length}/10):</p>
+              <p className="mb-2 text-sm text-neutral-600">Нові фото — ще не збережені ({portfolioFiles.length}). Усього: {portfolioPhotos.length + portfolioFiles.length}/10:</p>
               <div className="mb-3 grid grid-cols-3 gap-2">
                 {portfolioFiles.map((file, index) => (
                   <div key={index} className="relative">
@@ -483,7 +499,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
           )}
 
           <label className="inline-block cursor-pointer rounded-xl border border-neutral-400 px-3 py-1 text-sm text-blue-500 focus-within:ring-2 focus-within:ring-blue-500">
-            {portfolioPhotos.length > 0 ? "Замінити портфоліо" : "+ Додати фото"}
+            + Додати фото
             <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={handlePortfolioChange} aria-describedby="portfolio-note" className="sr-only" />
           </label>
 
@@ -492,7 +508,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
           </p>
           {portfolioPhotos.length > 0 && (
             <p className="mt-2 text-sm text-neutral-600">
-              Нові фото замінять усе попереднє портфоліо. Якщо не обирати нові — попередні залишаться.
+              Нові фото додадуться до збережених після натискання «Далі». Видалення збережених фото виконується одразу.
             </p>
           )}
           {portfolioError && <p role="alert" className="mt-2 text-sm text-red-500">{portfolioError}</p>}

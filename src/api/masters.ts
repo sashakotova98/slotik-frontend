@@ -219,3 +219,9 @@ export async function getMasterPortfolio(masterId: number): Promise<PortfolioPho
 
   return master.portfolioPhotos;
 }
+
+export async function deletePortfolioPhoto(id: number): Promise<void> {
+  await api<{ message: string }>(`/Master/portfolio-photo/${id}`, {
+    method: "DELETE",
+  });
+}
