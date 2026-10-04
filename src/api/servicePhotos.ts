@@ -10,3 +10,6 @@ export type ServicePhoto = {
 export function getServicePhotosByMasterId(masterId: number): Promise<ServicePhoto[]> {
   return api<ServicePhoto[]>(`/ServicePhoto?masterId=${masterId}`);
 }
+export async function deleteServicePhoto(id: number): Promise<void> {
+  await api<unknown>(`/ServicePhoto/${id}`, { method: "DELETE" });
+}

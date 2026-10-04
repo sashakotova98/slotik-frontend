@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { createMasterProfile, saveMasterProfile, getOwnProfile, type MasterProfileData } from "../../api/masters";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import MasterServicesStep from "../../components/master/MasterServicesStep";
@@ -16,6 +16,15 @@ export default function MasterOnboardingPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [step, setStep] = useState(1);
+  const [serviceHasChanges, setServiceHasChanges] = useState(false);
+  const [serviceSaving, setServiceSaving] = useState(false);
+  const [stepError, setStepError] = useState("");
+
+  const handleServiceFormStateChange = useCallback((hasChanges: boolean, saving: boolean) => {
+    setServiceHasChanges(hasChanges);
+    setServiceSaving(saving);
+    setStepError("");
+  }, []);
 
   const [photo, setPhoto] = useState<UploadedPhoto | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -57,9 +66,7 @@ export default function MasterOnboardingPage() {
       await deletePortfolioPhoto(id);
       setPortfolioPhotos((photos) => photos.filter((photo) => photo.id !== id));
     } catch (error) {
-      setPortfolioError(
-        error instanceof Error ? error.message : "Не вдалося видалити фото. Спробуйте ще раз."
-      );
+      setPortfolioError(error instanceof Error ? error.message : "Не вдалося видалити фото. Спробуйте ще раз.");
     } finally {
       deletingPhotoRef.current = false;
       setDeletingPhotoId(null);
@@ -71,10 +78,7 @@ export default function MasterOnboardingPage() {
 
     async function loadProfile() {
       try {
-        const [user, cities] = await Promise.all([
-          getOwnProfile(),
-          getCities(),
-        ]);
+        const [user, cities] = await Promise.all([getOwnProfile(), getCities()]);
 
         if (!active) return;
 
@@ -84,7 +88,7 @@ export default function MasterOnboardingPage() {
               url: user.avatarUrl,
               publicId: user.photoId ?? "",
             }
-            : null
+            : null,
         );
 
         const master = user.master;
@@ -98,9 +102,7 @@ export default function MasterOnboardingPage() {
 
         setPortfolioPhotos(savedPhotos);
 
-        const city = cities.find((item) =>
-          item.districts.some((district) => district.id === master.districtId)
-        );
+        const city = cities.find((item) => item.districts.some((district) => district.id === master.districtId));
 
         setMasterId(master.id);
         setSlug(master.slug);
@@ -116,11 +118,7 @@ export default function MasterOnboardingPage() {
       } catch (error) {
         if (!active) return;
 
-        setProfileLoadError(
-          error instanceof Error
-            ? error.message
-            : "Не вдалося завантажити профіль."
-        );
+        setProfileLoadError(error instanceof Error ? error.message : "Не вдалося завантажити профіль.");
       } finally {
         if (active) setProfileLoading(false);
       }
@@ -132,6 +130,17 @@ export default function MasterOnboardingPage() {
       active = false;
     };
   }, []);
+
+  const handleStepChange = (nextStep: number) => {
+    if (savingRef.current || deletingPhotoRef.current || photoUploading || serviceSaving) return;
+    if (step === 2 && serviceHasChanges) {
+      setStepError("Спочатку додайте послугу або очистіть форму.");
+      return;
+    }
+    setStepError("");
+    setSaveError("");
+    setStep(nextStep);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -195,9 +204,7 @@ export default function MasterOnboardingPage() {
         const savedPhotos = await getMasterPortfolio(savedId);
         setPortfolioPhotos(savedPhotos);
       } catch {
-        setPortfolioError(
-          "Профіль збережено, але не вдалося оновити фото портфоліо. Оновіть сторінку."
-        );
+        setPortfolioError("Профіль збережено, але не вдалося оновити фото портфоліо. Оновіть сторінку.");
       }
 
       setStep(2);
@@ -244,7 +251,6 @@ export default function MasterOnboardingPage() {
     <>
       <Header />
       <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-12">
-
         <div className="relative w-full max-w-md rounded-3xl bg-white px-6 pt-6 pb-12 text-black shadow">
           <StepProgress step={step} />
           {portfolioError && (
@@ -283,22 +289,21 @@ export default function MasterOnboardingPage() {
                 </p>
               )}
             </form>
-
           )}
 
-          {step === 2 && <MasterServicesStep />}
+          {step === 2 && masterId !== null && <MasterServicesStep masterId={masterId} onFormStateChange={handleServiceFormStateChange} />}
+
+          {step === 2 && stepError && (
+            <p role="alert" className="mt-3 text-sm text-red-500">{stepError}</p>
+          )}
           {step === 3 && <MasterScheduleStep />}
 
           {step > 1 && (
             <button
               type="button"
               aria-label="Попередній крок"
-              disabled={saving || photoUploading || deletingPhotoId !== null}
-              onClick={() => {
-                if (savingRef.current || deletingPhotoRef.current || photoUploading) return;
-                setSaveError("");
-                setStep((prev) => Math.max(prev - 1, 1));
-              }}
+              disabled={saving || photoUploading || deletingPhotoId !== null || serviceSaving}
+              onClick={() => handleStepChange(Math.max(step - 1, 1))}
               className="absolute bottom-0 left-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
             >
               <ChevronLeft size={36} strokeWidth={2} aria-hidden="true" />
@@ -309,8 +314,8 @@ export default function MasterOnboardingPage() {
             type={step === 1 ? "submit" : "button"}
             form={step === 1 ? "master-profile-form" : undefined}
             aria-label={saving ? "Збереження профілю" : "Наступний крок"}
-            disabled={step === 3 || photoUploading || saving || deletingPhotoId !== null}
-            onClick={step === 2 ? () => setStep(3) : undefined}
+            disabled={step === 3 || photoUploading || saving || deletingPhotoId !== null || serviceSaving}
+            onClick={step === 2 ? () => handleStepChange(3) : undefined}
             className="absolute bottom-0 right-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-neutral-500/80"
           >
             <ChevronRight size={36} strokeWidth={2} aria-hidden="true" />
