@@ -19,6 +19,17 @@ export default function MasterOnboardingPage() {
   const [serviceHasChanges, setServiceHasChanges] = useState(false);
   const [serviceSaving, setServiceSaving] = useState(false);
   const [stepError, setStepError] = useState("");
+  const [scheduleHasChanges, setScheduleHasChanges] = useState(false);
+  const [scheduleBusy, setScheduleBusy] = useState(true);
+  const [hasWorkingDays, setHasWorkingDays] = useState(false);
+
+  // Не дозволяємо залишити графік із незбереженими змінами.
+  const handleScheduleFormStateChange = useCallback((hasChanges: boolean, busy: boolean, hasDays: boolean) => {
+    setScheduleHasChanges(hasChanges);
+    setScheduleBusy(busy);
+    setHasWorkingDays(hasDays);
+    setStepError("");
+  }, []);
 
   const handleServiceFormStateChange = useCallback((hasChanges: boolean, saving: boolean) => {
     setServiceHasChanges(hasChanges);
@@ -132,14 +143,33 @@ export default function MasterOnboardingPage() {
   }, []);
 
   const handleStepChange = (nextStep: number) => {
-    if (savingRef.current || deletingPhotoRef.current || photoUploading || serviceSaving) return;
+    if (savingRef.current || deletingPhotoRef.current || photoUploading || serviceSaving || (step === 3 && scheduleBusy)) return;
     if (step === 2 && serviceHasChanges) {
       setStepError("Спочатку додайте послугу або очистіть форму.");
       return;
     }
     setStepError("");
     setSaveError("");
+    if (step === 3 && scheduleHasChanges) {
+      setStepError("Спочатку збережіть графік або скасуйте зміни.");
+      return;
+    }
+    if (nextStep === 3) setScheduleBusy(true);
     setStep(nextStep);
+  };
+
+  // Фінальна стрілка відкриває кабінет, але не змінює статус підписки.
+  const handleFinish = () => {
+    if (scheduleBusy) return;
+    if (scheduleHasChanges) {
+      setStepError("Спочатку збережіть графік або скасуйте зміни.");
+      return;
+    }
+    if (!hasWorkingDays) {
+      setStepError("Додайте хоча б один робочий день.");
+      return;
+    }
+    navigate("/cabinet");
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -293,16 +323,16 @@ export default function MasterOnboardingPage() {
 
           {step === 2 && masterId !== null && <MasterServicesStep masterId={masterId} onFormStateChange={handleServiceFormStateChange} />}
 
-          {step === 2 && stepError && (
+          {step > 1 && stepError && (
             <p role="alert" className="mt-3 text-sm text-red-500">{stepError}</p>
           )}
-          {step === 3 && <MasterScheduleStep />}
+          {step === 3 && <MasterScheduleStep onFormStateChange={handleScheduleFormStateChange} />}
 
           {step > 1 && (
             <button
               type="button"
               aria-label="Попередній крок"
-              disabled={saving || photoUploading || deletingPhotoId !== null || serviceSaving}
+              disabled={saving || photoUploading || deletingPhotoId !== null || serviceSaving || (step === 3 && scheduleBusy)}
               onClick={() => handleStepChange(Math.max(step - 1, 1))}
               className="absolute bottom-0 left-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
             >
@@ -313,9 +343,9 @@ export default function MasterOnboardingPage() {
           <button
             type={step === 1 ? "submit" : "button"}
             form={step === 1 ? "master-profile-form" : undefined}
-            aria-label={saving ? "Збереження профілю" : "Наступний крок"}
-            disabled={step === 3 || photoUploading || saving || deletingPhotoId !== null || serviceSaving}
-            onClick={step === 2 ? () => handleStepChange(3) : undefined}
+            aria-label={saving ? "Збереження профілю" : step === 3 ? "Перейти до кабінету" : "Наступний крок"}
+            disabled={photoUploading || saving || deletingPhotoId !== null || serviceSaving || (step === 3 && scheduleBusy)}
+            onClick={step === 2 ? () => handleStepChange(3) : step === 3 ? handleFinish : undefined}
             className="absolute bottom-0 right-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-neutral-500/80"
           >
             <ChevronRight size={36} strokeWidth={2} aria-hidden="true" />
