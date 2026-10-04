@@ -118,3 +118,104 @@ export type PublicMasterProfile = {
 export function getMasterBySlug(slug: string): Promise<PublicMasterProfile> {
   return api<PublicMasterProfile>(`/Master/slug/${encodeURIComponent(slug)}`);
 }
+
+
+
+// Тело запроса для POST /api/Master и PUT /api/Master/{id}
+export type MasterProfileData = {
+  categoryId: number;
+  districtId: number;
+  slug: string;
+  about: string | null;
+  experienceYears: number;
+  slotStepMin: number;
+  isBlocked: boolean;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+function createMasterFormData(data: MasterProfileData, files: File[]): FormData {
+  const formData = new FormData();
+
+  for (const [key, value] of Object.entries(data)) {
+    // Статус блокировки не меняется через форму мастера.
+    if (key === "isBlocked") continue;
+
+    if (value !== null && value !== undefined) {
+      formData.append(key, String(value));
+    }
+  }
+
+  for (const file of files) {
+    formData.append("portfolioPhotos", file);
+  }
+
+  return formData;
+}
+
+// Создание профиля авторизованного мастера.
+export async function createMasterProfile(data: MasterProfileData, files: File[] = []): Promise<{ id: number }> {
+  return api<{ id: number }>("/Master", {
+    method: "POST",
+    body: createMasterFormData(data, files),
+  });
+}
+
+// Обновление профиля авторизованного мастера.
+export async function saveMasterProfile(data: MasterProfileData, files: File[] = []): Promise<void> {
+  await api<void>("/Master", {
+    method: "PUT",
+    body: createMasterFormData(data, files),
+  });
+}
+
+type CurrentUserProfile = {
+  avatarUrl: string | null;
+  photoId: string | null;
+  master: (MasterProfileData & { id: number }) | null;
+};
+
+export async function getOwnProfile(): Promise<CurrentUserProfile> {
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    throw new Error("Увійдіть у свій акаунт.");
+  }
+
+  let userId: number;
+
+  try {
+    const payload = token.split(".")[1];
+    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    const decoded = JSON.parse(atob(padded));
+
+    userId = Number(decoded.userId);
+
+    if (!Number.isSafeInteger(userId) || userId <= 0) {
+      throw new Error();
+    }
+  } catch {
+    throw new Error("Увійдіть у свій акаунт повторно.");
+  }
+
+  return api<CurrentUserProfile>(`/User/${userId}`);
+
+  
+}
+
+export type PortfolioPhoto = {
+  id: number;
+  photoUrl: string;
+  photoId: string;
+  masterId: number;
+};
+
+export async function getMasterPortfolio(masterId: number): Promise<PortfolioPhoto[]> {
+  const master = await api<{ portfolioPhotos: PortfolioPhoto[] }>(
+    `/Master/${masterId}`
+  );
+
+  return master.portfolioPhotos;
+}
