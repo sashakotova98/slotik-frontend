@@ -1,8 +1,10 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import PaymentSummary, { type PaidPlan } from "../../components/master/PaymentSummary";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiCreateCheckout, openLiqPay } from "../../api/payments";
+
+import { getOwnProfile } from "../../api/users";
 
 type Plan = {
   id: "free" | "basic" | "pro";
@@ -35,13 +37,34 @@ const plans: Plan[] = [
 
 export default function MasterPlansPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { token, logout } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PaidPlan | null>(null);
   const [message, setMessage] = useState("");
 
   const [paying, setPaying] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   const paymentInFlight = useRef(false);
+
+  const [masterName, setMasterName] = useState("Завантаження…");
+
+  useEffect(() => {
+    let active = true;
+    const loadProfile = async () => {
+      if (!token) return;
+      setMasterName("Завантаження…");
+      try {
+        const user = await getOwnProfile(token);
+        if (active) {
+          const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+          setMasterName(name || "Ім’я не вказано");
+        }
+      } catch {
+        if (active) setMasterName("Не вдалося завантажити ім’я");
+      }
+    };
+    loadProfile();
+    return () => { active = false; };
+  }, [token]);
 
   const handlePay = async () => {
     if (!selectedPlan || paymentInFlight.current) return;
@@ -94,6 +117,7 @@ export default function MasterPlansPage() {
           {selectedPlan ? (
             <PaymentSummary
               plan={selectedPlan}
+              masterName={masterName}
               periodLabel="30 днів"
               paying={paying}
               error={paymentError}

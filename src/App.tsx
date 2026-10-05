@@ -18,6 +18,7 @@ import MasterOnboardingPage from "./pages/master/MasterOnboardingPage";
 import MasterPlansPage from "./pages/master/MasterPlansPage";
 import ConfirmEmailPage from "./pages/ConfirmEmailPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import PaymentResultPage from "./pages/master/PaymentResultPage";
 
 function App() {
   const { token, role } = useAuth();
@@ -51,9 +52,9 @@ function App() {
 
         <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginPage />} />
 
-        <Route path="/confirm-email" element={<ConfirmEmailPage />}/>
+        <Route path="/confirm-email" element={<ConfirmEmailPage />} />
 
-        <Route path="/reset-password" element={<ResetPasswordPage />}/>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         <Route path="/cabinet" element={token && role === "Master" ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
 
@@ -64,6 +65,8 @@ function App() {
 
         <Route path="/cabinet/setup" element={token && role === "Master" ? <MasterOnboardingPage /> : <Navigate to="/login" replace />} />
         <Route path="/cabinet/plans" element={token && role === "Master" ? <MasterPlansPage /> : <Navigate to="/login" replace />} />
+
+        <Route path="/payment/result" element={token && role === "Master" ? <PaymentResultPage /> : <Navigate to="/login" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
