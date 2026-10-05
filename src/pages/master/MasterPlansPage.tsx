@@ -51,8 +51,8 @@ export default function MasterPlansPage() {
     setPaymentError("");
 
     try {
-      const checkout = await apiCreateCheckout(selectedPlan.id);
-      openLiqPay(checkout);
+      const result = await apiCreateCheckout(selectedPlan.id);
+      openLiqPay(result.checkout);
     } catch {
       setPaymentError("Не вдалося відкрити оплату. Спробуйте пізніше.");
     } finally {
@@ -90,61 +90,61 @@ export default function MasterPlansPage() {
       </header>
 
       <main className="flex flex-1 items-center justify-center px-4 pt-4 pb-10">
-      <div className="w-full max-w-sm rounded-[40px] bg-neutral-100 px-7 pt-8 pb-5 shadow-2xl">
-        {selectedPlan ? (
-          <PaymentSummary
-            plan={selectedPlan}
-            periodLabel="30 днів"
-            paying={paying}
-            error={paymentError}
-            onPay={handlePay}
-            onBack={() => {
-              setPaymentError("");
-              setSelectedPlan(null);
-            }}
-          />
-        ) : (
-          <>
-            <h1 className="mb-5 text-lg font-semibold">Тарифи</h1>
+        <div className="w-full max-w-sm rounded-[40px] bg-neutral-100 px-7 pt-8 pb-5 shadow-2xl">
+          {selectedPlan ? (
+            <PaymentSummary
+              plan={selectedPlan}
+              periodLabel="30 днів"
+              paying={paying}
+              error={paymentError}
+              onPay={handlePay}
+              onBack={() => {
+                setPaymentError("");
+                setSelectedPlan(null);
+              }}
+            />
+          ) : (
+            <>
+              <h1 className="mb-5 text-lg font-semibold">Тарифи</h1>
 
-            <div className="space-y-4">
-              {plans.map((plan) => (
-                <button
-                  key={plan.id}
-                  type="button"
-                  onClick={() => handleSelect(plan)}
-                  className="w-full rounded-xl border border-neutral-400 p-4 text-left transition hover:border-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
-                >
-                  <span className="flex items-start justify-between gap-3 font-semibold">
-                    <span>{plan.name}</span>
-                    <span className="shrink-0">
-                      {plan.price === 0 ? "0 ₴" : `${plan.price} ₴/міс`}
+              <div className="space-y-4">
+                {plans.map((plan) => (
+                  <button
+                    key={plan.id}
+                    type="button"
+                    onClick={() => handleSelect(plan)}
+                    className="w-full rounded-xl border border-neutral-400 p-4 text-left transition hover:border-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                  >
+                    <span className="flex items-start justify-between gap-3 font-semibold">
+                      <span>{plan.name}</span>
+                      <span className="shrink-0">
+                        {plan.price === 0 ? "0 ₴" : `${plan.price} ₴/міс`}
+                      </span>
                     </span>
-                  </span>
 
-                  <span className="mt-2 block text-sm leading-5 text-neutral-600">
-                    {plan.description}
-                  </span>
-                </button>
-              ))}
-            </div>
+                    <span className="mt-2 block text-sm leading-5 text-neutral-600">
+                      {plan.description}
+                    </span>
+                  </button>
+                ))}
+              </div>
 
-            {message && (
-              <p role="status" className="mt-4 text-sm text-neutral-600">
-                {message}
-              </p>
-            )}
+              {message && (
+                <p role="status" className="mt-4 text-sm text-neutral-600">
+                  {message}
+                </p>
+              )}
 
-            <button
-              type="button"
-              onClick={() => navigate("/cabinet/setup")}
-              className="mt-4 w-full py-2 text-sm text-neutral-500 hover:text-black"
-            >
-              Назад
-            </button>
-          </>
-        )}
-      </div>
+              <button
+                type="button"
+                onClick={() => navigate("/cabinet/setup")}
+                className="mt-4 w-full py-2 text-sm text-neutral-500 hover:text-black"
+              >
+                Назад
+              </button>
+            </>
+          )}
+        </div>
       </main>
     </div>
   );

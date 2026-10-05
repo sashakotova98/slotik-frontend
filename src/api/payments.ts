@@ -14,20 +14,38 @@ const planCodes: Record<PaidPlanId, number> = {
   pro: 2,
 };
 
-export async function apiCreateCheckout(plan: PaidPlanId): Promise<CheckoutResponse> {
-  return api<CheckoutResponse>("/Payment/checkout", {
+// Відповідь POST /api/Payment/checkout.
+export type CreateCheckoutResponse = {
+  paymentId: number;
+  checkout: CheckoutResponse;
+};
+
+// 0 — очікування, 1 — успішна оплата, 2 — помилка.
+export type PaymentStatus = 0 | 1 | 2;
+
+export type PaymentResult = {
+  id: number;
+  status: PaymentStatus;
+  amount: number;
+  currency: string;
+  paidAt: string | null;
+};
+
+// Створює платіж і повертає дані для переходу до LiqPay.
+export async function apiCreateCheckout(plan: PaidPlanId): Promise<CreateCheckoutResponse> {
+  return api<CreateCheckoutResponse>("/Payment/checkout", {
     method: "POST",
     body: JSON.stringify({ plan: planCodes[plan] }),
   });
 }
 
+// Отримує поточний стан платежу після повернення з LiqPay.
+export async function getPayment(paymentId: number): Promise<PaymentResult> {
+  return api<PaymentResult>(`/Payment/${paymentId}`);
+}
+
 export function openLiqPay(checkout: CheckoutResponse) {
-  if (
-    checkout.checkoutUrl !== "https://www.liqpay.ua/api/3/checkout" ||
-    !checkout.data ||
-    !checkout.signature ||
-    !checkout.orderId
-  ) {
+  if (checkout.checkoutUrl !== "https://www.liqpay.ua/api/3/checkout" || !checkout.data || !checkout.signature || !checkout.orderId) {
     throw new Error("Не вдалося отримати дані для оплати.");
   }
 
