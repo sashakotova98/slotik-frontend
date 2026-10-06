@@ -2,9 +2,13 @@ import { api } from "./api";
 
 // Поля користувача для відображення імені.
 export type UserProfile = {
-  id: number;
+  id: number;            
   firstName: string;
   lastName: string;
+  master: {
+    id: number;          
+    slug: string;        
+  } | null;
 };
 
 // GET /api/User/{id} — отримати користувача за ID.

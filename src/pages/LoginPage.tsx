@@ -16,7 +16,7 @@ import { Check } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
 import { useNavigate } from "react-router-dom";
-import { useSearchParams,useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 
 
 
@@ -24,20 +24,20 @@ export default function LoginPage() {
 
   const location = useLocation();
 
-const passwordChanged =
-  (
-    location.state as
+  const passwordChanged =
+    (
+      location.state as
       | { passwordChanged?: boolean }
       | null
-  )?.passwordChanged === true;
+    )?.passwordChanged === true;
 
   const [searchParams] = useSearchParams();
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
-  const [showRegistrationSuccess, setShowRegistrationSuccess] =useState(false);
-  const [showForgotPassword, setShowForgotPassword] =useState(() => searchParams.get("forgot") === "1");
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(() => searchParams.get("forgot") === "1");
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -148,6 +148,7 @@ const passwordChanged =
       <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-sm">
         <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
           <button
+            disabled={loading}
             // onClick={() => setTab("login")}
             onClick={() => {
               setTab("login");
@@ -161,7 +162,8 @@ const passwordChanged =
             Вхід
           </button>
           <button
-            onClick={() => setTab("register")}
+            disabled={loading}
+            onClick={() => { setTab("register"); setServerError(""); setErrors({}); setTouched({}); }}
             className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
           >
             Реєстрація
@@ -339,44 +341,48 @@ const passwordChanged =
       </div>
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 
-      {showForgotPassword && (
-      <ForgotPasswordModal
-        onClose={() =>
-          setShowForgotPassword(false)
-        }
-      />
-    )}
+      {
+        showForgotPassword && (
+          <ForgotPasswordModal
+            onClose={() =>
+              setShowForgotPassword(false)
+            }
+          />
+        )
+      }
 
-      {showRegistrationSuccess && (
-        <RegistrationSuccessModal
-          email={values.email}
-          onClose={() => setShowRegistrationSuccess(false)}
-          onGoToLogin={() => {
-            const registeredEmail = values.email;
+      {
+        showRegistrationSuccess && (
+          <RegistrationSuccessModal
+            email={values.email}
+            onClose={() => setShowRegistrationSuccess(false)}
+            onGoToLogin={() => {
+              const registeredEmail = values.email;
 
-            setShowRegistrationSuccess(false);
-            setTab("login");
+              setShowRegistrationSuccess(false);
+              setTab("login");
 
-            setValues({
-              firstName: "",
-              lastName: "",
-              phone: "",
-              email: registeredEmail,
-              password: "",
-              confirmPassword: "",
-              agree: false,
-            });
+              setValues({
+                firstName: "",
+                lastName: "",
+                phone: "",
+                email: registeredEmail,
+                password: "",
+                confirmPassword: "",
+                agree: false,
+              });
 
-            setErrors({});
-            setTouched({});
-            setServerError("");
-          }}
-        />
-      )}
-    </div>
+              setErrors({});
+              setTouched({});
+              setServerError("");
+            }}
+          />
+        )
+      }
+    </div >
   );
 
-  
+
 }
 
 

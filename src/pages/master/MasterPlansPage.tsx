@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import PaymentSummary, { type PaidPlan } from "../../components/master/PaymentSummary";
 import { useEffect, useRef, useState } from "react";
 import { apiCreateCheckout, openLiqPay } from "../../api/payments";
-
+import PaymentSuccess from "../../components/master/PaymentSuccess";
 import { getOwnProfile } from "../../api/users";
 
 type Plan = {
@@ -47,6 +47,9 @@ export default function MasterPlansPage() {
 
   const [masterName, setMasterName] = useState("Завантаження…");
 
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [slug, setSlug] = useState<string | null>(null);
+
   useEffect(() => {
     let active = true;
     const loadProfile = async () => {
@@ -57,6 +60,7 @@ export default function MasterPlansPage() {
         if (active) {
           const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
           setMasterName(name || "Ім’я не вказано");
+          setSlug(user.master?.slug ?? null);
         }
       } catch {
         if (active) setMasterName("Не вдалося завантажити ім’я");
@@ -89,12 +93,25 @@ export default function MasterPlansPage() {
     setPaymentError("");
 
     if (plan.id === "free") {
-      setMessage("Ви обрали безкоштовний тариф. Збереження вибору ще не підключене.");
+      if (!slug) {
+        setMessage("Посилання на профіль ще не завантажено. Спробуйте ще раз.");
+        return;
+      }
+
+      setShowSuccess(true);
       return;
     }
 
     setSelectedPlan({ id: plan.id, name: plan.name, price: plan.price });
   };
+
+  if (showSuccess) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-linear-to-br from-neutral-200 to-neutral-400 px-4 py-10">
+        <PaymentSuccess slug={slug} />
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-br from-neutral-200 via-neutral-300 to-neutral-400 text-black">

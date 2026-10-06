@@ -4,9 +4,15 @@ import { useEffect, useState } from "react";
 import { CircleAlert, Clock } from "lucide-react";
 import { getPayment, type PaymentResult } from "../../api/payments";
 import PaymentSuccess from "../../components/master/PaymentSuccess";
+import { getOwnProfile } from "../../api/users";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export default function PaymentResultPage() {
+  const { token } = useAuth();
+
+  const [slug, setSlug] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState("");
 
   //http://localhost:5173/payment/result?paymentId=13
   const [searchParams] = useSearchParams();
@@ -16,6 +22,44 @@ export default function PaymentResultPage() {
 
   const [payment, setPayment] = useState<PaymentResult | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    // Завантажуємо профіль лише після успішної оплати.
+    if (!token || payment?.status !== 1) return;
+
+    let active = true;
+
+    const loadProfile = async () => {
+      setProfileError("");
+      setSlug(null);
+
+      try {
+        const user = await getOwnProfile(token);
+        const savedSlug = user.master?.slug;
+
+        if (!active) return;
+
+        if (!savedSlug) {
+          setProfileError("Не вдалося знайти посилання на профіль.");
+          return;
+        }
+
+        setSlug(savedSlug);
+      } catch {
+        if (active) {
+          setProfileError("Не вдалося завантажити профіль.");
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      active = false;
+    };
+  }, [token, payment?.status]);
+
+
 
 
   useEffect(() => {
@@ -56,8 +100,14 @@ export default function PaymentResultPage() {
   // Успіх показуємо лише після підтвердження від бекенда.
   if (!error && payment?.status === 1) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-linear-to-br from-neutral-200 to-neutral-400 px-4 py-10">
-        <PaymentSuccess slug={null} />
+      <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-linear-to-br from-neutral-200 to-neutral-400 px-4 py-10">
+        <PaymentSuccess slug={slug} />
+
+        {profileError && (
+          <p role="alert" className="text-center text-sm text-red-700">
+            {profileError}
+          </p>
+        )}
       </main>
     );
   }
