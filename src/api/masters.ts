@@ -21,9 +21,12 @@ export function getMasters(): Promise<Master[]> {
 
 export type Payment = {
   id: number;
-  paidAt: string;
+  createdAt: string;
+  paidAt: string | null;
   amount: number;
+  currency: string;
   status: 0 | 1 | 2;
+  providerStatus: string | null;
 };
 
 export type MasterDetails = Master & {

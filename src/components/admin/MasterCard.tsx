@@ -25,6 +25,8 @@ const tariffStyles: Record<Master["tariff"], string> = {
 export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirationDate = false, showRemainingTime = false, }: Props) {
 
   const [now] = useState(Date.now);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
+  const avatarUrl = master.avatarUrl?.trim() || null;
 
   const initials =
     `${master.firstName.charAt(0)}${master.lastName.charAt(0)}`.toUpperCase();
@@ -86,9 +88,20 @@ export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirati
       <div className="flex items-center gap-3">
         <div
           aria-hidden="true"
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-selected text-xl font-medium text-muted"
+          className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-selected text-xl font-medium text-muted"
         >
-          {initials}
+          {/* Якщо фото недоступне, показуємо ініціали. */}
+          {avatarUrl && avatarUrl !== failedAvatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              loading="lazy"
+              className="h-full w-full object-cover"
+              onError={() => setFailedAvatarUrl(avatarUrl)}
+            />
+          ) : (
+            initials
+          )}
         </div>
 
         <div className="min-w-0 flex-1 pt-2">
