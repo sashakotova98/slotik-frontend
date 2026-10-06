@@ -35,7 +35,7 @@ export type PaymentResult = {
 export async function apiCreateCheckout(plan: PaidPlanId): Promise<CreateCheckoutResponse> {
   return api<CreateCheckoutResponse>("/Payment/checkout", {
     method: "POST",
-    body: JSON.stringify({ plan: planCodes[plan] }),
+    body: JSON.stringify({ plan: planCodes[plan] }), //"basic" в число 1
   });
 }
 

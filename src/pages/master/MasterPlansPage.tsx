@@ -74,7 +74,7 @@ export default function MasterPlansPage() {
     setPaymentError("");
 
     try {
-      const result = await apiCreateCheckout(selectedPlan.id);
+      const result = await apiCreateCheckout(selectedPlan.id); // basic
       openLiqPay(result.checkout);
     } catch {
       setPaymentError("Не вдалося відкрити оплату. Спробуйте пізніше.");

@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CircleAlert, CircleCheck, Clock } from "lucide-react";
+import { CircleAlert, Clock } from "lucide-react";
 import { getPayment, type PaymentResult } from "../../api/payments";
+import PaymentSuccess from "../../components/master/PaymentSuccess";
 
 
 export default function PaymentResultPage() {
 
+  //http://localhost:5173/payment/result?paymentId=13
   const [searchParams] = useSearchParams();
   const paymentId = Number(searchParams.get("paymentId"));
   //для кнопки «Перевірити статус» или «Спробувати знову»
@@ -50,6 +52,15 @@ export default function PaymentResultPage() {
   }, [paymentId, retry]);
 
   const checking = !payment;
+
+  // Успіх показуємо лише після підтвердження від бекенда.
+  if (!error && payment?.status === 1) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-linear-to-br from-neutral-200 to-neutral-400 px-4 py-10">
+        <PaymentSuccess slug={null} />
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-neutral-200 px-4 py-10">
@@ -118,35 +129,35 @@ export default function PaymentResultPage() {
                 {checking ? "Перевіряємо…" : "Перевірити статус"}
               </button>
             </>
-          ) : payment?.status === 1 ? (
-            <>
-              {/* Успішна оплата. */}
-              <CircleCheck
-                size={96}
-                strokeWidth={1.5}
-                aria-hidden="true"
-                className="mx-auto text-green-600"
-              />
+            // ) : payment?.status === 1 ? (
+            //   <>
+            //     {/* Успішна оплата. */}
+            //     <CircleCheck
+            //       size={96}
+            //       strokeWidth={1.5}
+            //       aria-hidden="true"
+            //       className="mx-auto text-green-600"
+            //     />
 
-              <h1 className="mt-8 text-2xl font-semibold">
-                Оплату підтверджено
-              </h1>
+            //     <h1 className="mt-8 text-2xl font-semibold">
+            //       Оплату підтверджено
+            //     </h1>
 
-              <p className="mt-4 text-neutral-500">
-                Ваш платіж успішно проведено.
-              </p>
+            //     <p className="mt-4 text-neutral-500">
+            //       Ваш платіж успішно проведено.
+            //     </p>
 
-              <Link
-                to="/cabinet"
-                className="mt-auto rounded-full bg-black px-5 py-3 font-medium text-white"
-              >
-                Перейти в кабінет
-              </Link>
+            //     <Link
+            //       to="/cabinet"
+            //       className="mt-auto rounded-full bg-black px-5 py-3 font-medium text-white"
+            //     >
+            //       Перейти в кабінет
+            //     </Link>
 
-              <p className="mt-4 text-sm text-neutral-400">
-                Дякуємо, що обираєте Slotik
-              </p>
-            </>
+            //     <p className="mt-4 text-sm text-neutral-400">
+            //       Дякуємо, що обираєте Slotik
+            //     </p>
+            //   </>
           ) : payment?.status === 2 ? (
             <>
               {/* Бекенд підтвердив невдалу оплату. */}
