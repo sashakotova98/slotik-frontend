@@ -18,18 +18,23 @@ import { apiLogin, apiRegister } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams, useLocation } from "react-router-dom";
 
-
+type LoginLocationState = {
+  passwordChanged?: boolean;
+  from?: {
+    pathname: string;
+    search: string;
+    hash: string;
+  };
+};
 
 export default function LoginPage() {
 
   const location = useLocation();
 
-  const passwordChanged =
-    (
-      location.state as
-      | { passwordChanged?: boolean }
-      | null
-    )?.passwordChanged === true;
+  const loginState = location.state as LoginLocationState | null;
+
+  const passwordChanged = loginState?.passwordChanged === true;
+  const from = loginState?.from;
 
   const [searchParams] = useSearchParams();
 
@@ -110,10 +115,20 @@ export default function LoginPage() {
 
         login(data.token, data.role);
 
-        if (data.role === "Superadmin") {
+        if (
+          data.role === "Master" &&
+          from?.pathname === "/payment/result"
+        ) {
+          navigate(
+            {
+              pathname: "/payment/result",
+              search: from.search ?? "",
+              hash: from.hash ?? "",
+            },
+            { replace: true },
+          );
+        } else if (data.role === "Superadmin") {
           navigate("/admin", { replace: true });
-        } else if (data.role === "Master") {
-          navigate("/cabinet/setup", { replace: true });
         } else {
           navigate("/", { replace: true });
         }

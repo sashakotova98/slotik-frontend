@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import SplashPage from "./pages/SplashPage";
 import LoginPage from "./pages/LoginPage";
@@ -19,6 +19,35 @@ import MasterPlansPage from "./pages/master/MasterPlansPage";
 import ConfirmEmailPage from "./pages/ConfirmEmailPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PaymentResultPage from "./pages/master/PaymentResultPage";
+import MasterEntryRedirect from "./components/master/MasterEntryRedirect";
+
+//Збереження адреси результату платежу перед входом
+function PaymentResultRoute() {
+  const { token, role } = useAuth();
+  const location = useLocation();
+
+  if (!token) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+          },
+        }}
+      />
+    );
+  }
+
+  if (role !== "Master") {
+    return <Navigate to="/" replace />;
+  }
+
+  return <PaymentResultPage />;
+}
 
 function App() {
   const { token, role } = useAuth();
@@ -33,7 +62,7 @@ function App() {
             !token ? (
               <SplashPage />
             ) : role === "Master" ? (
-              <Navigate to="/cabinet/setup" replace />
+              <MasterEntryRedirect key={token} />
             ) : role === "Superadmin" ? (
               <Navigate to="/admin" replace />
             ) : (
@@ -56,7 +85,18 @@ function App() {
 
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        <Route path="/cabinet" element={token && role === "Master" ? <MasterCabinetPage /> : <Navigate to="/login" replace />} />
+        <Route
+          path="/cabinet"
+          element={
+            token && role === "Master" ? (
+              <MasterEntryRedirect key={token}>
+                <MasterCabinetPage />
+              </MasterEntryRedirect>
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
 
         <Route path="/admin" element={isAdmin ? <AdminDashboardPage /> : <Navigate to="/login" replace />} />
         <Route path="/admin/masters" element={isAdmin ? <AdminMastersPage /> : <Navigate to="/login" replace />} />
@@ -66,7 +106,7 @@ function App() {
         <Route path="/cabinet/setup" element={token && role === "Master" ? <MasterOnboardingPage /> : <Navigate to="/login" replace />} />
         <Route path="/cabinet/plans" element={token && role === "Master" ? <MasterPlansPage /> : <Navigate to="/login" replace />} />
 
-        <Route path="/payment/result" element={token && role === "Master" ? <PaymentResultPage /> : <Navigate to="/login" replace />} />
+        <Route path="/payment/result" element={<PaymentResultRoute />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

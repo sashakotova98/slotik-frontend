@@ -70,4 +70,16 @@ export async function apiResetPassword(token: string, newPassword: string): Prom
   });
 }
 
+
+export type AuthMeResponse = {
+  userId: number;
+  role: AuthResponse["role"];
+  masterId: number | null;
+  isOnboardingCompleted: boolean;
+};
+
+export function apiGetMe(userId: number): Promise<AuthMeResponse> {
+  return api<AuthMeResponse>(`/Auth/Me?id=${userId}`);
+}
+
 // superadmin@slotik.local / SuperAdmin123!

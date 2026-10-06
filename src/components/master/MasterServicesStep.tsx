@@ -1,6 +1,6 @@
 import { ImageIcon, LoaderCircle, Plus, SquarePen } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { createService, getServicesByMasterId, type Service } from "../../api/services";
+import { createService, getServicesByMasterId, updateService, type Service } from "../../api/services";
 import { deleteServicePhoto, getServicePhotosByMasterId, type ServicePhoto } from "../../api/servicePhotos";
 
 type Props = {
@@ -16,6 +16,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   const [price, setPrice] = useState("");
   const [duration, setDuration] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -28,7 +30,40 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   const busy = saving || deletingPhotoId !== null;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const hasChanges = name !== "" || price !== "" || duration !== "" || files.length > 0;
+  const savedPhotoCount = editingService
+    ? photos.filter((photo) => photo.serviceId === editingService.id).length
+    : 0;
+  const totalPhotoCount = savedPhotoCount + files.length;
+  // Заповнена форма редагування ще не означає зміни.
+  const hasChanges = editingService
+    ? name.trim() !== editingService.name || price.trim() === "" ||
+      Number(price) !== editingService.price || duration.trim() === "" ||
+      Number(duration) !== editingService.durationMin || files.length > 0
+    : name !== "" || price !== "" || duration !== "" || files.length > 0;
+
+  const resetForm = () => {
+    setEditingService(null);
+    setName("");
+    setPrice("");
+    setDuration("");
+    setFiles([]);
+    setSaveError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleEdit = (service: Service) => {
+    if (savingRef.current || deletingRef.current) return;
+    if (hasChanges && !window.confirm("Відкинути незбережені зміни у формі?")) return;
+    setEditingService(service);
+    setName(service.name);
+    setPrice(String(service.price));
+    setDuration(String(service.durationMin));
+    setFiles([]);
+    setSaveError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    formRef.current?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+  };
 
   useEffect(() => {
     onFormStateChange(hasChanges, busy);
@@ -104,8 +139,9 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
       return;
     }
 
-    if (files.length === 0 || files.length > 3) {
-      setSaveError("Поки що потрібно обрати від 1 до 3 фото.");
+    // Для зміни тексту нові фото не потрібні.
+    if ((!editingService && files.length === 0) || totalPhotoCount > 3) {
+      setSaveError(editingService ? "Разом зі збереженими можна мати до 3 фото." : "Потрібно обрати від 1 до 3 фото.");
       return;
     }
 
@@ -116,43 +152,42 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
 
     savingRef.current = true;
     setSaving(true);
+    onFormStateChange(hasChanges, true);
 
     try {
-      const created = await createService(
-        {
+      const data = {
           masterId,
           name: name.trim(),
           price: servicePrice,
           durationMin: serviceDuration,
-        },
-        files,
-      );
+      };
+      const saved = editingService
+        ? await updateService(editingService.id, {
+            ...data,
+            groupId: editingService.groupId,
+            isPopular: editingService.isPopular,
+            sortOrder: editingService.sortOrder,
+          }, files)
+        : await createService(data, files);
 
-      if (!Number.isSafeInteger(created.id) || created.id <= 0) {
+      if (!Number.isSafeInteger(saved.id) || saved.id <= 0) {
         throw new Error("API не повернув коректний ID послуги. Потрібна перевірка бекенда.");
       }
 
-      setServices((previous) => [...previous, created]);
+      setServices((previous) => editingService
+        ? previous.map((service) => service.id === editingService.id ? saved : service)
+        : [...previous, saved]);
+      resetForm();
 
-      setName("");
-      setPrice("");
-      setDuration("");
-      setFiles([]);
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-
-      // Створення вже успішне; помилка GET не повинна виглядати
-      // як помилка створення і провокувати повторний POST.
+      // Помилка оновлення фото не скасовує збереження.
       try {
         const savedPhotos = await getServicePhotosByMasterId(masterId);
         setPhotos(savedPhotos);
       } catch {
-        setSaveError("Послугу додано, але фото не вдалося оновити. Оновіть сторінку.");
+        setLoadError("Послугу збережено, але фото не вдалося оновити. Оновіть сторінку перед наступним редагуванням.");
       }
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Не вдалося додати послугу.");
+      setSaveError(error instanceof Error ? error.message : "Не вдалося зберегти послугу.");
     } finally {
       savingRef.current = false;
       setSaving(false);
@@ -171,7 +206,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
     );
   }
 
-  const canSubmit = Boolean(name.trim()) && price.trim() !== "" && Number.isFinite(Number(price)) && Number(price) >= 0 && Number.isSafeInteger(Number(duration)) && Number(duration) > 0 && files.length > 0 && files.length <= 3;
+  const canSubmit = Boolean(name.trim()) && price.trim() !== "" && Number.isFinite(Number(price)) && Number(price) >= 0 && Number.isSafeInteger(Number(duration)) && Number(duration) > 0 && (editingService !== null || files.length > 0) && totalPhotoCount <= 3 && hasChanges;
   const inputClass = "block h-12 w-full min-w-0 rounded-[14px] border border-neutral-400 bg-transparent px-4 text-lg text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300";
 
   return (
@@ -191,7 +226,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
               <p className="wrap-break-word text-lg font-semibold leading-snug">{service.name}</p>
               <p className="mt-1 text-base leading-snug text-neutral-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
             </div>
-            <button type="button" disabled aria-label="Редагування послуги поки недоступне" title="Редагування буде доступне після підключення API" className="flex size-9 shrink-0 cursor-not-allowed items-center justify-center text-neutral-400">
+            <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-neutral-500 hover:text-black disabled:cursor-wait disabled:opacity-50">
               <SquarePen size={22} strokeWidth={1.5} aria-hidden="true" />
             </button>
             </div>
@@ -224,9 +259,9 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
         );
       })}
 
-      <form onSubmit={handleSubmit}>
+      <form ref={formRef} onSubmit={handleSubmit}>
         <fieldset disabled={busy} aria-labelledby="new-service-title" className="m-0 min-w-0 space-y-5 rounded-2xl border border-dashed border-neutral-400 p-4 sm:p-5">
-          <h3 id="new-service-title" className="text-xl font-semibold">+ Нова послуга</h3>
+          <h3 id="new-service-title" className="text-xl font-semibold">{editingService ? "Редагування послуги" : "+ Нова послуга"}</h3>
           <label className="block text-lg text-neutral-600">
             Назва
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Назва послуги" required className={inputClass + " mt-1.5"} />
@@ -250,7 +285,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
           </div>
 
           <div>
-            <p id="service-photos-label" className="mb-2 text-lg text-neutral-600">Фото робіт <span className="text-sm text-neutral-400">(від 1 до 3 фото)</span></p>
+            <p id="service-photos-label" className="mb-2 text-lg text-neutral-600">Фото робіт <span className="text-sm text-neutral-400">{editingService ? `(збережено ${savedPhotoCount}, нових ${files.length}; разом до 3)` : "(від 1 до 3 фото)"}</span></p>
+            {editingService && <p className="mb-2 text-sm text-neutral-500">Нові фото необов’язкові. Збережені можна переглянути й видалити в картці послуги вище. Скасування форми не відновлює видалені фото.</p>}
             <div className="flex flex-wrap gap-3">
               {files.map((file, index) => (
                 <div key={index} className="relative size-19 shrink-0">
@@ -261,7 +297,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
                   }} className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-black/70 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">×</button>
                 </div>
               ))}
-              {files.length < 3 && (
+              {totalPhotoCount < 3 && (
                 <label className="flex size-19 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-neutral-400 text-neutral-500 transition hover:bg-neutral-100 focus-within:ring-2 focus-within:ring-neutral-400">
                   <Plus size={30} strokeWidth={1.5} aria-hidden="true" />
                   <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" aria-label="Додати фото роботи" onChange={(e) => {
@@ -269,7 +305,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
                     e.target.value = "";
                     if (selected.length === 0) return;
                     const nextFiles = [...files, ...selected];
-                    if (nextFiles.length > 3) { setSaveError("Можна обрати не більше 3 фото."); return; }
+                    if (savedPhotoCount + nextFiles.length > 3) { setSaveError("Разом зі збереженими можна мати до 3 фото."); return; }
                     if (selected.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024)) {
                       setSaveError("Оберіть JPG, PNG або WebP до 5 МБ кожне."); return;
                     }
@@ -283,18 +319,14 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
 
           {saveError && <p role="alert" className="text-sm text-red-500">{saveError}</p>}
           <button type="submit" disabled={busy || !canSubmit} className="min-h-16 w-full rounded-2xl bg-black px-3 py-3 text-xl font-semibold text-white transition hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:bg-neutral-300 sm:text-2xl">
-            {saving ? "Збереження…" : "Додати послугу"}
+            {saving ? "Збереження…" : editingService ? "Зберегти зміни" : "Додати послугу"}
           </button>
-          {hasChanges && (
+          {(hasChanges || editingService) && (
             <button type="button" disabled={busy} onClick={() => {
-              setName("");
-              setPrice("");
-              setDuration("");
-              setFiles([]);
-              setSaveError("");
-              if (fileInputRef.current) fileInputRef.current.value = "";
+              if (hasChanges && !window.confirm("Відкинути незбережені зміни у формі?")) return;
+              resetForm();
             }} className="w-full py-2 text-sm text-neutral-500 hover:text-black disabled:cursor-not-allowed">
-              Очистити форму
+              {editingService ? "Скасувати" : "Очистити форму"}
             </button>
           )}
         </fieldset>
