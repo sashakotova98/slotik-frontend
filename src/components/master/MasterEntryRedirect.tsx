@@ -120,9 +120,9 @@ export default function MasterEntryRedirect({ children }: Props) {
   }
 
   // Тимчасово: поки бек не зберігає безкоштовний тариф.
-  if (!me.isOnboardingCompleted) {
-    return <Navigate to="/cabinet/setup" replace />;
-  }
+  // if (!me.isOnboardingCompleted) {
+  //   return <Navigate to="/cabinet/setup" replace />;
+  // }
 
   // Перевірка пройдена — показуємо захищену сторінку.
   if (children !== undefined) {
