@@ -5,7 +5,13 @@ import LoginPage from "./pages/LoginPage";
 import ClientHomePage from "./pages/ClientHomePage";
 import PublicHomePage from "./pages/PublicHomePage";
 import MasterProfilePage from "./pages/MasterProfilePage";
-import MasterCabinetPage from "./pages/MasterCabinetPage";
+import MasterCabinetPage from "./pages/master/MasterCabinetPage";
+import MasterCabinetLayout from "./components/master/MasterCabinetLayout";
+import MasterSchedulePage from "./pages/master/MasterSchedulePage";
+import MasterCalendarPage from "./pages/master/MasterCalendarPage";
+import MasterAccountPage from "./pages/master/MasterAccountPage";
+import MasterBookingsPage from "./pages/master/MasterBookingsPage";
+import MasterTariffPage from "./pages/master/MasterTariffPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminCategoriesPage from "./pages/admin/AdminCategoriesPage";
 import AdminMastersPage from "./pages/admin/AdminMastersPage";
@@ -20,6 +26,7 @@ import ConfirmEmailPage from "./pages/ConfirmEmailPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PaymentResultPage from "./pages/master/PaymentResultPage";
 import MasterEntryRedirect from "./components/master/MasterEntryRedirect";
+import MasterCreatedPage from "./pages/master/MasterCreatedPage";
 
 //Збереження адреси результату платежу перед входом
 function PaymentResultRoute() {
@@ -90,13 +97,20 @@ function App() {
           element={
             token && role === "Master" ? (
               <MasterEntryRedirect key={token}>
-                <MasterCabinetPage />
+                <MasterCabinetLayout />
               </MasterEntryRedirect>
             ) : (
               <Navigate to="/login" replace />
             )
           }
-        />
+        >
+          <Route index element={<MasterCabinetPage />} />
+          <Route path="schedule" element={<MasterSchedulePage />} />
+          <Route path="calendar" element={<MasterCalendarPage />} />
+          <Route path="account" element={<MasterAccountPage />} />
+          <Route path="account/bookings" element={<MasterBookingsPage />} />
+          <Route path="account/tariff" element={<MasterTariffPage />} />
+        </Route>
 
         <Route path="/admin" element={isAdmin ? <AdminDashboardPage /> : <Navigate to="/login" replace />} />
         <Route path="/admin/masters" element={isAdmin ? <AdminMastersPage /> : <Navigate to="/login" replace />} />
@@ -105,6 +119,14 @@ function App() {
 
         <Route path="/cabinet/setup" element={token && role === "Master" ? <MasterOnboardingPage /> : <Navigate to="/login" replace />} />
         <Route path="/cabinet/plans" element={token && role === "Master" ? <MasterPlansPage /> : <Navigate to="/login" replace />} />
+        <Route
+          path="/cabinet/created"
+          element={
+            token && role === "Master"
+              ? <MasterCreatedPage />
+              : <Navigate to="/login" replace />
+          }
+        />
 
         <Route path="/payment/result" element={<PaymentResultRoute />} />
 

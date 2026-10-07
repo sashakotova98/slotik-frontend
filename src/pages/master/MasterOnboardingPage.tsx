@@ -12,6 +12,17 @@ import MasterProfileStep, { type ProfileFields } from "../../components/master/M
 import { getCities } from "../../api/cities";
 import { deletePortfolioPhoto, getMasterPortfolio, type PortfolioPhoto } from "../../api/masters";
 
+function createUuid(): string {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+
+  // На HTTP використовуємо доступний getRandomValues.
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 export default function MasterOnboardingPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
@@ -53,7 +64,7 @@ export default function MasterOnboardingPage() {
   const [masterId, setMasterId] = useState<number | null>(null);
   const savingRef = useRef(false);
 
-  const [slug, setSlug] = useState(() => `master-${crypto.randomUUID()}`);
+  const [slug, setSlug] = useState(() => `master-${createUuid()}`);
 
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileLoadError, setProfileLoadError] = useState("");

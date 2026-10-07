@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin, MessageSquare } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { type PublicMasterProfile, getMasterBySlug } from "../api/masters";
 import { getServicePhotosByMasterId, type ServicePhoto } from "../api/servicePhotos";
 import { type Service, getServicesByMasterId } from "../api/services";
@@ -9,6 +9,7 @@ import ProfileShareModal from "../components/master/ProfileShareModal";
 
 export default function MasterProfilePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const serviceListRef = useRef<HTMLUListElement>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -55,6 +56,12 @@ export default function MasterProfilePage() {
   }, [slug]);
 
   function handleBack() {
+    // Повернення з перегляду після створення сторінки майстра.
+    if (location.state?.returnTo === "/cabinet") {
+      navigate("/cabinet", { replace: true });
+      return;
+    }
+
     const historyIndex = window.history.state?.idx;
 
     if (typeof historyIndex === "number" && historyIndex > 0) {

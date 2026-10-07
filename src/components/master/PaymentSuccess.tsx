@@ -83,6 +83,7 @@ export default function PaymentSuccess({ slug }: Props) {
       {profilePath ? (
         <Link
           to={profilePath}
+          state={{ returnTo: "/cabinet" }}
           className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-neutral-500 px-4 py-4 text-base font-medium text-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <Eye size={21} aria-hidden="true" className="shrink-0" />
