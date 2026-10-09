@@ -14,3 +14,9 @@ export type Subscription = {
 export function getOwnSubscriptions() {
   return api<Subscription[]>("/Subscription");
 }
+
+export function activateFreePlan() {
+  return api<{ message: string }>("/Subscription/free", {
+    method: "POST",
+  });
+}

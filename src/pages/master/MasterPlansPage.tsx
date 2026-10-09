@@ -6,6 +6,9 @@ import { apiCreateCheckout, openLiqPay } from "../../api/payments";
 // import PaymentSuccess from "../../components/master/PaymentSuccess";
 import { getOwnProfile } from "../../api/users";
 
+import { activateFreePlan, getOwnSubscriptions } from "../../api/subscriptions";
+import { apiGetMe } from "../../api/auth";
+
 type Plan = {
   id: "free" | "basic" | "pro";
   name: string;
@@ -50,6 +53,12 @@ export default function MasterPlansPage() {
   // const [showSuccess, setShowSuccess] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
 
+  const [userId, setUserId] = useState<number | null>(null); //check onboarding
+  const [savingFree, setSavingFree] = useState(false); //true, showing «Зберігаємо…»
+  const freeInFlight = useRef(false); //protection against repeated requests
+
+  const busy = paying || savingFree;//Blocks the button both during the start of the paid plan and while maintaining the free plan.
+
   useEffect(() => {
     let active = true;
     const loadProfile = async () => {
@@ -61,6 +70,7 @@ export default function MasterPlansPage() {
           const name = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
           setMasterName(name || "Ім’я не вказано");
           setSlug(user.master?.slug ?? null);
+          setUserId(user.id);
         }
       } catch {
         if (active) setMasterName("Не вдалося завантажити ім’я");
@@ -88,22 +98,78 @@ export default function MasterPlansPage() {
     }
   };
 
-  const handleSelect = (plan: Plan) => {
+  const handleSelect = async (plan: Plan) => {
+    if (paymentInFlight.current || freeInFlight.current) return;
+
     setMessage("");
     setPaymentError("");
 
-    if (plan.id === "free") {
-      if (!slug) {
-        setMessage("Посилання на профіль ще не завантажено. Спробуйте ще раз.");
-        return;
-      }
-
-      // setShowSuccess(true);
-      navigate("/cabinet/created", { replace: true });
+    // Платний тариф: відкриваємо підсумок оплати.
+    if (plan.id !== "free") {
+      setSelectedPlan({
+        id: plan.id,
+        name: plan.name,
+        price: plan.price,
+      });
       return;
     }
 
-    setSelectedPlan({ id: plan.id, name: plan.name, price: plan.price });
+    if (!token || userId === null || !slug) {
+      setMessage(
+        "Дані профілю ще не завантажено. Оновіть сторінку та спробуйте ще раз."
+      );
+      return;
+    }
+
+    freeInFlight.current = true;
+    setSavingFree(true);
+
+    try {
+      const subscriptions = await getOwnSubscriptions();
+
+      const hasActivePaidPlan = subscriptions.some(
+        (subscription) =>
+          subscription.plan !== 0 &&
+          subscription.status === 0 &&
+          Date.parse(subscription.expiresAt) > Date.now()
+      );
+
+      if (hasActivePaidPlan) {
+        setMessage(
+          "У вас уже діє платний тариф. Його не було змінено."
+        );
+        return;
+      }
+
+      // Бек не створює повторний Free, якщо він уже є в історії.
+      const hasFreePlan = subscriptions.some(
+        (subscription) => subscription.plan === 0
+      );
+
+      if (!hasFreePlan) {
+        await activateFreePlan();
+      }
+
+      const me = await apiGetMe(userId);
+
+      if (!me.isOnboardingCompleted) {
+        setMessage(
+          "Налаштування ще не завершено. Перевірте профіль, послуги та робочий графік."
+        );
+        return;
+      }
+
+      navigate("/cabinet/created", { replace: true });
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Не вдалося зберегти тариф. Спробуйте ще раз."
+      );
+    } finally {
+      freeInFlight.current = false;
+      setSavingFree(false);
+    }
   };
 
   // if (showSuccess) {
@@ -154,6 +220,7 @@ export default function MasterPlansPage() {
                   <button
                     key={plan.id}
                     type="button"
+                    disabled={busy}
                     onClick={() => handleSelect(plan)}
                     className="w-full rounded-xl border border-neutral-400 p-4 text-left transition hover:border-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
@@ -171,6 +238,12 @@ export default function MasterPlansPage() {
                 ))}
               </div>
 
+              {savingFree && (
+                <p role="status" className="mt-4 text-sm text-neutral-500">
+                  Зберігаємо безкоштовний тариф…
+                </p>
+              )}
+
               {message && (
                 <p role="status" className="mt-4 text-sm text-neutral-600">
                   {message}
@@ -179,6 +252,7 @@ export default function MasterPlansPage() {
 
               <button
                 type="button"
+                disabled={busy}
                 onClick={() => navigate("/cabinet/setup")}
                 className="mt-4 w-full py-2 text-sm text-neutral-500 hover:text-black"
               >

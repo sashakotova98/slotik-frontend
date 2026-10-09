@@ -9,6 +9,7 @@
 //     port: 5173,
 //     strictPort: true,
 //     allowedHosts: ["site.local"],
+//     open: "http://site.local:5173/",
 //   },
 // });
 
