@@ -170,40 +170,85 @@ export async function saveMasterProfile(data: MasterProfileData, files: File[] =
   });
 }
 
-type CurrentUserProfile = {
-  avatarUrl: string | null;
-  photoId: string | null;
-  master: (MasterProfileData & { id: number }) | null;
-};
 
-export async function getOwnProfile(): Promise<CurrentUserProfile> {
-  const token = localStorage.getItem("token");
 
-  if (!token) {
-    throw new Error("Увійдіть у свій акаунт.");
-  }
+// кнопка далі бек зберіг потом повернулись getOwnProfile() завантажив збережений файл форма заповнена
+// export async function getOwnProfile(): Promise<CurrentUserProfile> {
+//   const token = localStorage.getItem("token");
 
-  let userId: number;
+//   if (!token) {
+//     throw new Error("Увійдіть у свій акаунт.");
+//   }
 
-  try {
-    const payload = token.split(".")[1];
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
-    const decoded = JSON.parse(atob(padded));
+//   let userId: number;
 
-    userId = Number(decoded.userId);
+//   try {
+//     const payload = token.split(".")[1];
+//     const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+//     const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+//     const decoded = JSON.parse(atob(padded));
 
-    if (!Number.isSafeInteger(userId) || userId <= 0) {
-      throw new Error();
-    }
-  } catch {
-    throw new Error("Увійдіть у свій акаунт повторно.");
-  }
+//     userId = Number(decoded.userId);
 
-  return api<CurrentUserProfile>(`/User/${userId}`);
+//     if (!Number.isSafeInteger(userId) || userId <= 0) {
+//       throw new Error();
+//     }
+//   } catch {
+//     throw new Error("Увійдіть у свій акаунт повторно.");
+//   }
+
+//   return api<CurrentUserProfile>(`/User/${userId}`);
 
   
+// }
+
+// Відповідь GET /api/User/me.
+export type UserMe = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  role: string;
+  masterId: number | null;
+};
+
+type MasterProfileResponse = MasterProfileData & {
+  id: number;
+};
+
+
+//// Об'єднані дані для MasterOnboardingPage.
+type CurrentUserProfile = UserMe & {
+  photoId: string | null;
+  master: MasterProfileResponse | null;
+};
+
+
+
+export async function getOwnProfile(): Promise<CurrentUserProfile> {
+   // api() додає токен із localStorage.
+  const user = await api<UserMe>("/User/me");
+
+  let master: MasterProfileResponse | null = null;
+
+   if (user.masterId !== null) {
+    master = await api<MasterProfileResponse>(
+      `/Master/${user.masterId}`
+    );
+  }
+
+    return {
+    ...user,
+    // Новий endpoint не повертає photoId.
+    // Залишаємо null для сумісності з поточною формою.
+    photoId: null,
+    master,
+  };
 }
+
+
 
 export type PortfolioPhoto = {
   id: number;

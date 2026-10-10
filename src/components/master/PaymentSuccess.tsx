@@ -4,9 +4,10 @@ import { Check, Copy, Eye } from "lucide-react";
 
 type Props = {
   slug: string | null;
+  title?: string;
 };
 
-export default function PaymentSuccess({ slug }: Props) {
+export default function PaymentSuccess({ slug, title = "Сторінку створено!" }: Props) {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState("");
 
@@ -44,7 +45,7 @@ export default function PaymentSuccess({ slug }: Props) {
       </div>
 
       <h1 className="mt-7 text-2xl font-semibold">
-        Сторінку створено!
+        {title}
       </h1>
 
       <div className="mt-4 flex items-center gap-2 rounded-lg border border-neutral-400 px-3 py-2">

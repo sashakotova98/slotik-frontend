@@ -40,8 +40,11 @@ export async function apiCreateCheckout(plan: PaidPlanId): Promise<CreateCheckou
 }
 
 // Отримує поточний стан платежу після повернення з LiqPay.
-export async function getPayment(paymentId: number): Promise<PaymentResult> {
-  return api<PaymentResult>(`/Payment/${paymentId}`);
+export async function getPayment(paymentId: number, signal?: AbortSignal): Promise<PaymentResult> {
+  return api<PaymentResult>(`/Payment/${paymentId}`, {
+    signal, // передаємо сигнал для можливого скасування HTTP запиту
+    //користувач пішов зі сторінки, відкрив інший платіж Запит пройшов - тайм-аут, який ми встановили, закінчився.  можна скасувати запит через сигнал.
+  });
 }
 
 export function openLiqPay(checkout: CheckoutResponse) {
