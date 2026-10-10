@@ -78,8 +78,8 @@ export type AuthMeResponse = {
   isOnboardingCompleted: boolean;
 };
 
-export function apiGetMe(userId: number): Promise<AuthMeResponse> {
-  return api<AuthMeResponse>(`/Auth/Me?id=${userId}`);
+export function apiGetMe(): Promise<AuthMeResponse> {
+  return api<AuthMeResponse>("/Auth/Me");
 }
 
 // superadmin@slotik.local / SuperAdmin123!

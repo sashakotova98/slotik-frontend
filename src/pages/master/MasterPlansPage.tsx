@@ -81,17 +81,22 @@ export default function MasterPlansPage() {
   }, [token]);
 
   const handlePay = async () => {
-    if (!selectedPlan || paymentInFlight.current) return;
+    if (!selectedPlan || paymentInFlight.current || freeInFlight.current) return;
 
     paymentInFlight.current = true;
     setPaying(true);
     setPaymentError("");
 
     try {
-      const result = await apiCreateCheckout(selectedPlan.id); // basic
-      openLiqPay(result.checkout);
-    } catch {
-      setPaymentError("Не вдалося відкрити оплату. Спробуйте пізніше.");
+      const result = await apiCreateCheckout(selectedPlan.id); // створємо платіж
+      openLiqPay(result.checkout); // відкриваємо отриманні дані на liqpay
+    }
+    catch (error) {
+      setPaymentError(
+        error instanceof Error
+          ? error.message
+          : "Не вдалося відкрити оплату. Спробуйте пізніше."
+      );
     } finally {
       paymentInFlight.current = false;
       setPaying(false);
@@ -141,25 +146,17 @@ export default function MasterPlansPage() {
         return;
       }
 
-      // Бек не створює повторний Free, якщо він уже є в історії.
-      const hasFreePlan = subscriptions.some(
-        (subscription) => subscription.plan === 0
-      );
+      await activateFreePlan();
+      const me = await apiGetMe();
 
-      if (!hasFreePlan) {
-        await activateFreePlan();
-      }
-
-      const me = await apiGetMe(userId);
-
-      if (!me.isOnboardingCompleted) {
+      if (me.isOnboardingCompleted === true) {
+        navigate("/cabinet/created", { replace: true });
+      } else {
         setMessage(
           "Налаштування ще не завершено. Перевірте профіль, послуги та робочий графік."
         );
-        return;
       }
 
-      navigate("/cabinet/created", { replace: true });
     } catch (error) {
       setMessage(
         error instanceof Error
@@ -185,7 +182,7 @@ export default function MasterPlansPage() {
       <header className="flex justify-end px-6 py-4">
         <button
           type="button"
-          disabled={paying}
+          disabled={busy}
           onClick={() => {
             logout();
             navigate("/login", { replace: true });

@@ -3,50 +3,96 @@ import { Link } from "react-router-dom";
 import { X } from "lucide-react";
 import { getOwnSubscriptions, type Subscription } from "../../api/subscriptions";
 
+// Коди тарифів і статусів приходять із бекенда, назви показуємо українською.
 const planNames = { 0: "Безкоштовний", 1: "Базовий", 2: "Професійний" };
-const statusNames = { 0: "Активна", 1: "Термін дії завершено", 2: "Скасована", 3: "Очікує активації" };
+const statusNames = {
+  0: "Активна",
+  1: "Термін дії завершено",
+  2: "Скасована",
+  3: "Очікує активації",
+};
+
 function formatDate(value: string) {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Дата не вказана" : date.toLocaleDateString("uk-UA", { timeZone: "Europe/Kyiv" });
+  if (Number.isNaN(date.getTime())) return "Дата не вказана";
+  return date.toLocaleDateString("uk-UA", { timeZone: "Europe/Kyiv" });
 }
-function money(amount: number, currency: string) {
+
+function formatMoney(amount: number, currency: string) {
   return new Intl.NumberFormat("uk-UA", { style: "currency", currency }).format(amount);
 }
 
+function formatPeriod(period: string | null) {
+  if (period === "month") return " / міс.";
+  if (period === "year") return " / рік";
+  return "";
+}
+
+// Показуємо лише явно заплановану оплату, а не дату завершення підписки. автоматическое списание не настроено
+function getNextPaymentText(subscription: Subscription | undefined) {
+  if (!subscription) return "Поточну підписку не визначено.";
+  if (subscription.plan === 0) return "Для безкоштовного тарифу оплата не потрібна.";
+
+  const { nextPaymentAt, nextPaymentAmount, currency } = subscription;
+
+  if (nextPaymentAt === null && nextPaymentAmount === null) {
+    return `Автоматичного списання не буде. Поточний тариф діє до ${formatDate(subscription.expiresAt)}.`;
+  }
+
+  // зараз показуємо дату та суму наступного платежу, якщо вони відомі. але немає зараз автоматичного списання. nextPaymentAt: null nextPaymentAmount: null
+  const date = nextPaymentAt ? formatDate(nextPaymentAt) : "Дату не вказано";
+  const amount = nextPaymentAmount !== null
+    ? formatMoney(nextPaymentAmount, currency)
+    : "Суму не вказано";
+
+  return `${date} — ${amount}`;
+}
+
 export default function MasterTariffPage() {
+  // Дані запиту та два стани інтерфейсу: завантаження й помилка.
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     let active = true;
-    void getOwnSubscriptions()
-      .then((data) => {
+
+    async function loadSubscriptions() {
+      try {
+        // GET /api/Subscription. Токен додає спільна функція api().
+        const data = await getOwnSubscriptions();
+        if (active) setSubscriptions(data);
+      } catch (error) {
         if (active) {
-          setSubscriptions(data);
-          setNow(Date.now());
+          setError(error instanceof Error
+            ? error.message
+            : "Не вдалося завантажити тариф. Оновіть сторінку, щоб повторити запит.");
         }
-      })
-      .catch(() => {
-        if (active) setError("Не вдалося завантажити тариф. Оновіть сторінку, щоб повторити запит.");
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+      }
+    }
+
+    void loadSubscriptions();
+
+    // Не оновлюємо стан після виходу зі сторінки.
+    return () => { active = false; };
   }, []);
 
-  // Платна активна підписка має пріоритет над збереженим Free.
-  const current = subscriptions
-    .filter((sub) => sub.status === 0 && Date.parse(sub.expiresAt) > now)
-    .sort((a, b) => Number(b.plan !== 0) - Number(a.plan !== 0) || Date.parse(b.expiresAt) - Date.parse(a.expiresAt))[0];
-  const payments = subscriptions
-    .flatMap((sub) => sub.payments.map((payment) => ({ ...payment, plan: sub.plan })))
+  // Бек сам визначає поточний тариф серед усіх підписок.
+  const currentSubscription = subscriptions.find((subscription) => subscription.isEffective);
+
+  // Збираємо платежі всіх підписок і додаємо тариф для підпису в історії.
+  const allPayments = subscriptions.flatMap((subscription) =>
+    subscription.payments.map((payment) => ({ ...payment, plan: subscription.plan }))
+  );
+
+  // Залишаємо успішні платежі та показуємо найновіші першими.
+  const successfulPayments = allPayments
     .filter((payment) => payment.status === 1)
-    .sort((a, b) => Date.parse(b.paidAt ?? b.createdAt) - Date.parse(a.paidAt ?? a.createdAt));
+    .sort((first, second) =>
+      Date.parse(second.paidAt ?? second.createdAt) - Date.parse(first.paidAt ?? first.createdAt)
+    );
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
@@ -56,54 +102,76 @@ export default function MasterTariffPage() {
           <X aria-hidden="true" />
         </Link>
       </header>
-      {loading ? (
-        <p role="status">Завантажуємо тариф…</p>
-      ) : error ? (
-        <p role="alert" className="text-red-600">
-          {error}
-        </p>
-      ) : (
+
+      {loading && <p role="status">Завантажуємо тариф…</p>}
+      {!loading && error && <p role="alert" className="text-red-600">{error}</p>}
+
+      {!loading && !error && (
         <>
+          {/* Поточна підписка та її строк дії. Ціну беремо з API. */}
           <section className="space-y-3">
             <h2 className="text-sm text-neutral-500">Поточний тариф</h2>
             <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
-              {current ? (
+              {currentSubscription ? (
                 <>
-                  <div className="flex items-center justify-between gap-3 font-semibold">
-                    <span>{planNames[current.plan]}</span>
-                    {current.plan === 0 && <span>0 ₴</span>}
-                    {current.isTrial && <span className="text-sm text-blue-600">Пробний період</span>}
+                  <div className="flex items-start justify-between gap-3 font-semibold">
+                    <span>{planNames[currentSubscription.plan]}</span>
+                    <span>
+                      {formatMoney(currentSubscription.price, currentSubscription.currency)}
+                      {currentSubscription.plan !== 0 && formatPeriod(currentSubscription.billingPeriod)}
+                    </span>
                   </div>
-                  {current.plan === 0 && (
-                    <p className="mt-3 text-sm text-neutral-500">Сторінка з прайсом і портфоліо, посилання та QR-код. Без онлайн-запису.</p>
+
+                  {/* Ціна тарифу під час trial не означає заплановане списання. */}
+                  {currentSubscription.isTrial && (
+                    <p className="mt-3 text-sm text-blue-600">
+                      Пробний період. Вище вказано звичайну вартість тарифу.
+                    </p>
                   )}
-                  <p className="mt-4 border-t border-neutral-200 pt-3 text-sm text-neutral-500">Діє до {formatDate(current.expiresAt)}</p>
-                  <p className="mt-2 text-sm text-green-700">{statusNames[current.status]}</p>
+
+                  {currentSubscription.plan === 0 && (
+                    <p className="mt-3 text-sm text-neutral-500">
+                      Сторінка з прайсом і портфоліо, посилання та QR-код. Без онлайн-запису.
+                    </p>
+                  )}
+
+                  <p className="mt-4 border-t border-neutral-200 pt-3 text-sm text-neutral-500">
+                    {currentSubscription.plan === 0
+                      ? "Безстроково"
+                      : `Діє до ${formatDate(currentSubscription.expiresAt)}`}
+                  </p>
+                  <p className="mt-2 text-sm text-green-700">{statusNames[currentSubscription.status]}</p>
                 </>
               ) : (
                 <p className="text-sm text-neutral-600">
-                  {subscriptions.length === 0 ? "Підписку ще не збережено." : "Немає активної підписки."}
+                  {subscriptions.length === 0
+                    ? "Підписку ще не збережено."
+                    : "Поточну підписку не визначено."}
                 </p>
               )}
             </div>
           </section>
+
+          {/* null означає відсутність даних про заплановану оплату. */}
           <section className="space-y-3">
             <h2 className="text-sm text-neutral-500">Наступна оплата</h2>
             <p className="rounded-2xl border border-neutral-100 bg-white p-4 text-sm shadow-sm">
-              {current?.plan === 0 ? "Для безкоштовного тарифу оплата не потрібна." : "Дата та сума наступної оплати не надані сервером."}
+              {getNextPaymentText(currentSubscription)}
             </p>
           </section>
+
+          {/* Історія містить лише платежі, успішність яких підтвердив бек. */}
           <section className="space-y-3">
             <h2 className="text-sm text-neutral-500">Попередні оплати</h2>
             <div className="divide-y divide-neutral-200 rounded-2xl border border-neutral-100 bg-white px-4 shadow-sm">
-              {payments.length === 0 ? (
+              {successfulPayments.length === 0 ? (
                 <p className="py-4 text-sm text-neutral-500">Оплат поки немає.</p>
               ) : (
-                payments.map((payment) => (
+                successfulPayments.map((payment) => (
                   <div key={payment.id} className="py-3 text-sm">
                     <div className="flex justify-between gap-3">
                       <span>{formatDate(payment.paidAt ?? payment.createdAt)}</span>
-                      <span>{money(payment.amount, payment.currency)}</span>
+                      <span>{formatMoney(payment.amount, payment.currency)}</span>
                     </div>
                     <p className="mt-1 text-xs text-neutral-500">
                       {planNames[payment.plan]}

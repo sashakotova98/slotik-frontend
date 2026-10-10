@@ -5,32 +5,6 @@ import { ApiError } from "../../api/api";
 import { useAuth } from "../../hooks/useAuth";
 
 
-function getUserIdFromToken(token: string): number {
-
-  //header.payload.signature - jwt token формат Base64URL atob() ожидает обычный Base64. {"userId":"25"}
-  try {
-    const payload = token.split(".")[1];
-    if (!payload) throw new Error();
-
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64.padEnd(
-      Math.ceil(base64.length / 4) * 4,
-      "=",
-    );
-
-    const decoded = JSON.parse(atob(padded));
-    const userId = Number(decoded.userId);
-
-    if (!Number.isSafeInteger(userId) || userId <= 0) {
-      throw new Error();
-    }
-
-    return userId;
-  } catch {
-    throw new Error("Увійдіть у свій акаунт повторно.");
-  }
-}
-
 type Props = {
   children?: ReactNode;
 };
@@ -48,11 +22,9 @@ export default function MasterEntryRedirect({ children }: Props) {
 
     let active = true;
 
-    async function loadProfile(currentToken: string) {
+    async function loadProfile() {
       try {
-        const userId = getUserIdFromToken(currentToken);
-        const result = await apiGetMe(userId);
-
+        const result = await apiGetMe();
         if (typeof result.isOnboardingCompleted !== "boolean") {
           throw new Error("Некоректна відповідь сервера.");
         }
@@ -78,7 +50,7 @@ export default function MasterEntryRedirect({ children }: Props) {
       }
     }
 
-    void loadProfile(token);
+    void loadProfile();
 
     return () => {
       active = false;
@@ -119,7 +91,7 @@ export default function MasterEntryRedirect({ children }: Props) {
     );
   }
 
-  // Тимчасово: поки бек не зберігає безкоштовний тариф.
+  
   if (!me.isOnboardingCompleted) {
     return <Navigate to="/cabinet/setup" replace />;
   }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, Search, ChevronRight } from "lucide-react";
 import Header from "../components/Header";
 import { Link } from "react-router-dom";
@@ -15,6 +15,11 @@ import facebookIcon from "../assets/social/facebook.svg";
 import { useNavigate } from "react-router-dom";
 import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 
+import { useAuth } from "../hooks/useAuth";
+import { apiGetMe } from "../api/auth";
+import { ApiError } from "../api/api";
+import { activateProTrial, getProTrialAvailability } from "../api/subscriptions";
+
 export default function PublicHomePage() {
 
   const [categories, setCategories] = useState<HomeCategory[]>([]);
@@ -23,6 +28,71 @@ export default function PublicHomePage() {
 
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const { token, role } = useAuth();
+  const [trialBusy, setTrialBusy] = useState(false);
+  const [trialMessage, setTrialMessage] = useState("");
+  const [trialActivated, setTrialActivated] = useState(false);
+  const trialInFlight = useRef(false);
+
+  // Перевірка не витрачає trial. Активація виконується лише після натискання.
+  async function handleStartTrial() {
+    if (trialInFlight.current) return;
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (role !== "Master") {
+      setTrialMessage("Пропозиція доступна лише для акаунта майстра.");
+      return;
+    }
+
+    trialInFlight.current = true;
+    setTrialBusy(true);
+    setTrialMessage("");
+
+    try {
+      // Якщо POST уже пройшов, повторюємо тільки перевірку профілю.
+      // Це потрібно, коли наступний GET завершився мережевою помилкою.
+      if (!trialActivated) {
+        const availability = await getProTrialAvailability();
+
+        if (!availability.canStartProTrial) {
+          setTrialMessage(
+            availability.reason === "trial_already_used"
+              ? "Ви вже скористалися пробним Pro."
+              : availability.reason === "active_pro_exists"
+                ? "У вас уже є активна підписка Pro."
+                : "Пробний Pro зараз недоступний."
+          );
+          return;
+        }
+
+        await activateProTrial();
+        setTrialActivated(true);
+      }
+
+      // Trial починається одразу; незавершений профіль направляємо на налаштування.
+      const me = await apiGetMe();
+      navigate(
+        me.isOnboardingCompleted ? "/cabinet/account/tariff" : "/cabinet/setup"
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setTrialMessage("Сесія завершилася. Вийдіть з акаунта та увійдіть знову.");
+      } else if (error instanceof ApiError && error.status === 404) {
+        setTrialMessage("Профіль майстра не знайдено. Завершіть налаштування профілю.");
+      } else if (error instanceof ApiError && error.status === 409) {
+        setTrialMessage("Пробний Pro уже використано або у вас уже діє Pro. Перевірте свій тариф.");
+      } else {
+        setTrialMessage(error instanceof Error
+          ? error.message
+          : "Не вдалося активувати пробний Pro. Спробуйте ще раз.");
+      }
+    } finally {
+      trialInFlight.current = false;
+      setTrialBusy(false);
+    }
+  }
 
 
   useEffect(() => {
@@ -283,15 +353,34 @@ export default function PublicHomePage() {
 
             <button
               type="button"
-              disabled
-              title="Пропозиція незабаром стане доступною"
+              disabled={trialBusy}
+              onClick={handleStartTrial}
+              aria-describedby="trial-offer-description"
               className="absolute -bottom-4 right-1 min-h-11 rounded-full bg-black px-6 py-2 text-sm text-white disabled:cursor-not-allowed lg:right-3 lg:px-9 lg:text-lg"
             >
-              Далі…
+              {trialBusy ? "Перевіряємо…" : trialActivated ? "Продовжити" : !token ? "Увійти та спробувати" : "Спробувати Pro"}
             </button>
           </div>
         </section>
 
+        <div className="mx-auto max-w-2xl px-4 pb-4 pt-6">
+          <p id="trial-offer-description" className="text-sm text-muted">
+            Пробний Pro на 7 днів доступний один раз для майстра. Відлік починається після активації.
+          </p>
+          {trialActivated && (
+            <p role="status" className="mt-2 text-sm">
+              Пробний Pro активовано. Повторна активація не потрібна.
+            </p>
+          )}
+          {trialMessage && (
+            <p role="status" className="mt-2 text-sm">{trialMessage}</p>
+          )}
+          {token && role === "Master" && trialMessage && (
+            <Link to="/cabinet" className="mt-2 inline-block underline">
+              Перейти до кабінету
+            </Link>
+          )}
+        </div>
         <section aria-labelledby="join-title" className="bg-linear-to-b from-transparent to-white px-2 lg:px-6 lg:pt-4">
           <div className="mx-auto grid min-h-45 w-full max-w-105 grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)_minmax(0,1fr)] items-end gap-1 sm:gap-2 lg:min-h-75 lg:max-w-225 lg:grid-cols-[1fr_1.4fr_1fr] lg:gap-6">
             <img src={joinMasterLeft} alt="" className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70" />
