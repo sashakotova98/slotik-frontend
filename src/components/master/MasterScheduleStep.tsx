@@ -3,8 +3,14 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { getOwnSchedule, saveScheduleDay, type ScheduleDay, type ScheduleInterval, type Weekday } from "../../api/schedules";
 
 type Props = {
-  onFormStateChange: (hasChanges: boolean, busy: boolean, hasWorkingDays: boolean) => void;
+  // Потрібно онбордингу для керування переходом на наступний крок.
+  onFormStateChange?: (
+    hasChanges: boolean,
+    busy: boolean,
+    hasWorkingDays: boolean
+  ) => void;
 };
+
 type Pause = { start: string; duration: string };
 const weekdays = ["Понеділок", "Вівторок", "Середа", "Четвер", "П’ятниця", "Субота", "Неділя"];
 const ranges = ["08:00-17:00", "09:00-18:00", "10:00-18:00", "10:00-19:00", "11:00-20:00"];
@@ -52,19 +58,31 @@ export default function MasterScheduleStep({ onFormStateChange }: Props) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [weekday, setWeekday] = useState<Weekday | "">("");
+  //isWorking чи є день робочим
   const [isWorking, setIsWorking] = useState(true);
+  //range обраний діапазон робочого часу
   const [range, setRange] = useState("");
+  //початок і кінець робочого дня
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+
+  //список пауз між робочими інтервалами
   const [pauses, setPauses] = useState<Pause[]>([]);
   const [dirty, setDirty] = useState(false);
+
+  //formRef посилання на HTML-форму для можливого програмного доступу до неї
   const formRef = useRef<HTMLFormElement>(null);
+  //hasWorkingDays чи є робочі дні з інтервалами
   const hasWorkingDays = days.some((day) => day.isWorking && day.intervals.length > 0);
 
   // Повідомляємо сторінці, коли не можна виходити з кроку.
   useEffect(() => {
-    onFormStateChange(dirty, loading || saving, !loadError && hasWorkingDays);
+    onFormStateChange?.(dirty, loading || saving, !loadError && hasWorkingDays);
   }, [dirty, loading, saving, loadError, hasWorkingDays, onFormStateChange]);
+  //dirty чи є незбережені зміни у формі
+  //loading чи йде завантаження даних з бекенду
+  //saving чи йде збереження даних на бекенд
+  //!loadError && hasWorkingDays   чи є робочі дні з інтервалами
 
   useEffect(() => {
     let active = true;
@@ -120,7 +138,7 @@ export default function MasterScheduleStep({ onFormStateChange }: Props) {
     }
     savingRef.current = true;
     setSaving(true);
-    onFormStateChange(dirty, true, hasWorkingDays);
+    onFormStateChange?.(dirty, true, hasWorkingDays); //викликати функцію якщо вона передана
     try {
       // PUT створює графік дня або замінює його попередні інтервали.
       const saved = await saveScheduleDay(weekday, { isWorking, intervals });
