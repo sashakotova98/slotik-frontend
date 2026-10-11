@@ -3,6 +3,7 @@ import { Check, TriangleAlert, LoaderCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { apiConfirmEmail } from "../api/auth";
+import { ApiError } from "../api/api";
 
 type ConfirmStatus = "loading" | "success" | "error";
 
@@ -50,10 +51,16 @@ export default function ConfirmEmailPage() {
         if (!active) return;
 
         setResult({ token, status: "success", message: "" });
-      } catch {
+      } catch (error) {
         if (!active) return;
 
-        setResult({ token, status: "error", message: "Не вдалося завершити підтвердження. Перевірте з’єднання та спробуйте пізніше." });
+        setResult({
+          token,
+          status: "error",
+          message: error instanceof ApiError
+            ? error.message
+            : "Не вдалося завершити підтвердження. Перевірте з’єднання та спробуйте пізніше.",
+        });
       }
     };
 

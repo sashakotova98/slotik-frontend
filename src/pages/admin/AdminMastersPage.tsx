@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { useEffect, useState } from "react";
 import { isSubscriptionExpiring, getMasters, type Master } from "../../api/masters";
@@ -31,7 +32,7 @@ export default function AdminMastersPage() {
         setMasters(data);
       } catch (err) {
         console.error(err);
-        setMastersError("Помилка при завантаженні списку майстрів");
+        setMastersError(err instanceof ApiError ? err.message : "Помилка при завантаженні списку майстрів");
       } finally {
         setMastersLoading(false);
       }

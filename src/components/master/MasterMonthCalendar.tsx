@@ -20,17 +20,9 @@ function dateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export default function MasterMonthCalendar({
-  selectedDate,
-  onSelectDate,
-  bookingCounts = {},
-  workingWeekdays,
-  todayDate,
-}: Props) {
+export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookingCounts = {}, workingWeekdays, todayDate }: Props) {
   const [visibleMonth, setVisibleMonth] = useState(() => {
-    const date = selectedDate
-      ? new Date(`${selectedDate}T12:00:00`)
-      : todayDate ? new Date(`${todayDate}T12:00:00`) : new Date();
+    const date = selectedDate ? new Date(`${selectedDate}T12:00:00`) : todayDate ? new Date(`${todayDate}T12:00:00`) : new Date();
 
     return new Date(date.getFullYear(), date.getMonth(), 1);
   });
@@ -43,10 +35,7 @@ export default function MasterMonthCalendar({
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
 
-  const days = Array.from(
-    { length: cellCount },
-    (_, index) => new Date(year, month, index - firstWeekday + 1),
-  );
+  const days = Array.from({ length: cellCount }, (_, index) => new Date(year, month, index - firstWeekday + 1));
 
   const monthTitle = visibleMonth.toLocaleDateString("uk-UA", {
     month: "long",
@@ -60,10 +49,7 @@ export default function MasterMonthCalendar({
   }
 
   return (
-    <section
-      aria-label="Календар записів"
-      className="border-y border-neutral-300 py-4"
-    >
+    <section aria-label="Календар записів" className="border-y border-neutral-300 py-4">
       <div className="mb-5 flex items-center justify-between">
         <button
           type="button"
@@ -74,10 +60,7 @@ export default function MasterMonthCalendar({
           <ChevronLeft size={22} />
         </button>
 
-        <h2
-          aria-live="polite"
-          className="rounded-full bg-black px-6 py-1 text-center text-white"
-        >
+        <h2 aria-live="polite" className="rounded-full bg-black px-6 py-1 text-center text-white">
           {monthTitle}
         </h2>
 
@@ -93,11 +76,7 @@ export default function MasterMonthCalendar({
 
       <div className="grid grid-cols-7">
         {weekdays.map((day, index) => (
-          <div
-            key={day}
-            className={`pb-3 text-center text-sm ${index >= 5 ? "text-blue-500" : "text-neutral-400"
-              }`}
-          >
+          <div key={day} className={`pb-3 text-center text-sm ${index >= 5 ? "text-blue-500" : "text-neutral-400"}`}>
             {day}
           </div>
         ))}
@@ -116,9 +95,9 @@ export default function MasterMonthCalendar({
               ? "bg-[#c9eac3] text-neutral-800"
               : isWorking
                 ? "bg-neutral-200 text-neutral-600"
-              : isWeekend
-                ? "text-blue-500"
-                : "text-neutral-600";
+                : isWeekend
+                  ? "text-blue-500"
+                  : "text-neutral-600";
 
           return (
             <button
@@ -131,17 +110,13 @@ export default function MasterMonthCalendar({
                 onSelectDate(key);
 
                 if (!isCurrentMonth) {
-                  setVisibleMonth(
-                    new Date(date.getFullYear(), date.getMonth(), 1),
-                  );
+                  setVisibleMonth(new Date(date.getFullYear(), date.getMonth(), 1));
                 }
               }}
               className={`flex min-h-11 items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-blue-500 ${isCurrentMonth ? "" : "opacity-40"
                 }`}
             >
-              <span
-                className={`relative flex size-7 items-center justify-center rounded-md text-sm ${appearance}`}
-              >
+              <span className={`relative flex size-7 items-center justify-center rounded-md text-sm ${appearance}`}>
                 {date.getDate()}
 
                 {count > 0 && (

@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useEffect, useState } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import type { FinanceStats } from "../../api/stats";
@@ -17,7 +18,7 @@ export default function AdminFinancePage() {
         setFinanceStats(data);
       } catch (err) {
         console.error(err);
-        setError("Помилка при завантаженні фінансової статистики");
+        setError(err instanceof ApiError ? err.message : "Помилка при завантаженні фінансової статистики");
       } finally {
         setLoading(false);
       }

@@ -1,3 +1,4 @@
+import { ApiError } from "../api/api";
 import { useEffect, useRef, useState } from "react";
 import { getCatalogMasters, type CatalogMaster, } from "../api/catalogMasters";
 import { Link, useSearchParams } from "react-router-dom";
@@ -30,7 +31,7 @@ export default function CatalogPage() {
   const [error, setError] = useState("");
 
   const [categories, setCategories] = useState<HomeCategory[]>([]);
-  const [categoryNameError, setCategoryNameError] = useState(false);
+  const [categoryNameError, setCategoryNameError] = useState("");
 
   const [cities, setCities] = useState<City[]>([]);
   const [citiesError, setCitiesError] = useState("");
@@ -78,8 +79,8 @@ export default function CatalogPage() {
       try {
         const data = await getCatalogMasters(categoryId, cityId, searchParam, districtId);
         if (!ignore) setMasters(data);
-      } catch {
-        if (!ignore) setError("Не вдалося завантажити майстрів.");
+      } catch (error) {
+        if (!ignore) setError(error instanceof ApiError ? error.message : "Не вдалося завантажити майстрів.");
       } finally {
         if (!ignore) setLoading(false);
       }
@@ -95,8 +96,8 @@ export default function CatalogPage() {
       try {
         const data = await getHomeCategories();
         setCategories(data);
-      } catch {
-        setCategoryNameError(true);
+      } catch (error) {
+        setCategoryNameError(error instanceof ApiError ? error.message : "Не вдалося завантажити назву категорії.");
       }
     }
 
@@ -109,8 +110,8 @@ export default function CatalogPage() {
       try {
         const data = await getCities();
         setCities(data);
-      } catch {
-        setCitiesError("Не вдалося завантажити міста.");
+      } catch (error) {
+        setCitiesError(error instanceof ApiError ? error.message : "Не вдалося завантажити міста.");
       } finally {
         setCitiesLoading(false);
       }
@@ -348,8 +349,8 @@ export default function CatalogPage() {
             )}
 
             {categoryId !== undefined && categoryNameError && (
-              <p className="mt-1 text-sm text-muted">
-                Не вдалося завантажити назву категорії.
+              <p role="alert" className="mt-1 text-sm text-muted">
+                {categoryNameError}
               </p>
             )}
 

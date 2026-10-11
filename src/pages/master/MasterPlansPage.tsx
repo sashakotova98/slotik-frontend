@@ -8,6 +8,7 @@ import { getOwnProfile } from "../../api/users";
 
 import { activateFreePlan, getOwnSubscriptions } from "../../api/subscriptions";
 import { apiGetMe } from "../../api/auth";
+import { ApiError } from "../../api/api";
 
 type Plan = {
   id: "free" | "basic" | "pro";
@@ -49,6 +50,7 @@ export default function MasterPlansPage() {
   const paymentInFlight = useRef(false);
 
   const [masterName, setMasterName] = useState("Завантаження…");
+  const [profileError, setProfileError] = useState("");
 
   // const [showSuccess, setShowSuccess] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
@@ -64,6 +66,9 @@ export default function MasterPlansPage() {
     const loadProfile = async () => {
       if (!token) return;
       setMasterName("Завантаження…");
+      setProfileError("");
+      setSlug(null);
+      setUserId(null);
       try {
         const user = await getOwnProfile(token);
         if (active) {
@@ -72,8 +77,11 @@ export default function MasterPlansPage() {
           setSlug(user.master?.slug ?? null);
           setUserId(user.id);
         }
-      } catch {
-        if (active) setMasterName("Не вдалося завантажити ім’я");
+      } catch (error) {
+        if (active) {
+          setMasterName("Ім’я не завантажено");
+          setProfileError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль. Оновіть сторінку.");
+        }
       }
     };
     loadProfile();
@@ -195,6 +203,12 @@ export default function MasterPlansPage() {
 
       <main className="flex flex-1 items-center justify-center px-4 pt-4 pb-10">
         <div className="w-full max-w-sm rounded-[40px] bg-neutral-100 px-7 pt-8 pb-5 shadow-2xl">
+          {/* Помилка профілю видима і при виборі тарифу, і в підсумку оплати. */}
+          {profileError && (
+            <p role="alert" className="mb-4 text-sm text-red-600">
+              {profileError}
+            </p>
+          )}
           {selectedPlan ? (
             <PaymentSummary
               plan={selectedPlan}

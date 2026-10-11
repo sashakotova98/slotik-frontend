@@ -2,6 +2,7 @@ import { ImageIcon, LoaderCircle, Plus, SquarePen } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createService, getServicesByMasterId, updateService, type Service } from "../../api/services";
 import { deleteServicePhoto, getServicePhotosByMasterId, type ServicePhoto } from "../../api/servicePhotos";
+import { ApiError } from "../../api/api";
 
 type Props = {
   masterId: number;
@@ -37,8 +38,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   // Заповнена форма редагування ще не означає зміни.
   const hasChanges = editingService
     ? name.trim() !== editingService.name || price.trim() === "" ||
-      Number(price) !== editingService.price || duration.trim() === "" ||
-      Number(duration) !== editingService.durationMin || files.length > 0
+    Number(price) !== editingService.price || duration.trim() === "" ||
+    Number(duration) !== editingService.durationMin || files.length > 0
     : name !== "" || price !== "" || duration !== "" || files.length > 0;
 
   const resetForm = () => {
@@ -80,12 +81,19 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
 
         setServices(savedServices);
         setPhotos(savedPhotos);
-      } catch {
+        setLoadError("");
+      } catch (error) {
         if (active) {
-          setLoadError("Не вдалося завантажити послуги. Оновіть сторінку.");
+          setLoadError(
+            error instanceof ApiError
+              ? error.message
+              : "Не вдалося завантажити послуги. Оновіть сторінку.",
+          );
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
@@ -156,18 +164,18 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
 
     try {
       const data = {
-          masterId,
-          name: name.trim(),
-          price: servicePrice,
-          durationMin: serviceDuration,
+        masterId,
+        name: name.trim(),
+        price: servicePrice,
+        durationMin: serviceDuration,
       };
       const saved = editingService
         ? await updateService(editingService.id, {
-            ...data,
-            groupId: editingService.groupId,
-            isPopular: editingService.isPopular,
-            sortOrder: editingService.sortOrder,
-          }, files)
+          ...data,
+          groupId: editingService.groupId,
+          isPopular: editingService.isPopular,
+          sortOrder: editingService.sortOrder,
+        }, files)
         : await createService(data, files);
 
       if (!Number.isSafeInteger(saved.id) || saved.id <= 0) {
@@ -217,18 +225,18 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
         return (
           <div key={service.id} className="rounded-[14px] border border-neutral-400 px-4 py-3">
             <div className="flex min-h-18 items-center gap-3">
-            {servicePhotos[0] ? (
-              <img src={servicePhotos[0].photoUrl} alt={service.name} className="size-14 shrink-0 rounded-xl object-cover" />
-            ) : (
-              <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400"><ImageIcon size={24} aria-hidden="true" /></span>
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="wrap-break-word text-lg font-semibold leading-snug">{service.name}</p>
-              <p className="mt-1 text-base leading-snug text-neutral-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
-            </div>
-            <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-neutral-500 hover:text-black disabled:cursor-wait disabled:opacity-50">
-              <SquarePen size={22} strokeWidth={1.5} aria-hidden="true" />
-            </button>
+              {servicePhotos[0] ? (
+                <img src={servicePhotos[0].photoUrl} alt={service.name} className="size-14 shrink-0 rounded-xl object-cover" />
+              ) : (
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400"><ImageIcon size={24} aria-hidden="true" /></span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="wrap-break-word text-lg font-semibold leading-snug">{service.name}</p>
+                <p className="mt-1 text-base leading-snug text-neutral-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
+              </div>
+              <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-neutral-500 hover:text-black disabled:cursor-wait disabled:opacity-50">
+                <SquarePen size={22} strokeWidth={1.5} aria-hidden="true" />
+              </button>
             </div>
             {servicePhotos.length > 0 && (
               <details className="mt-2 border-t border-neutral-200 pt-2">

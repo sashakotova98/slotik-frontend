@@ -2,7 +2,11 @@
 
 import { api } from "./api";
 
-export type BookingStatus = 0 | 1 | 2 | 3;
+export type BookingStatus =
+  | 0  // Очікує підтвердження — Pending
+  | 1  // Підтверджено — Confirmed
+  | 2  // Завершено — Completed
+  | 3; // Скасовано — Cancelled
 
 export type MasterBooking = {
   id: number;

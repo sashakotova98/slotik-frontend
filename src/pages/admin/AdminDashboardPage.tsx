@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
@@ -23,6 +24,7 @@ export default function AdminDashboardPage() {
   const [mastersError, setMastersError] = useState("");
 
   const [categoriesCount, setCategoriesCount] = useState<number | null>(null);
+  const [categoriesError, setCategoriesError] = useState("");
 
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
 
@@ -36,7 +38,7 @@ export default function AdminDashboardPage() {
         setStats(data);
       } catch (err) {
         console.error(err);
-        setError("Помилка при завантаженні статистики");
+        setError(err instanceof ApiError ? err.message : "Помилка при завантаженні статистики");
       } finally {
         setLoading(false);
       }
@@ -52,7 +54,7 @@ export default function AdminDashboardPage() {
         setMasters(data);
       } catch (err) {
         console.error(err);
-        setMastersError("Помилка при завантаженні списку майстрів");
+        setMastersError(err instanceof ApiError ? err.message : "Помилка при завантаженні списку майстрів");
       } finally {
         setMastersLoading(false);
       }
@@ -65,9 +67,11 @@ export default function AdminDashboardPage() {
       try {
         const data = await getAdminCategories();
         setCategoriesCount(data.length);
+        setCategoriesError("");
       } catch (err) {
         console.error(err);
         setCategoriesCount(null);
+        setCategoriesError(err instanceof ApiError ? err.message : "Не вдалося завантажити кількість категорій.");
       }
     };
 
@@ -268,6 +272,11 @@ export default function AdminDashboardPage() {
               {categoriesCount !== null && stats && (
                 <span className="block text-xs text-muted md:text-sm">
                   Категорій: {categoriesCount} • Майстрів: {stats.mastersTotal}
+                </span>
+              )}
+              {categoriesError && (
+                <span role="alert" className="block text-xs text-danger md:text-sm">
+                  {categoriesError}
                 </span>
               )}
             </span>

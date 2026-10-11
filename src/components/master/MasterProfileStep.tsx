@@ -4,6 +4,7 @@ import { Camera, LoaderCircle, ChevronDown, Check } from "lucide-react";
 import { apiUploadPhoto, type UploadedPhoto } from "../../api/photos";
 import { type CategoryOption, getCategoryOptions } from "../../api/categories";
 import { getCities, type City } from "../../api/cities";
+import { ApiError } from "../../api/api";
 
 export type ProfileFields = {
   cityId: number | null;
@@ -74,8 +75,10 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
       .then((data) => {
         if (active) setCities(data);
       })
-      .catch(() => {
-        if (active) setCitiesError("Не вдалося завантажити міста.");
+      .catch((error: unknown) => {
+        if (active) {
+          setCitiesError(error instanceof ApiError ? error.message : "Не вдалося завантажити міста.");
+        }
       })
       .finally(() => {
         if (active) setCitiesLoading(false);
@@ -110,8 +113,10 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
       .then((categories) => {
         if (active) setCategoryOptions(categories);
       })
-      .catch(() => {
-        if (active) setCategoriesError("Не вдалося завантажити категорії.");
+      .catch((error: unknown) => {
+        if (active) {
+          setCategoriesError(error instanceof ApiError ? error.message : "Не вдалося завантажити категорії.");
+        }
       })
       .finally(() => {
         if (active) setCategoriesLoading(false);
@@ -151,8 +156,13 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
       }
 
       onPhotoChange(result);
-    } catch {
-      setPhotoError("Не вдалося завантажити фото. Спробуйте ще раз.");
+    } catch (error) {
+      // Показуємо повідомлення API; для мережевих та інших помилок — загальний текст.
+      setPhotoError(
+        error instanceof ApiError
+          ? error.message
+          : "Не вдалося завантажити фото. Спробуйте ще раз.",
+      );
     } finally {
       onUploadingChange(false);
     }

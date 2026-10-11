@@ -9,6 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { ApiError } from "../../api/api";
 import {
   getOwnProfile,
   type UserProfile,
@@ -67,9 +68,9 @@ export default function MasterAccountPage() {
           setProfile(result);
           setError("");
         }
-      } catch {
+      } catch (error) {
         if (active) {
-          setError("Не вдалося завантажити профіль.");
+          setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль.");
         }
       } finally {
         if (active) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PaymentSuccess from "../../components/master/PaymentSuccess";
 import { getOwnProfile } from "../../api/users";
 import { useAuth } from "../../hooks/useAuth";
+import { ApiError } from "../../api/api";
 
 export default function MasterCreatedPage() {
   const { token } = useAuth();
@@ -24,10 +25,11 @@ export default function MasterCreatedPage() {
         }
 
         setSlug(savedSlug);
+        setError("");
       })
-      .catch(() => {
+      .catch((error: unknown) => {
         if (active) {
-          setError("Не вдалося завантажити профіль.");
+          setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль.");
         }
       });
 

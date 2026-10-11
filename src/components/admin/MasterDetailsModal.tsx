@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, FileText } from "lucide-react";
@@ -48,7 +49,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
         setMasterDetails(data);
       } catch (err) {
         console.error(err);
-        setDetailsError("Не вдалося завантажити подробиці майстра.");
+        setDetailsError(err instanceof ApiError ? err.message : "Не вдалося завантажити подробиці майстра.");
       } finally {
         setDetailsLoading(false);
       }
@@ -82,7 +83,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
       setShowBlockConfirm(false);
     } catch (error) {
       console.error(error);
-      setBlockError("Не вдалося змінити блокування майстра.");
+      setBlockError(error instanceof ApiError ? error.message : "Не вдалося змінити блокування майстра.");
     } finally {
       setSavingBlock(false);
     }
@@ -96,8 +97,8 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
 
     try {
       await updateMasterSubscription(master.id, { days });
-    } catch {
-      setError("Не вдалося продовжити підписку.");
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : "Не вдалося продовжити підписку.");
       setSaving(false);
       return;
     }
@@ -128,8 +129,8 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
 
     try {
       await updateMasterSubscription(master.id, { plan });
-    } catch {
-      setError("Не вдалося змінити тариф.");
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : "Не вдалося змінити тариф.");
       setSaving(false);
       return;
     }

@@ -1,3 +1,4 @@
+import { ApiError } from "../api/api";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin, MessageSquare } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
@@ -46,7 +47,7 @@ export default function MasterProfilePage() {
         setServicePhotos(photos);
       } catch (error) {
         console.error(error);
-        setError("Не вдалося завантажити профіль майстра.");
+        setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль майстра.");
       } finally {
         setLoading(false);
       }
