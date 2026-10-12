@@ -210,7 +210,7 @@ export default function MasterCalendarPage() {
       booking.clientLastName,
       date,
       displayDate,
-    ].join(" ").toLocaleLowerCase("uk-UA");
+    ].join(" ").toLocaleLowerCase("uk-UA");   //"манікюр анна попова 2026-10-13 13.10.2026"
 
     if (!searchableText.includes(searchText)) return false;
 
@@ -225,7 +225,6 @@ export default function MasterCalendarPage() {
     return isActiveBooking(booking) && hasNotEnded;
   });
   visibleBookings.sort((first, second) => Date.parse(first.startsAt) - Date.parse(second.startsAt));
-
   // Робочі дні потрібні календарю для сірого позначення дат.
   const workingWeekdays = schedule?.days
     .filter((day) => day.isWorking && day.intervals.length > 0)
