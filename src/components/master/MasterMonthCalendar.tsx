@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { DayOff } from "../../api/daysOff";
 
 type Props = {
   selectedDate: string;
@@ -8,6 +9,7 @@ type Props = {
   bookingCounts?: Record<string, number>;
   workingWeekdays?: number[];
   todayDate?: string;
+  daysOff?: DayOff[];
 };
 
 const weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
@@ -20,7 +22,7 @@ function dateKey(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookingCounts = {}, workingWeekdays, todayDate }: Props) {
+export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookingCounts = {}, workingWeekdays, todayDate, daysOff = [] }: Props) {
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const date = selectedDate ? new Date(`${selectedDate}T12:00:00`) : todayDate ? new Date(`${todayDate}T12:00:00`) : new Date();
 
@@ -83,21 +85,27 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
 
         {days.map((date) => {
           const key = dateKey(date);
+          // Обидві межі періоду включаємо; рядки мають формат YYYY-MM-DD.
+          const isDayOff = daysOff.some((period) => key >= period.dateFrom && key <= period.dateTo);
           const isSelected = key === selectedDate;
           const isCurrentMonth = date.getMonth() === month;
           const isWeekend = date.getDay() === 0 || date.getDay() === 6;
           const count = bookingCounts[key] ?? 0;
           const isWorking = workingWeekdays?.includes(date.getDay() || 7);
 
-          const appearance = isSelected
-            ? "bg-black text-white"
-            : count > 0
-              ? "bg-[#c9eac3] text-neutral-800"
-              : isWorking
-                ? "bg-neutral-200 text-neutral-600"
-                : isWeekend
-                  ? "text-blue-500"
-                  : "text-neutral-600";
+          const appearance = isDayOff
+            ? isSelected
+              ? "bg-red-600 text-white ring-2 ring-red-300"
+              : "bg-red-100 text-red-700"
+            : isSelected
+              ? "bg-black text-white"
+              : count > 0
+                ? "bg-[#c9eac3] text-neutral-800"
+                : isWorking
+                  ? "bg-neutral-200 text-neutral-600"
+                  : isWeekend
+                    ? "text-blue-500"
+                    : "text-neutral-600";
 
           return (
             <button
@@ -105,7 +113,7 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
               type="button"
               aria-pressed={isSelected}
               aria-current={key === today ? "date" : undefined}
-              aria-label={`${date.toLocaleDateString("uk-UA")}. Записів: ${count}`}
+              aria-label={`${date.toLocaleDateString("uk-UA")}. ${isDayOff ? "Відпустка. " : ""}Записів: ${count}`}
               onClick={() => {
                 onSelectDate(key);
 

@@ -5,6 +5,7 @@ import { changeBookingStatus, getMasterBookings, type BookingStatus, type Master
 import { getOwnSchedule, type WeeklySchedule } from "../../api/schedules";
 import MasterMonthCalendar from "../../components/master/MasterMonthCalendar";
 import MasterBookingCard from "../../components/master/MasterBookingCard";
+import { getOwnDaysOff, type DayOff } from "../../api/daysOff";
 
 // Перетворюємо час запису на дату YYYY-MM-DD за Києвом.
 function getKyivDate(value: string | Date): string {
@@ -45,6 +46,9 @@ export default function MasterCalendarPage() {
   const updatingBookingIds = useRef(new Set<number>());
   const [updatingCount, setUpdatingCount] = useState(0);
 
+  const [daysOff, setDaysOff] = useState<DayOff[]>([]);
+  const [daysOffError, setDaysOffError] = useState("");
+
   // Раз на хвилину оновлюємо час для списку найближчих записів.
   // Цей таймер не робить запитів до бекенду.
   useEffect(() => {
@@ -62,9 +66,10 @@ export default function MasterCalendarPage() {
     async function loadCalendar() {
       // Запити незалежні. allSettled повертає результат кожного,
       // навіть якщо один із них завершився помилкою.
-      const [bookingsResult, scheduleResult] = await Promise.allSettled([
+      const [bookingsResult, scheduleResult, daysOffResult] = await Promise.allSettled([
         getMasterBookings(), // GET /api/Booking/master/me
         getOwnSchedule(),   // GET /api/Schedule/me
+        getOwnDaysOff(),   // GET /api/DaysOff/me
       ]);
 
       // Після виходу зі сторінки або початку нового завантаження
@@ -96,6 +101,20 @@ export default function MasterCalendarPage() {
         );
       }
 
+      // Помилка відпусток не приховує графік та записи, які завантажилися.
+      if (daysOffResult.status === "fulfilled") {
+        setDaysOff(daysOffResult.value.daysOff);
+        setDaysOffError("");
+      } else {
+        const error: unknown = daysOffResult.reason;
+        setDaysOff([]);
+        setDaysOffError(
+          error instanceof ApiError
+            ? error.message
+            : "Не вдалося завантажити відпустки. Натисніть «Оновити».",
+        );
+      }
+
       setLoading(false);
     }
 
@@ -110,6 +129,7 @@ export default function MasterCalendarPage() {
     setLoading(true);
     setBookingsError("");
     setScheduleError("");
+    setDaysOffError("");
     setReloadCount((previous) => previous + 1);
   }
 
@@ -247,13 +267,19 @@ export default function MasterCalendarPage() {
         onSelectDate={setSelectedDate}
         bookingCounts={bookingCounts}
         workingWeekdays={workingWeekdays}
+        daysOff={daysOff}
         todayDate={getKyivDate(new Date(currentTime))}
       />
       <p className="text-xs text-neutral-500">
-        Зелені дні — активні записи. Сірі — робочі дні за тижневим графіком. Час — за Києвом.
+        Червоні дні — відпустка. Зелені — активні записи. Сірі — робочі дні за тижневим графіком. Час — за Києвом.
       </p>
 
       {/* Помилка графіка не приховує успішно завантажені записи клієнтів. */}
+      {daysOffError && (
+        <p role="alert" className="text-sm text-amber-800">
+          Відпустки: {daysOffError}
+        </p>
+      )}
       {scheduleError && (
         <p role="alert" className="text-sm text-amber-800">
           Робочий графік: {scheduleError}

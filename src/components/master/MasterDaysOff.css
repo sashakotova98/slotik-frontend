@@ -1,0 +1,30 @@
+/* Стилі лише календаря відпусток — інші календарі не змінюємо. */
+.slotik-vacation-calendar.rdp-root {
+  --rdp-accent-color: #000;
+  --rdp-accent-background-color: #f5f5f5;
+  --rdp-day-width: 100%;
+  --rdp-day_button-width: 100%;
+  --rdp-day-height: 44px;
+  --rdp-day_button-height: 44px;
+  --rdp-day_button-border-radius: 12px;
+  --rdp-nav_button-width: 44px;
+  --rdp-nav_button-height: 44px;
+  font-size: 14px;
+}
+
+.slotik-vacation-calendar .rdp-months,
+.slotik-vacation-calendar .rdp-month,
+.slotik-vacation-calendar .rdp-month_grid {
+  width: 100%;
+  max-width: none;
+}
+
+.slotik-vacation-calendar .rdp-month_grid { table-layout: fixed; }
+.slotik-vacation-calendar .rdp-day { width: auto; }
+.slotik-vacation-calendar .rdp-caption_label { font-size: 15px; font-weight: 600; }
+.slotik-vacation-calendar .rdp-weekday { color: #737373; }
+.slotik-vacation-calendar .rdp-selected { font-size: inherit; }
+.slotik-vacation-calendar .rdp-selected .rdp-day_button { background: #000; color: #fff; }
+.slotik-vacation-calendar .rdp-day:not(.rdp-selected) .rdp-day_button:not(:disabled):hover { background: #f5f5f5; }
+.slotik-vacation-calendar button:focus-visible { outline: 2px solid #000; outline-offset: -2px; }
+.slotik-vacation-calendar .rdp-selected button:focus-visible { outline-color: #a3a3a3; }
