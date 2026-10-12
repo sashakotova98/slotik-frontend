@@ -9,6 +9,9 @@ type Props = {
     busy: boolean,
     hasWorkingDays: boolean
   ) => void;
+
+  // Передаємо батьківській сторінці завантажений крок запису.
+  onSlotStepLoaded?: (step: number) => void;
 };
 
 type Pause = { start: string; duration: string };
@@ -48,7 +51,7 @@ function buildIntervals(start: string, end: string, pauses: Pause[]): ScheduleIn
   return intervals;
 }
 
-export default function MasterScheduleStep({ onFormStateChange }: Props) {
+export default function MasterScheduleStep({ onFormStateChange, onSlotStepLoaded }: Props) {
   const [days, setDays] = useState<ScheduleDay[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -87,14 +90,17 @@ export default function MasterScheduleStep({ onFormStateChange }: Props) {
   useEffect(() => {
     let active = true;
     getOwnSchedule().then((schedule) => {
-      if (active) setDays(schedule.days);
+      if (active) {
+        setDays(schedule.days);
+        onSlotStepLoaded?.(schedule.slotStepMin); //викликаємо якщо батьківська сторінка передала колбек
+      }
     }).catch((reason: unknown) => {
       if (active) setLoadError(reason instanceof Error ? reason.message : "Не вдалося завантажити графік.");
     }).finally(() => {
       if (active) setLoading(false);
     });
     return () => { active = false; };
-  }, [retry]);
+  }, [retry, onSlotStepLoaded]);
 
   // Відновлюємо паузи з проміжків між збереженими інтервалами.
   function selectDay(value: Weekday | "") {

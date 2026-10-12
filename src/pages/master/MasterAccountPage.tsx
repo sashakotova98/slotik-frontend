@@ -1,19 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  ChevronRight,
-  CreditCard,
-  CalendarDays,
-  HelpCircle,
-  LogOut,
-  Users,
-} from "lucide-react";
+import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../api/api";
-import {
-  getOwnProfile,
-  type UserProfile,
-} from "../../api/users";
+import { getOwnProfile, type UserProfile } from "../../api/users";
 import ProfileShareCard from "../../components/master/ProfileShareCard";
 
 const menuItems = [
@@ -91,22 +81,15 @@ export default function MasterAccountPage() {
     navigate("/login", { replace: true });
   }
 
-  const fullName = profile
-    ? [profile.firstName, profile.lastName].filter(Boolean).join(" ")
-    : "";
+  const fullName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "";
 
-  const initials = profile
-    ? `${profile.firstName?.[0] ?? ""}${profile.lastName?.[0] ?? ""}`
-      .toLocaleUpperCase("uk-UA")
-    : "";
+  const initials = profile ? `${profile.firstName?.[0] ?? ""}${profile.lastName?.[0] ?? ""}`.toLocaleUpperCase("uk-UA") : "";
 
   const avatarUrl = profile?.avatarUrl?.trim() || null;
 
   const slug = profile?.master?.slug;
 
-  const profileUrl = slug
-    ? `${window.location.origin}/m/${encodeURIComponent(slug)}`
-    : "";
+  const profileUrl = slug ? `${window.location.origin}/m/${encodeURIComponent(slug)}` : "";
 
   return (
     <div className="mx-auto w-full max-w-md">
@@ -145,28 +128,19 @@ export default function MasterAccountPage() {
                     className="size-full object-cover"
                   />
                 ) : (
-                  <span className="text-lg font-semibold text-neutral-500">
-                    {initials || "М"}
-                  </span>
+                  <span className="text-lg font-semibold text-neutral-500">{initials || "М"}</span>
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
-                <h2 className="wrap-break-word font-semibold">
-                  {fullName || "Ім’я не вказано"}
-                </h2>
+                <h2 className="wrap-break-word font-semibold">{fullName || "Ім’я не вказано"}</h2>
 
                 {profile.phone ? (
-                  <a
-                    href={`tel:${profile.phone}`}
-                    className="mt-1 block text-sm text-neutral-500"
-                  >
+                  <a href={`tel:${profile.phone}`} className="mt-1 block text-sm text-neutral-500">
                     {profile.phone}
                   </a>
                 ) : (
-                  <p className="mt-1 text-sm text-neutral-400">
-                    Телефон не вказано
-                  </p>
+                  <p className="mt-1 text-sm text-neutral-400">Телефон не вказано</p>
                 )}
               </div>
             </header>
@@ -176,32 +150,19 @@ export default function MasterAccountPage() {
                 <ProfileShareCard profileUrl={profileUrl} />
               </div>
             ) : (
-              <p className="mb-5 rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">
-                Посилання на профіль ще не створено.
-              </p>
+              <p className="mb-5 rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">Посилання на профіль ще не створено.</p>
             )}
           </>
         ) : null}
 
-        <nav
-          aria-label="Налаштування акаунта"
-          className="divide-y divide-neutral-200 border-t border-neutral-200"
-        >
+        <nav aria-label="Налаштування акаунта" className="divide-y divide-neutral-200 border-t border-neutral-200">
           {menuItems.map(({ to, label, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className="flex min-h-14 items-center gap-3 py-3 hover:text-blue-600"
-            >
+            <Link key={to} to={to} className="flex min-h-14 items-center gap-3 py-3 hover:text-blue-600">
               <Icon size={20} aria-hidden="true" />
 
               <span className="flex-1">{label}</span>
 
-              <ChevronRight
-                size={20}
-                aria-hidden="true"
-                className="text-neutral-400"
-              />
+              <ChevronRight size={20} aria-hidden="true" className="text-neutral-400" />
             </Link>
           ))}
         </nav>

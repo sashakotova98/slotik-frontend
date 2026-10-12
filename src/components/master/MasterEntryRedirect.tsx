@@ -41,6 +41,12 @@ export default function MasterEntryRedirect({ children }: Props) {
             return;
           }
 
+          // Fetch повідомляє про недоступне з'єднання помилкою TypeError.
+          if (err instanceof TypeError) {
+            setError("Не вдалося з’єднатися із сервером. Перевірте з’єднання та спробуйте ще раз.");
+            return;
+          }
+
           setError(
             err instanceof Error
               ? err.message
@@ -56,6 +62,12 @@ export default function MasterEntryRedirect({ children }: Props) {
       active = false;
     };
   }, [token, retry, logout, navigate]);
+
+  function handleChangeAccount() {
+    // Очищаємо збережену авторизацію та відкриваємо форму входу.
+    logout();
+    navigate("/login", { replace: true });
+  }
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -78,6 +90,14 @@ export default function MasterEntryRedirect({ children }: Props) {
           className="rounded-field bg-accent px-6 py-3 text-on-accent"
         >
           Спробувати ще раз
+        </button>
+
+        <button
+          type="button"
+          onClick={handleChangeAccount}
+          className="rounded-field border border-neutral-300 px-6 py-3 text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-black"
+        >
+          Увійти в інший акаунт
         </button>
       </main>
     );

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, ChevronRight } from "lucide-react";
+import { Menu, Search, ChevronRight, CloudOff, RefreshCw } from "lucide-react";
 import Header from "../components/Header";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
@@ -25,6 +25,7 @@ export default function PublicHomePage() {
   const [categories, setCategories] = useState<HomeCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState("");
+  const [categoriesRetry, setCategoriesRetry] = useState(0);
 
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -96,21 +97,33 @@ export default function PublicHomePage() {
 
 
   useEffect(() => {
-    async function loadCategories() {
-      setCategoriesLoading(true);
-      setCategoriesError("");
-      setCategories([]);
+    let active = true;
 
+    async function loadCategories() {
       try {
         const data = await getHomeCategories();
-        setCategories(data);
+        if (active) {
+          setCategories(data);
+          setCategoriesError("");
+        }
       } catch {
-        setCategoriesError("Не вдалося завантажити категорії.");
+        if (active) setCategoriesError("Не вдалося завантажити категорії");
       } finally {
-        setCategoriesLoading(false);
+        if (active) setCategoriesLoading(false);
       }
-    } loadCategories();
-  }, []);
+    }
+
+    void loadCategories();
+    // Після виходу зі сторінки не оновлюємо її стан.
+    return () => { active = false; };
+  }, [categoriesRetry]);
+
+  function handleRetryCategories() {
+    if (categoriesLoading) return;
+    setCategoriesLoading(true);
+    // Повторюємо лише запит категорій, зберігаючи решту сторінки.
+    setCategoriesRetry((previous) => previous + 1);
+  }
 
 
 
@@ -233,19 +246,31 @@ export default function PublicHomePage() {
             className="mx-auto -mt-7 w-[calc(100%-16px)] max-w-164 rounded-b-[36px] bg-[#f5f5f5] px-3 pb-8 pt-13 lg:px-6 lg:pb-10"
           >
 
-            {categoriesLoading && (
+            {categoriesLoading && !categoriesError && (
               <p role="status" className="py-4 text-center text-sm">
                 Завантаження категорій…
               </p>
             )}
 
-            {!categoriesLoading && categoriesError && (
-              <p
-                role="alert"
-                className="py-4 text-center text-sm text-danger"
-              >
-                {categoriesError}
-              </p>
+            {categoriesError && (
+              <div className="flex flex-col items-center gap-3 px-2 py-4 text-center">
+                <CloudOff size={32} strokeWidth={1.5} aria-hidden="true" className="text-neutral-500" />
+                <div role="alert">
+                  <p className="text-base font-semibold text-black">{categoriesError}</p>
+                  <p className="mt-2 max-w-sm text-sm text-neutral-600">
+                    Перевірте з’єднання з інтернетом або спробуйте пізніше.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRetryCategories}
+                  disabled={categoriesLoading}
+                  className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60"
+                >
+                  <RefreshCw size={16} aria-hidden="true" className={categoriesLoading ? "animate-spin motion-reduce:animate-none" : ""} />
+                  <span role="status">{categoriesLoading ? "Завантажуємо…" : "Спробувати ще раз"}</span>
+                </button>
+              </div>
             )}
 
             {!categoriesLoading &&

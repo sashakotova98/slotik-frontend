@@ -15,6 +15,7 @@ import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
+import { ApiError } from "../api/api";
 import { useNavigate } from "react-router-dom";
 import { useSearchParams, useLocation } from "react-router-dom";
 
@@ -147,7 +148,21 @@ export default function LoginPage() {
 
       setShowRegistrationSuccess(true);
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Помилка сервера");
+      if (err instanceof ApiError) {
+        // Перекладаємо повідомлення про неправильні дані входу.
+        setServerError(
+          tab === "login" && err.message.trim() === "Wrong Email or Password"
+            ? "Неправильна електронна пошта або пароль."
+            : err.message
+        );
+      } else if (err instanceof TypeError) {
+        // Зокрема, сюди потрапляє Failed to fetch.
+        setServerError(
+          "Не вдалося з’єднатися із сервером. Спробуйте ще раз пізніше."
+        );
+      } else {
+        setServerError("Не вдалося виконати запит. Спробуйте ще раз.");
+      }
     } finally {
       setLoading(false);
     }
