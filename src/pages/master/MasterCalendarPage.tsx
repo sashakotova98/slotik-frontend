@@ -37,6 +37,8 @@ export default function MasterCalendarPage() {
   // Кожен запит має своє повідомлення про помилку.
   const [loading, setLoading] = useState(true);
   const [bookingsError, setBookingsError] = useState("");
+  // Зберігаємо пояснення окремо від картки, яка може зникнути зі списку.
+  const [statusMessage, setStatusMessage] = useState("");
   const [scheduleError, setScheduleError] = useState("");
   const [reloadCount, setReloadCount] = useState(0);
   const [currentTime, setCurrentTime] = useState(() => Date.now());
@@ -144,6 +146,7 @@ export default function MasterCalendarPage() {
 
     updatingBookingIds.current.add(id);
     setUpdatingCount(updatingBookingIds.current.size);
+    setStatusMessage("");
 
     try {
       // PATCH /api/Booking/master/{id}/status
@@ -158,20 +161,40 @@ export default function MasterCalendarPage() {
           return booking;
         });
       });
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== "pending_booking_expired") {
+        throw error; // Інші помилки показуємо в картці запису.
+      }
+
+      // При цій помилці бек уже зберіг Cancelled. Оновлюємо лише записи.
+      setStatusMessage(error.message);
+      try {
+        const currentBookings = await getMasterBookings();
+        setBookings(currentBookings);
+        setCurrentTime(Date.now());
+        setBookingsError("");
+      } catch {
+        setBookingsError("Статус запису змінився, але список не вдалося оновити. Натисніть «Оновити».");
+      }
     } finally {
-      // Помилку не перехоплюємо: її покаже MasterBookingCard біля своєї кнопки.
       // Блокування знімаємо і після успіху, і після помилки.
       updatingBookingIds.current.delete(id);
       setUpdatingCount(updatingBookingIds.current.size);
     }
   }
 
-  // Підраховуємо записи зі статусами Pending (0) та Confirmed (1) для кожного дня.
+  // Прострочений Pending не є активним, навіть якщо бек ще не змінив його статус.
+  function isActiveBooking(booking: MasterBooking) {
+    if (booking.status === 1) return true;
+    return booking.status === 0 &&
+      Date.parse(booking.pendingExpiresAt ?? booking.startsAt) > currentTime;
+  }
+
+  // Підраховуємо активні записи для зелених позначок календаря.
   const bookingCounts: Record<string, number> = {};
   for (const booking of bookings) {
     const date = getKyivDate(booking.startsAt);
-    const hasActiveStatus = booking.status === 0 || booking.status === 1;
-    if (date && hasActiveStatus) {
+    if (date && isActiveBooking(booking)) {
       bookingCounts[date] = (bookingCounts[date] ?? 0) + 1;
     }
   }
@@ -197,10 +220,9 @@ export default function MasterCalendarPage() {
     // Без вибраного дня шукаємо серед усіх завантажених записів.
     if (searchText) return true;
 
-    // Без пошуку та вибраного дня показуємо майбутні Pending і Confirmed.
-    const hasActiveStatus = booking.status === 0 || booking.status === 1;
-    const startsInFuture = new Date(booking.startsAt).getTime() >= currentTime;
-    return hasActiveStatus && startsInFuture;
+    // Поточна процедура залишається у списку до закінчення її часу.
+    const hasNotEnded = Date.parse(booking.endsAt) > currentTime;
+    return isActiveBooking(booking) && hasNotEnded;
   });
   visibleBookings.sort((first, second) => Date.parse(first.startsAt) - Date.parse(second.startsAt));
 
@@ -217,7 +239,7 @@ export default function MasterCalendarPage() {
     listTitle = "Результати пошуку";
   }
 
-  let emptyMessage = "Майбутніх активних записів поки немає.";
+  let emptyMessage = "Поточних і майбутніх активних записів поки немає.";
   if (searchText) {
     emptyMessage = "За вашим пошуком записів немає.";
   } else if (selectedDate) {
@@ -240,6 +262,7 @@ export default function MasterCalendarPage() {
       <MasterBookingCard
         key={booking.id}
         booking={booking}
+        currentTime={currentTime}
         onChangeStatus={handleChangeStatus}
       />
     ));
@@ -307,6 +330,12 @@ export default function MasterCalendarPage() {
           >
             Показати найближчі записи
           </button>
+        )}
+
+        {statusMessage && (
+          <p role="status" className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+            {statusMessage}
+          </p>
         )}
 
         {renderBookings()}

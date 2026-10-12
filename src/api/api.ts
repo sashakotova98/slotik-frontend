@@ -60,6 +60,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   existing_free_subscription: "Наявна безкоштовна підписка потребує перевірки. Зверніться до підтримки.",
   trial_already_used: "Ви вже використали пробний період Pro.",
   active_pro_exists: "У вас уже діє підписка Pro.",
+  booking_not_finished: "Завершити запис можна лише після закінчення його часу.",
 };
 
 //options: RequestInit = {} = об'єкт з параметрами запиту, такими як метод, тіло та signal для скасування. або порожній об'єкт get

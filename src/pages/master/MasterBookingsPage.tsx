@@ -10,6 +10,8 @@ export default function MasterBookingsPage() {
   const [bookings, setBookings] = useState<MasterBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Повідомлення не зникає, коли запис переходить до історії після оновлення.
+  const [statusMessage, setStatusMessage] = useState("");
   const [revision, setRevision] = useState(0);
   const [now, setNow] = useState(() => Date.now());
 
@@ -69,12 +71,29 @@ export default function MasterBookingsPage() {
 
     pendingUpdates.current.add(id);
     setUpdating(pendingUpdates.current.size);
+    setStatusMessage("");
 
     try {
       const updated = await changeBookingStatus(id, status);
 
       // Оновлюємо картку лише після успішної відповіді сервера.
       setBookings((current) => current.map((booking) => (booking.id === updated.id ? { ...booking, status: updated.status } : booking)));
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== "pending_booking_expired") {
+        throw error; // Інші помилки показуємо в картці запису.
+      }
+
+      // Бек уже скасував прострочений Pending, хоча повернув 409.
+      // Читаємо збережений статус і залишаємо пояснення над списком.
+      setStatusMessage(error.message);
+      try {
+        const currentBookings = await getMasterBookings();
+        setBookings(currentBookings);
+        setNow(Date.now());
+        setError("");
+      } catch {
+        setError("Статус запису змінився, але список не вдалося оновити. Натисніть «Оновити».");
+      }
     } finally {
       pendingUpdates.current.delete(id);
       setUpdating(pendingUpdates.current.size);
@@ -82,16 +101,51 @@ export default function MasterBookingsPage() {
     // Помилку запиту показує MasterBookingCard.
   }
 
-  // Запис залишається поточним до завершення його часу.
-  function isCurrentOrUpcoming(booking: MasterBooking) {
-    return (booking.status === 0 || booking.status === 1) && Date.parse(booking.endsAt) > now;
+  // перевіряє зо запис не прострочений і ще актуальний або майбутній.
+  function isCurrentOrUpcoming(booking: MasterBooking): boolean {
+    // Вибираємо строк підтвердження.
+    // Якщо його немає, беремо час початку запису.
+    const deadline = booking.pendingExpiresAt ?? booking.startsAt;
+
+    const deadlineMs = Date.parse(deadline);
+    const endsAtMs = Date.parse(booking.endsAt);
+
+    // Pending прострочений, якщо час підтвердження вже минув.
+    const pendingExpired =
+      booking.status === 0 && deadlineMs <= now;
+
+    // Активні статуси: очікує підтвердження або підтверджено.
+    const hasActiveStatus =
+      booking.status === 0 || booking.status === 1;
+
+    // Процедура ще не закінчилася.
+    const hasNotEnded = endsAtMs > now;
+
+    // Запис підходить, лише якщо виконуються всі три умови.
+    return !pendingExpired && hasActiveStatus && hasNotEnded;
   }
 
-  const upcoming = bookings.filter(isCurrentOrUpcoming).sort((a, b) => Date.parse(a.startsAt) - Date.parse(b.startsAt));
+  // Залишаємо поточні та майбутні записи.
+  const upcoming = bookings
+    .filter((booking) => isCurrentOrUpcoming(booking))
+    .sort((a, b) => {
+      const firstStartMs = Date.parse(a.startsAt);
+      const secondStartMs = Date.parse(b.startsAt);
+
+      // Раніші записи показуємо першими.
+      return firstStartMs - secondStartMs;
+    });
+
 
   const history = bookings
     .filter((booking) => !isCurrentOrUpcoming(booking))
-    .sort((a, b) => Date.parse(b.startsAt) - Date.parse(a.startsAt));
+    .sort((a, b) => {
+      const firstStartMs = Date.parse(a.startsAt);
+      const secondStartMs = Date.parse(b.startsAt);
+
+      // Пізніші записи показуємо першими.
+      return secondStartMs - firstStartMs;
+    });
 
   return (
     <div className="mx-auto w-full max-w-md space-y-5">
@@ -118,6 +172,12 @@ export default function MasterBookingsPage() {
         </button>
       </div>
 
+      {statusMessage && (
+        <p role="status" className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+          {statusMessage}
+        </p>
+      )}
+
       {loading ? (
         <p role="status" className="text-sm text-neutral-500">
           Завантажуємо ваші записи…
@@ -137,7 +197,7 @@ export default function MasterBookingsPage() {
             {upcoming.length === 0 ? (
               <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Майбутніх активних записів поки немає.</p>
             ) : (
-              upcoming.map((booking) => <MasterBookingCard key={booking.id} booking={booking} onChangeStatus={handleChangeStatus} />)
+              upcoming.map((booking) => <MasterBookingCard key={booking.id} booking={booking} currentTime={now} onChangeStatus={handleChangeStatus} />)
             )}
           </section>
 
@@ -147,7 +207,7 @@ export default function MasterBookingsPage() {
             {history.length === 0 ? (
               <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Історія записів поки порожня.</p>
             ) : (
-              history.map((booking) => <MasterBookingCard key={booking.id} booking={booking} onChangeStatus={handleChangeStatus} />)
+              history.map((booking) => <MasterBookingCard key={booking.id} booking={booking} currentTime={now} onChangeStatus={handleChangeStatus} />)
             )}
           </section>
         </>

@@ -13,6 +13,8 @@ export type MasterBooking = {
   startsAt: string;
   endsAt: string;
   status: BookingStatus;
+  // Строк підтвердження Pending. Для старих записів може бути null.
+  pendingExpiresAt: string | null;
   serviceName: string;
   durationMin: number;
   price: number;

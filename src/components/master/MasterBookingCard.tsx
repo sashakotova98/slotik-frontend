@@ -3,6 +3,7 @@ import { ApiError } from "../../api/api";
 
 type Props = {
   booking: MasterBooking;
+  currentTime: number;
   onChangeStatus: (id: number, status: BookingStatus) => Promise<void>;
 };
 
@@ -22,8 +23,7 @@ const statusStyles: Record<BookingStatus, string> = {
 
 import { useState } from "react";
 
-export default function MasterBookingCard({ booking, onChangeStatus }: Props) {
-
+export default function MasterBookingCard({ booking, currentTime, onChangeStatus }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -55,8 +55,31 @@ export default function MasterBookingCard({ booking, onChangeStatus }: Props) {
     maximumFractionDigits: 2,
   }).format(booking.price);
 
+  const endsAt = Date.parse(booking.endsAt);
+  const validEndDate = Number.isFinite(endsAt);
+
+  // Якщо бек не вказав строк Pending, використовуємо час початку запису.
+  const pendingDeadline = Date.parse(booking.pendingExpiresAt ?? booking.startsAt);
+  const pendingExpired = booking.status === 0 && pendingDeadline <= currentTime;
+
+  // Завершувати можна лише підтверджений запис після його закінчення.
+  const canComplete =
+    booking.status === 1 &&
+    validEndDate &&
+    currentTime >= endsAt;
   async function handleStatusChange(status: BookingStatus) {
     if (saving) return;
+
+    // Повторно перевіряємо час у момент натискання, між оновленнями таймера.
+    if (status === 1 && booking.status === 0 && pendingDeadline <= Date.now()) {
+      setError("Час підтвердження минув. Цей запис уже не можна підтвердити.");
+      return;
+    }
+
+    if (status === 2 && (booking.status !== 1 || !validEndDate || Date.now() < endsAt)) {
+      setError("Завершення доступне лише для підтвердженого запису після його закінчення.");
+      return;
+    }
 
     setSaving(true);
     setError("");
@@ -65,11 +88,7 @@ export default function MasterBookingCard({ booking, onChangeStatus }: Props) {
       await onChangeStatus(booking.id, status);
     } catch (error) {
       // Показуємо повідомлення API, а для інших помилок — загальний текст.
-      setError(
-        error instanceof ApiError
-          ? error.message
-          : "Не вдалося змінити статус. Спробуйте ще раз."
-      );
+      setError(error instanceof ApiError ? error.message : "Не вдалося змінити статус. Спробуйте ще раз.");
     } finally {
       setSaving(false);
     }
@@ -116,7 +135,8 @@ export default function MasterBookingCard({ booking, onChangeStatus }: Props) {
           {booking.status === 0 && (
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || pendingExpired}
+              aria-describedby={pendingExpired ? `pending-hint-${booking.id}` : undefined}
               onClick={() => void handleStatusChange(1)}
               className="min-h-10 rounded-full bg-[#c9eac3] px-4 text-sm text-green-900 disabled:opacity-50"
             >
@@ -127,14 +147,35 @@ export default function MasterBookingCard({ booking, onChangeStatus }: Props) {
           {booking.status === 1 && (
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || !canComplete}
+              aria-describedby={
+                !canComplete ? `completion-hint-${booking.id}` : undefined
+              }
               onClick={() => void handleStatusChange(2)}
-              className="min-h-10 rounded-full bg-neutral-100 px-4 text-sm disabled:opacity-50"
+              className="min-h-10 rounded-full bg-neutral-100 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               Завершити
             </button>
           )}
         </div>
+      )}
+
+      {/* Строк минув, але збережений статус змінює лише бекенд. */}
+      {pendingExpired && (
+        <p id={`pending-hint-${booking.id}`} className="mt-2 text-right text-sm text-amber-700">
+          Час підтвердження минув. Цей запис уже не можна підтвердити.
+        </p>
+      )}
+
+      {booking.status === 1 && !canComplete && (
+        <p
+          id={`completion-hint-${booking.id}`}
+          className="mt-2 text-right text-sm text-neutral-500"
+        >
+          {validEndDate
+            ? "Завершення доступне після закінчення запису."
+            : "Не вдалося визначити час закінчення запису."}
+        </p>
       )}
 
       {saving && (
