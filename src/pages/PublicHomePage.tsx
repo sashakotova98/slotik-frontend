@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Menu, Search, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Menu, Search, ChevronRight, CloudOff, RefreshCw } from "lucide-react";
 import Header from "../components/Header";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
@@ -15,32 +15,116 @@ import facebookIcon from "../assets/social/facebook.svg";
 import { useNavigate } from "react-router-dom";
 import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 
+import { useAuth } from "../hooks/useAuth";
+import { apiGetMe } from "../api/auth";
+import { ApiError } from "../api/api";
+import HomeMastersReviews from "../components/home/HomeMastersReviews";
+import { activateProTrial, getProTrialAvailability } from "../api/subscriptions";
+
 export default function PublicHomePage() {
 
   const [categories, setCategories] = useState<HomeCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState("");
+  const [categoriesRetry, setCategoriesRetry] = useState(0);
 
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const { token, role } = useAuth();
+  const [trialBusy, setTrialBusy] = useState(false);
+  const [trialMessage, setTrialMessage] = useState("");
+  const [trialActivated, setTrialActivated] = useState(false);
+  const trialInFlight = useRef(false);
+
+  // Перевірка не витрачає trial. Активація виконується лише після натискання.
+  async function handleStartTrial() {
+    if (trialInFlight.current) return;
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    if (role !== "Master") {
+      setTrialMessage("Пропозиція доступна лише для акаунта майстра.");
+      return;
+    }
+
+    trialInFlight.current = true;
+    setTrialBusy(true);
+    setTrialMessage("");
+
+    try {
+      // Якщо POST уже пройшов, повторюємо тільки перевірку профілю.
+      // Це потрібно, коли наступний GET завершився мережевою помилкою.
+      if (!trialActivated) {
+        const availability = await getProTrialAvailability();
+
+        if (!availability.canStartProTrial) {
+          setTrialMessage(
+            availability.reason === "trial_already_used"
+              ? "Ви вже скористалися пробним Pro."
+              : availability.reason === "active_pro_exists"
+                ? "У вас уже є активна підписка Pro."
+                : "Пробний Pro зараз недоступний."
+          );
+          return;
+        }
+
+        await activateProTrial();
+        setTrialActivated(true);
+      }
+
+      // Trial починається одразу; незавершений профіль направляємо на налаштування.
+      const me = await apiGetMe();
+      navigate(
+        me.isOnboardingCompleted ? "/cabinet/account/tariff" : "/cabinet/setup"
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setTrialMessage("Сесія завершилася. Вийдіть з акаунта та увійдіть знову.");
+      } else if (error instanceof ApiError && error.status === 404) {
+        setTrialMessage("Профіль майстра не знайдено. Завершіть налаштування профілю.");
+      } else if (error instanceof ApiError && error.status === 409) {
+        setTrialMessage("Пробний Pro уже використано або у вас уже діє Pro. Перевірте свій тариф.");
+      } else {
+        setTrialMessage(error instanceof Error
+          ? error.message
+          : "Не вдалося активувати пробний Pro. Спробуйте ще раз.");
+      }
+    } finally {
+      trialInFlight.current = false;
+      setTrialBusy(false);
+    }
+  }
 
 
   useEffect(() => {
-    async function loadCategories() {
-      setCategoriesLoading(true);
-      setCategoriesError("");
-      setCategories([]);
+    let active = true;
 
+    async function loadCategories() {
       try {
         const data = await getHomeCategories();
-        setCategories(data);
+        if (active) {
+          setCategories(data);
+          setCategoriesError("");
+        }
       } catch {
-        setCategoriesError("Не вдалося завантажити категорії.");
+        if (active) setCategoriesError("Не вдалося завантажити категорії");
       } finally {
-        setCategoriesLoading(false);
+        if (active) setCategoriesLoading(false);
       }
-    } loadCategories();
-  }, []);
+    }
+
+    void loadCategories();
+    // Після виходу зі сторінки не оновлюємо її стан.
+    return () => { active = false; };
+  }, [categoriesRetry]);
+
+  function handleRetryCategories() {
+    if (categoriesLoading) return;
+    setCategoriesLoading(true);
+    // Повторюємо лише запит категорій, зберігаючи решту сторінки.
+    setCategoriesRetry((previous) => previous + 1);
+  }
 
 
 
@@ -163,19 +247,31 @@ export default function PublicHomePage() {
             className="mx-auto -mt-7 w-[calc(100%-16px)] max-w-164 rounded-b-[36px] bg-[#f5f5f5] px-3 pb-8 pt-13 lg:px-6 lg:pb-10"
           >
 
-            {categoriesLoading && (
+            {categoriesLoading && !categoriesError && (
               <p role="status" className="py-4 text-center text-sm">
                 Завантаження категорій…
               </p>
             )}
 
-            {!categoriesLoading && categoriesError && (
-              <p
-                role="alert"
-                className="py-4 text-center text-sm text-danger"
-              >
-                {categoriesError}
-              </p>
+            {categoriesError && (
+              <div className="flex flex-col items-center gap-3 px-2 py-4 text-center">
+                <CloudOff size={32} strokeWidth={1.5} aria-hidden="true" className="text-neutral-500" />
+                <div role="alert">
+                  <p className="text-base font-semibold text-black">{categoriesError}</p>
+                  <p className="mt-2 max-w-sm text-sm text-neutral-600">
+                    Перевірте з’єднання з інтернетом або спробуйте пізніше.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRetryCategories}
+                  disabled={categoriesLoading}
+                  className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60"
+                >
+                  <RefreshCw size={16} aria-hidden="true" className={categoriesLoading ? "animate-spin motion-reduce:animate-none" : ""} />
+                  <span role="status">{categoriesLoading ? "Завантажуємо…" : "Спробувати ще раз"}</span>
+                </button>
+              </div>
             )}
 
             {!categoriesLoading &&
@@ -249,19 +345,7 @@ export default function PublicHomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="masters-preview-title" className="px-4 py-8 lg:py-12">
-          <div className="mx-auto max-w-2xl rounded-4xl bg-surface px-6 py-8 text-center shadow-md lg:py-12">
-            <h2 id="masters-preview-title" className="text-xl font-semibold text-text lg:text-3xl">
-              Знайдіть свого майстра
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-md text-sm text-muted lg:text-base">
-              Незабаром тут з’являться профілі майстрів та фотографії їхніх робіт.
-            </p>
-
-            <span className="mt-5 inline-block rounded-full bg-selected px-4 py-2 text-xs text-muted lg:text-sm">Готуємо до запуску</span>
-          </div>
-        </section>
+        <HomeMastersReviews />
 
         <section id="offers" aria-label="Пропозиція для майстрів" className="px-3 py-2 lg:pt-4 lg:pb-6">
           <div className="relative mx-auto max-w-2xl">
@@ -283,15 +367,34 @@ export default function PublicHomePage() {
 
             <button
               type="button"
-              disabled
-              title="Пропозиція незабаром стане доступною"
-              className="absolute -bottom-4 right-1 min-h-11 rounded-full bg-black px-6 py-2 text-sm text-white disabled:cursor-not-allowed lg:right-3 lg:px-9 lg:text-lg"
+              disabled={trialBusy}
+              onClick={handleStartTrial}
+              aria-describedby="trial-offer-description"
+              className="relative z-10 -mt-2 mr-2 ml-auto block min-h-11 max-w-[calc(100%-16px)] rounded-full bg-black px-4 py-2 text-xs leading-tight text-white disabled:cursor-not-allowed lg:absolute lg:-bottom-4 lg:right-3 lg:m-0 lg:px-9 lg:text-lg"
             >
-              Далі…
+              {trialBusy ? "Перевіряємо…" : trialActivated ? "Продовжити" : !token ? "Увійти та спробувати" : "Спробувати Pro"}
             </button>
           </div>
         </section>
 
+        <div className="mx-auto max-w-2xl px-4 pb-4 pt-6">
+          <p id="trial-offer-description" className="text-sm text-muted">
+            Пробний Pro на 7 днів доступний один раз для майстра. Відлік починається після активації.
+          </p>
+          {trialActivated && (
+            <p role="status" className="mt-2 text-sm">
+              Пробний Pro активовано. Повторна активація не потрібна.
+            </p>
+          )}
+          {trialMessage && (
+            <p role="status" className="mt-2 text-sm">{trialMessage}</p>
+          )}
+          {token && role === "Master" && trialMessage && (
+            <Link to="/cabinet" className="mt-2 inline-block underline">
+              Перейти до кабінету
+            </Link>
+          )}
+        </div>
         <section aria-labelledby="join-title" className="bg-linear-to-b from-transparent to-white px-2 lg:px-6 lg:pt-4">
           <div className="mx-auto grid min-h-45 w-full max-w-105 grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)_minmax(0,1fr)] items-end gap-1 sm:gap-2 lg:min-h-75 lg:max-w-225 lg:grid-cols-[1fr_1.4fr_1fr] lg:gap-6">
             <img src={joinMasterLeft} alt="" className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70" />
@@ -369,3 +472,4 @@ export default function PublicHomePage() {
     </div>
   );
 }
+

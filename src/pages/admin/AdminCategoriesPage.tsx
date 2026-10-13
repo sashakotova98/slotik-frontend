@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useState, useEffect } from "react";
 import { EllipsisVertical, Plus } from "lucide-react";
 
@@ -31,7 +32,7 @@ export default function AdminCategoriesPage() {
         setCategories(data);
       } catch (err) {
         console.error(err);
-        setError("Помилка при завантаженні категорій");
+        setError(err instanceof ApiError ? err.message : "Помилка при завантаженні категорій");
       } finally {
         setLoading(false);
       }
@@ -77,7 +78,7 @@ export default function AdminCategoriesPage() {
       setOpenedCategoryId(null);
     } catch (err) {
       console.error(err);
-      setActionError("Не вдалося видалити категорію.");
+      setActionError(err instanceof ApiError ? err.message : "Не вдалося видалити категорію.");
     } finally {
       setDeleting(false);
     }
@@ -109,7 +110,7 @@ export default function AdminCategoriesPage() {
       setOpenedCategoryId(null);
     } catch (err) {
       console.error(err);
-      setActionError("Не вдалося оновити видимість категорії.");
+      setActionError(err instanceof ApiError ? err.message : "Не вдалося оновити видимість категорії.");
     } finally {
       setSavingVisibility(false);
     }

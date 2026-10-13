@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import { X } from "lucide-react";
 import { createCategory, updateCategory, } from "../../api/categories";
@@ -59,7 +60,7 @@ export function CategoryModal({ category, onClose, onSaved, }: Props) {
       handleClose();
     } catch (err) {
       console.error(err);
-      setError("Помилка при збереженні категорії");
+      setError(err instanceof ApiError ? err.message : "Помилка при збереженні категорії");
     } finally {
       setSaving(false);
     }

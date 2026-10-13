@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Field from "../components/Field";
 import { validatePassword, validateConfirmPassword } from "../utils/validation";
 import { apiConfirmReset, apiResetPassword } from "../api/auth";
+import { ApiError } from "../api/api";
 
 type PageState = "checking" | "form" | "error";
 
@@ -51,10 +52,14 @@ function ResetPasswordContent({ token }: { token: string | null }) {
 
           setFinalToken(result);
           setPageState("form");
-        } catch {
+        } catch (error) {
           if (!active) return;
 
-          setTokenError("Не вдалося перевірити посилання. Спробуйте пізніше або запросіть нове посилання для відновлення.");
+          setTokenError(
+            error instanceof ApiError
+              ? error.message
+              : "Не вдалося перевірити посилання. Спробуйте пізніше або запросіть нове посилання для відновлення."
+          );
           setPageState("error");
         }
       };
@@ -118,10 +123,14 @@ function ResetPasswordContent({ token }: { token: string | null }) {
       if (!activeRef.current) return;
 
       navigate("/login", { replace: true, state: { passwordChanged: true } });
-    } catch {
+    } catch (error) {
       if (!activeRef.current) return;
 
-      setServerError("Не вдалося змінити пароль. Спробуйте пізніше або запросіть нове посилання для відновлення.");
+      setServerError(
+        error instanceof ApiError
+          ? error.message
+          : "Не вдалося змінити пароль. Спробуйте пізніше або запросіть нове посилання для відновлення.",
+      );
     } finally {
       submittingRef.current = false;
 
@@ -156,6 +165,8 @@ function ResetPasswordContent({ token }: { token: string | null }) {
               <Field
                 id="new-password"
                 name="password"
+                disabled={loading}
+                autoComplete="new-password"
                 label="Новий пароль"
                 type="password"
                 value={values.password}
@@ -166,6 +177,8 @@ function ResetPasswordContent({ token }: { token: string | null }) {
               <Field
                 id="confirm-new-password"
                 name="confirmPassword"
+                disabled={loading}
+                autoComplete="new-password"
                 label="Підтвердіть пароль"
                 type="password"
                 value={values.confirmPassword}
@@ -174,7 +187,7 @@ function ResetPasswordContent({ token }: { token: string | null }) {
               />
 
               {serverError && (
-                <p className="mb-3 text-center text-sm text-danger">{serverError}</p>
+                <p role="alert" className="mb-3 text-center text-sm text-danger">{serverError}</p>
               )}
 
               <button
@@ -196,7 +209,7 @@ function ResetPasswordContent({ token }: { token: string | null }) {
 
             <h1 className="mt-6 text-[21px] font-semibold">Не вдалося відновити пароль</h1>
 
-            <p className="mt-3 text-sm leading-6 text-neutral-500">{tokenError}</p>
+            <p role="alert" className="mt-3 text-sm leading-6 text-neutral-500">{tokenError}</p>
 
             <button
               type="button"

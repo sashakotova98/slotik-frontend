@@ -1,3 +1,4 @@
+import { ApiError } from "../../api/api";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, FileText } from "lucide-react";
@@ -20,6 +21,12 @@ const tariffLabels: Record<"free" | "basic" | "pro", string> = {
   pro: "Професійний",
 };
 
+const paymentStatusLabels: Record<0 | 1 | 2, string> = {
+  0: "Очікує оплати",
+  1: "Успішно",
+  2: "Неуспішно",
+};
+
 export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpdated }: Props) {
 
   const [masterDetails, setMasterDetails] = useState<MasterDetails | null>(null);
@@ -36,6 +43,8 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
+
 
   useEffect(() => {
     async function fetchDetails() {
@@ -48,7 +57,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
         setMasterDetails(data);
       } catch (err) {
         console.error(err);
-        setDetailsError("Не вдалося завантажити подробиці майстра.");
+        setDetailsError(err instanceof ApiError ? err.message : "Не вдалося завантажити подробиці майстра.");
       } finally {
         setDetailsLoading(false);
       }
@@ -82,7 +91,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
       setShowBlockConfirm(false);
     } catch (error) {
       console.error(error);
-      setBlockError("Не вдалося змінити блокування майстра.");
+      setBlockError(error instanceof ApiError ? error.message : "Не вдалося змінити блокування майстра.");
     } finally {
       setSavingBlock(false);
     }
@@ -96,8 +105,8 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
 
     try {
       await updateMasterSubscription(master.id, { days });
-    } catch {
-      setError("Не вдалося продовжити підписку.");
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : "Не вдалося продовжити підписку.");
       setSaving(false);
       return;
     }
@@ -128,8 +137,8 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
 
     try {
       await updateMasterSubscription(master.id, { plan });
-    } catch {
-      setError("Не вдалося змінити тариф.");
+    } catch (error) {
+      setError(error instanceof ApiError ? error.message : "Не вдалося змінити тариф.");
       setSaving(false);
       return;
     }
@@ -174,6 +183,21 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
     onClose();
   }
   const currentMaster = masterDetails ?? master;
+
+  // Якщо в подробицях немає фото, беремо його зі списку.
+  const avatarUrl =
+    masterDetails?.avatarUrl?.trim() ||
+    master.avatarUrl?.trim() ||
+    null;
+
+  // Сортуємо копію масиву: нові платежі першими.
+  const payments = masterDetails?.payments
+    ? [...masterDetails.payments].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() -
+        new Date(a.createdAt).getTime(),
+    )
+    : null;
 
   const isFree = currentMaster.tariff === "free";
   const isBlocked = currentMaster.isBlocked;
@@ -282,9 +306,18 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
           <div className="mt-1 flex items-center gap-3">
             <div
               aria-hidden="true"
-              className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-selected text-2xl text-muted"
+              className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-selected text-2xl text-muted"
             >
-              {initials}
+              {avatarUrl && avatarUrl !== failedAvatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  onError={() => setFailedAvatarUrl(avatarUrl)}
+                />
+              ) : (
+                initials
+              )}
             </div>
 
             <div className="min-w-0 flex-1">
@@ -379,26 +412,47 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
                 <p className="mt-3 text-sm text-muted" role="status">
                   Завантаження історії…
                 </p>
-              ) : !masterDetails || masterDetails.payments === null ? (
+              ) : payments === null ? (
                 <p className="mt-3 text-sm text-muted">
                   Історія оплат поки недоступна.
                 </p>
-              ) : masterDetails.payments.length === 0 ? (
+              ) : payments.length === 0 ? (
                 <div className="mt-3 flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-border p-4 text-muted">
                   <FileText size={24} strokeWidth={1.5} aria-hidden="true" />
                   <p className="text-sm">Оплат ще немає</p>
                 </div>
               ) : (
                 <div className="mt-3 rounded-2xl border border-border px-3 py-1">
-                  {masterDetails.payments.map((payment) => (
+                  {payments.map((payment) => (
                     <div
                       key={payment.id}
                       className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
                     >
-                      <span>{formatDate(payment.paidAt)}</span>
+                      <div className="min-w-0">
+                        <p>{formatDate(payment.paidAt ?? payment.createdAt)}</p>
+                        <p
+                          className={`mt-1 text-xs ${
+                            payment.providerStatus === "reversed"
+                              ? "text-muted"
+                              : payment.status === 1
+                                ? "text-green-700"
+                                : payment.status === 2
+                                  ? "text-red-600"
+                                  : "text-muted"
+                          }`}
+                        >
+                          {payment.providerStatus === "reversed"
+                            ? "Повернено"
+                            : paymentStatusLabels[payment.status] ?? "Невідомий статус"}
+                          {payment.providerStatus === "sandbox" && " • Тестова оплата"}
+                        </p>
+                      </div>
 
-                      <span className="shrink-0">
-                        {payment.amount} ₴
+                      <span className="shrink-0 font-medium">
+                        {new Intl.NumberFormat("uk-UA", {
+                          style: "currency",
+                          currency: payment.currency || "UAH",
+                        }).format(payment.amount)}
                       </span>
                     </div>
                   ))}

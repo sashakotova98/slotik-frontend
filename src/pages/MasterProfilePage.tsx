@@ -1,60 +1,78 @@
+import { ApiError } from "../api/api";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin, MessageSquare } from "lucide-react";
-import { useParams, useNavigate } from "react-router-dom";
-import { type PublicMasterProfile, getMasterBySlug } from "../api/masters";
-import { getServicePhotosByMasterId, type ServicePhoto } from "../api/servicePhotos";
+import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin } from "lucide-react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { type PublicMasterProfile, type PortfolioPhoto, getMasterBySlug, getMasterPortfolio } from "../api/masters";
+
 import { type Service, getServicesByMasterId } from "../api/services";
 import MasterProfileHeader from "../components/master/MasterProfileHeader";
 import ProfileShareModal from "../components/master/ProfileShareModal";
+import PublicMasterReviews from "../components/rewiews/PublicMasterReviews";
 
 export default function MasterProfilePage() {
+  const { slug } = useParams();
+  if (!slug) {
+    return <p role="alert">Не вказано майстра.</p>;
+  }
+  // Інший slug створює нову сторінку з початковим станом завантаження.
+  return <MasterProfileContent key={slug} slug={slug} />;
+}
+
+function MasterProfileContent({ slug }: { slug: string }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const serviceListRef = useRef<HTMLUListElement>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const { slug } = useParams();
+
   const [masterProfile, setMasterProfile] = useState<PublicMasterProfile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
-  const [servicePhotos, setServicePhotos] = useState<ServicePhoto[]>([]);
+  const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    setMasterProfile(null);
-    setServices([]);
-    setServicePhotos([]);
+    let active = true;
 
-    if (!slug) {
-      setError("Не вказано майстра.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         const profile = await getMasterBySlug(slug);
+        if (!active) { return; }
+
+        const [services, photos] = await Promise.all([
+          getServicesByMasterId(profile.id),
+          getMasterPortfolio(profile.id),
+        ]);
+        // Ігноруємо відповідь, якщо користувач уже відкрив іншу сторінку.
+        if (!active) { return; }
         setMasterProfile(profile);
-
-        const services = await getServicesByMasterId(profile.id);
         setServices(services);
-
-        const photos = await getServicePhotosByMasterId(profile.id);
-        setServicePhotos(photos);
+        setPortfolioPhotos(photos);
       } catch (error) {
-        console.error(error);
-        setError("Не вдалося завантажити профіль майстра.");
+        if (active) {
+          setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль майстра.");
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
-    };
+    }
 
-    fetchData();
+    void fetchData();
+    return () => {
+      active = false;
+    };
   }, [slug]);
 
   function handleBack() {
+    // Повернення з перегляду після створення сторінки майстра.
+    if (location.state?.returnTo === "/cabinet") {
+      navigate("/cabinet", { replace: true });
+      return;
+    }
+
     const historyIndex = window.history.state?.idx;
 
     if (typeof historyIndex === "number" && historyIndex > 0) {
@@ -76,15 +94,7 @@ export default function MasterProfilePage() {
 
   const profileUrl = `${window.location.origin}/m/${encodeURIComponent(masterProfile.slug)}`;
 
-  const joinedAt = new Date(masterProfile.user.createdAt ?? "");
-  const joinedDate = Number.isNaN(joinedAt.getTime())
-    ? null
-    : new Intl.DateTimeFormat("uk-UA", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "Europe/Kyiv",
-    }).format(joinedAt);
+  // Публічний API не повертає дату реєстрації, тому її не показуємо.
 
   const { latitude, longitude } = masterProfile;
   const hasCoordinates =
@@ -117,9 +127,9 @@ export default function MasterProfilePage() {
     });
     directionsUrl = "https://www.google.com/maps/dir/?" + directionsParams.toString();
   }
-  const fullName = [masterProfile.user.firstName, masterProfile.user.lastName].filter(Boolean).join(" ");
+  const fullName = [masterProfile.firstName, masterProfile.lastName].filter(Boolean).join(" ");
 
-  const initials = [masterProfile.user.firstName, masterProfile.user.lastName]
+  const initials = [masterProfile.firstName, masterProfile.lastName]
     .map((part) => part.trim().charAt(0))
     .join("")
     .toUpperCase();
@@ -131,12 +141,20 @@ export default function MasterProfilePage() {
 
         <main className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:items-stretch lg:bg-neutral-100 xl:grid-cols-[320px_minmax(0,1fr)]">
           <section aria-labelledby="master-name" className="px-6 pb-8 text-center lg:px-7 lg:py-8 lg:text-left">
-            <div
-              role="img"
-              aria-label={"Профіль: " + fullName}
-              className="mx-auto flex size-24 items-center justify-center rounded-full bg-neutral-100 text-3xl font-medium text-neutral-500 lg:mx-0 lg:h-36 lg:w-28 lg:rounded-lg lg:bg-white lg:text-4xl"
-            >
-              {initials || "М"}
+            <div className="relative mx-auto flex size-24 items-center justify-center overflow-hidden rounded-full bg-neutral-100 text-3xl font-medium text-neutral-500 lg:mx-0 lg:h-36 lg:w-28 lg:rounded-lg lg:bg-white lg:text-4xl">
+              <span aria-hidden="true">{initials || "М"}</span>
+
+              {masterProfile.avatarUrl && (
+                <img
+                  key={masterProfile.avatarUrl}
+                  src={masterProfile.avatarUrl}
+                  alt={`Фото майстра ${fullName}`}
+                  className="absolute inset-0 size-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.hidden = true;
+                  }}
+                />
+              )}
             </div>
             <h1 id="master-name" className="mt-3 wrap-break-word text-2xl font-semibold tracking-tight lg:mt-5 lg:text-2xl">
               {fullName}
@@ -145,7 +163,6 @@ export default function MasterProfilePage() {
             <p className="mt-3 text-sm text-neutral-500">{masterProfile.districtName}</p>
             {masterProfile.about && <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-600">{masterProfile.about}</p>}
             <div className="mt-6 hidden border-t border-neutral-200 pt-5 lg:block">
-              {joinedDate && <p className="mb-5 text-xs text-neutral-500">В Slotik з <time dateTime={joinedAt.toISOString()}>{joinedDate}</time></p>}
               <a href="#services" className="flex min-h-11 items-center justify-center rounded-lg bg-black px-4 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2">Переглянути послуги</a>
               {directionsUrl ? (
                 <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg border border-neutral-200 px-4 text-sm hover:bg-white focus-visible:outline-2">Прокласти маршрут</a>
@@ -214,9 +231,12 @@ export default function MasterProfilePage() {
                           </p>
                           <button
                             type="button"
-                            disabled
-                            aria-describedby="booking-unavailable"
-                            className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-400 disabled:cursor-not-allowed lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white/60"
+                            onClick={() => {
+                              navigate(
+                                `/m/${encodeURIComponent(slug)}/services/${service.id}`
+                              );
+                            }}
+                            className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-900 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white lg:hover:bg-neutral-800"
                           >
                             Обрати
                           </button>
@@ -224,9 +244,6 @@ export default function MasterProfilePage() {
                       </li>
                     ))}
                   </ul>
-                  <p id="booking-unavailable" className="mt-2 text-xs leading-relaxed text-neutral-500">
-                    Онлайн-запис поки недоступний.
-                  </p>
                 </>
               )}
             </section>
@@ -235,15 +252,15 @@ export default function MasterProfilePage() {
               <h2 id="portfolio-title" className="mb-4 text-2xl font-medium text-neutral-600 lg:text-lg lg:text-black">
                 Портфоліо
               </h2>
-              {servicePhotos.length === 0 ? (
-                <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-500">Майстер ще не додав фотографій.</p>
+              {portfolioPhotos.length === 0 ? (
+                <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-500">Майстер ще не додав фото до портфоліо.</p>
               ) : (
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-3 lg:gap-4">
-                  {servicePhotos.map((photo) => (
+                  {portfolioPhotos.map((photo) => (
                     <li key={photo.id} className="overflow-hidden rounded-xl bg-neutral-100">
                       <img
                         src={photo.photoUrl}
-                        alt={services.find((service) => service.id === photo.serviceId)?.name ?? "Робота майстра"}
+                        alt="Робота з портфоліо майстра"
                         loading="lazy"
                         className="aspect-square w-full object-cover lg:aspect-4/3"
                       />
@@ -257,10 +274,7 @@ export default function MasterProfilePage() {
               <h2 id="reviews-title" className="mb-4 text-2xl font-medium text-neutral-600 lg:text-lg lg:text-black">
                 Відгуки
               </h2>
-              <div className="flex flex-col items-center rounded-2xl bg-white px-5 py-7 text-center shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-                <MessageSquare size={28} strokeWidth={1.25} aria-hidden="true" className="mb-3 text-neutral-400" />
-                <p className="text-sm text-neutral-600">Перегляд відгуків поки недоступний.</p>
-              </div>
+              <PublicMasterReviews key={masterProfile.id} masterId={masterProfile.id} />
             </section>
 
             <section id="location" aria-labelledby="location-title" className="min-w-0 px-5 py-6 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-6 lg:px-0 lg:py-6">
@@ -305,14 +319,15 @@ export default function MasterProfilePage() {
           </div>
         </main>
 
-        {joinedDate && (
-          <footer className="px-5 pb-8 pt-6 text-center text-sm text-neutral-600 lg:hidden">
-            В Slotik з <time dateTime={joinedAt.toISOString()}>{joinedDate}</time>
-          </footer>
-        )}
 
         {shareOpen && <ProfileShareModal profileUrl={profileUrl} onClose={() => setShareOpen(false)} />}
       </div>
     </div>
   );
 }
+
+
+
+
+
+

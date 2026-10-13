@@ -15,29 +15,35 @@ import { Check } from "lucide-react";
 
 import { useAuth } from "../hooks/useAuth";
 import { apiLogin, apiRegister } from "../api/auth";
+import { ApiError } from "../api/api";
 import { useNavigate } from "react-router-dom";
-import { useSearchParams,useLocation } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 
-
+type LoginLocationState = {
+  passwordChanged?: boolean;
+  from?: {
+    pathname: string;
+    search: string;
+    hash: string;
+  };
+};
 
 export default function LoginPage() {
 
   const location = useLocation();
 
-const passwordChanged =
-  (
-    location.state as
-      | { passwordChanged?: boolean }
-      | null
-  )?.passwordChanged === true;
+  const loginState = location.state as LoginLocationState | null;
+
+  const passwordChanged = loginState?.passwordChanged === true;
+  const from = loginState?.from;
 
   const [searchParams] = useSearchParams();
 
   const { login } = useAuth();
   const navigate = useNavigate();
   const [showTerms, setShowTerms] = useState(false);
-  const [showRegistrationSuccess, setShowRegistrationSuccess] =useState(false);
-  const [showForgotPassword, setShowForgotPassword] =useState(() => searchParams.get("forgot") === "1");
+  const [showRegistrationSuccess, setShowRegistrationSuccess] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(() => searchParams.get("forgot") === "1");
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
 
@@ -110,10 +116,20 @@ const passwordChanged =
 
         login(data.token, data.role);
 
-        if (data.role === "Superadmin") {
+        if (
+          data.role === "Master" &&
+          from?.pathname === "/payment/result"
+        ) {
+          navigate(
+            {
+              pathname: "/payment/result",
+              search: from.search ?? "",
+              hash: from.hash ?? "",
+            },
+            { replace: true },
+          );
+        } else if (data.role === "Superadmin") {
           navigate("/admin", { replace: true });
-        } else if (data.role === "Master") {
-          navigate("/cabinet", { replace: true });
         } else {
           navigate("/", { replace: true });
         }
@@ -132,7 +148,21 @@ const passwordChanged =
 
       setShowRegistrationSuccess(true);
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Помилка сервера");
+      if (err instanceof ApiError) {
+        // Перекладаємо повідомлення про неправильні дані входу.
+        setServerError(
+          tab === "login" && err.message.trim() === "Wrong Email or Password"
+            ? "Неправильна електронна пошта або пароль."
+            : err.message
+        );
+      } else if (err instanceof TypeError) {
+        // Зокрема, сюди потрапляє Failed to fetch.
+        setServerError(
+          "Не вдалося з’єднатися із сервером. Спробуйте ще раз пізніше."
+        );
+      } else {
+        setServerError("Не вдалося виконати запит. Спробуйте ще раз.");
+      }
     } finally {
       setLoading(false);
     }
@@ -148,6 +178,7 @@ const passwordChanged =
       <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-sm">
         <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
           <button
+            disabled={loading}
             // onClick={() => setTab("login")}
             onClick={() => {
               setTab("login");
@@ -161,7 +192,8 @@ const passwordChanged =
             Вхід
           </button>
           <button
-            onClick={() => setTab("register")}
+            disabled={loading}
+            onClick={() => { setTab("register"); setServerError(""); setErrors({}); setTouched({}); }}
             className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
           >
             Реєстрація
@@ -339,44 +371,48 @@ const passwordChanged =
       </div>
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 
-      {showForgotPassword && (
-      <ForgotPasswordModal
-        onClose={() =>
-          setShowForgotPassword(false)
-        }
-      />
-    )}
+      {
+        showForgotPassword && (
+          <ForgotPasswordModal
+            onClose={() =>
+              setShowForgotPassword(false)
+            }
+          />
+        )
+      }
 
-      {showRegistrationSuccess && (
-        <RegistrationSuccessModal
-          email={values.email}
-          onClose={() => setShowRegistrationSuccess(false)}
-          onGoToLogin={() => {
-            const registeredEmail = values.email;
+      {
+        showRegistrationSuccess && (
+          <RegistrationSuccessModal
+            email={values.email}
+            onClose={() => setShowRegistrationSuccess(false)}
+            onGoToLogin={() => {
+              const registeredEmail = values.email;
 
-            setShowRegistrationSuccess(false);
-            setTab("login");
+              setShowRegistrationSuccess(false);
+              setTab("login");
 
-            setValues({
-              firstName: "",
-              lastName: "",
-              phone: "",
-              email: registeredEmail,
-              password: "",
-              confirmPassword: "",
-              agree: false,
-            });
+              setValues({
+                firstName: "",
+                lastName: "",
+                phone: "",
+                email: registeredEmail,
+                password: "",
+                confirmPassword: "",
+                agree: false,
+              });
 
-            setErrors({});
-            setTouched({});
-            setServerError("");
-          }}
-        />
-      )}
-    </div>
+              setErrors({});
+              setTouched({});
+              setServerError("");
+            }}
+          />
+        )
+      }
+    </div >
   );
 
-  
+
 }
 
 

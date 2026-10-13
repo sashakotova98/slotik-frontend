@@ -1,0 +1,48 @@
+//GET /api/Booking/master/me
+
+import { api } from "./api";
+
+export type BookingStatus =
+  | 0  // Очікує підтвердження — Pending
+  | 1  // Підтверджено — Confirmed
+  | 2  // Завершено — Completed
+  | 3; // Скасовано — Cancelled
+
+export type MasterBooking = {
+  id: number;
+  startsAt: string;
+  endsAt: string;
+  status: BookingStatus;
+  // Строк підтвердження Pending. Для старих записів може бути null.
+  pendingExpiresAt: string | null;
+  serviceId: number;
+  serviceName: string;
+  durationMin: number;
+  price: number;
+  clientFirstName: string;
+  clientLastName: string;
+  clientPhone: string | null;
+  clientEmail: string | null;
+};
+
+export function getMasterBookings() {
+  return api<MasterBooking[]>("/Booking/master/me");
+}
+
+export function changeBookingStatus(
+  id: number,
+  status: BookingStatus,
+) {
+  return api<{ id: number; status: BookingStatus }>(
+    `/Booking/master/${id}/status`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    },
+  );
+}
+
+// 0 — ожидает подтверждения;
+// 1 — подтверждена;
+// 2 — завершена;
+// 3 — отменена.

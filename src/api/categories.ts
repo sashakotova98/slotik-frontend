@@ -41,3 +41,14 @@ export function updateCategory(id: number, name: string, icon: string): Promise<
 export function deleteCategory(id: number): Promise<void> {
   return api<void>(`/Category/${id}`, { method: "DELETE" });
 }
+
+
+export type CategoryOption = {
+  id: number;
+  name: string;
+  icon: string | null;
+};
+
+export async function getCategoryOptions(): Promise<CategoryOption[]> {
+  return api<CategoryOption[]>("/Category/options");
+}
