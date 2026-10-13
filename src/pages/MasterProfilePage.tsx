@@ -1,20 +1,30 @@
 import { ApiError } from "../api/api";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin, MessageSquare } from "lucide-react";
+import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { type PublicMasterProfile, getMasterBySlug } from "../api/masters";
 import { getServicePhotosByMasterId, type ServicePhoto } from "../api/servicePhotos";
 import { type Service, getServicesByMasterId } from "../api/services";
 import MasterProfileHeader from "../components/master/MasterProfileHeader";
 import ProfileShareModal from "../components/master/ProfileShareModal";
+import PublicMasterReviews from "../components/rewiews/PublicMasterReviews";
 
 export default function MasterProfilePage() {
+  const { slug } = useParams();
+  if (!slug) {
+    return <p role="alert">Не вказано майстра.</p>;
+  }
+  // Інший slug створює нову сторінку з початковим станом завантаження.
+  return <MasterProfileContent key={slug} slug={slug} />;
+}
+
+function MasterProfileContent({ slug }: { slug: string }) {
   const navigate = useNavigate();
   const location = useLocation();
   const serviceListRef = useRef<HTMLUListElement>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
-  const { slug } = useParams();
+
   const [masterProfile, setMasterProfile] = useState<PublicMasterProfile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [servicePhotos, setServicePhotos] = useState<ServicePhoto[]>([]);
@@ -23,37 +33,37 @@ export default function MasterProfilePage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    setMasterProfile(null);
-    setServices([]);
-    setServicePhotos([]);
+    let active = true;
 
-    if (!slug) {
-      setError("Не вказано майстра.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchData = async () => {
+    async function fetchData() {
       try {
         const profile = await getMasterBySlug(slug);
+        if (!active) { return; }
+
+        const [services, photos] = await Promise.all([
+          getServicesByMasterId(profile.id),
+          getServicePhotosByMasterId(profile.id),
+        ]);
+        // Ігноруємо відповідь, якщо користувач уже відкрив іншу сторінку.
+        if (!active) { return; }
         setMasterProfile(profile);
-
-        const services = await getServicesByMasterId(profile.id);
         setServices(services);
-
-        const photos = await getServicePhotosByMasterId(profile.id);
         setServicePhotos(photos);
       } catch (error) {
-        console.error(error);
-        setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль майстра.");
+        if (active) {
+          setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль майстра.");
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
-    };
+    }
 
-    fetchData();
+    void fetchData();
+    return () => {
+      active = false;
+    };
   }, [slug]);
 
   function handleBack() {
@@ -262,10 +272,7 @@ export default function MasterProfilePage() {
               <h2 id="reviews-title" className="mb-4 text-2xl font-medium text-neutral-600 lg:text-lg lg:text-black">
                 Відгуки
               </h2>
-              <div className="flex flex-col items-center rounded-2xl bg-white px-5 py-7 text-center shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
-                <MessageSquare size={28} strokeWidth={1.25} aria-hidden="true" className="mb-3 text-neutral-400" />
-                <p className="text-sm text-neutral-600">Перегляд відгуків поки недоступний.</p>
-              </div>
+              <PublicMasterReviews key={masterProfile.id} masterId={masterProfile.id} />
             </section>
 
             <section id="location" aria-labelledby="location-title" className="min-w-0 px-5 py-6 sm:px-6 lg:grid lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-x-6 lg:px-0 lg:py-6">
@@ -316,3 +323,8 @@ export default function MasterProfilePage() {
     </div>
   );
 }
+
+
+
+
+

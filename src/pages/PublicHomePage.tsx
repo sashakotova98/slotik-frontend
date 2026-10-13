@@ -18,6 +18,7 @@ import { getHomeCategories, type HomeCategory } from "../api/homeCategories";
 import { useAuth } from "../hooks/useAuth";
 import { apiGetMe } from "../api/auth";
 import { ApiError } from "../api/api";
+import HomeMastersReviews from "../components/home/HomeMastersReviews";
 import { activateProTrial, getProTrialAvailability } from "../api/subscriptions";
 
 export default function PublicHomePage() {
@@ -344,19 +345,7 @@ export default function PublicHomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="masters-preview-title" className="px-4 py-8 lg:py-12">
-          <div className="mx-auto max-w-2xl rounded-4xl bg-surface px-6 py-8 text-center shadow-md lg:py-12">
-            <h2 id="masters-preview-title" className="text-xl font-semibold text-text lg:text-3xl">
-              Знайдіть свого майстра
-            </h2>
-
-            <p className="mx-auto mt-3 max-w-md text-sm text-muted lg:text-base">
-              Незабаром тут з’являться профілі майстрів та фотографії їхніх робіт.
-            </p>
-
-            <span className="mt-5 inline-block rounded-full bg-selected px-4 py-2 text-xs text-muted lg:text-sm">Готуємо до запуску</span>
-          </div>
-        </section>
+        <HomeMastersReviews />
 
         <section id="offers" aria-label="Пропозиція для майстрів" className="px-3 py-2 lg:pt-4 lg:pb-6">
           <div className="relative mx-auto max-w-2xl">
@@ -381,7 +370,7 @@ export default function PublicHomePage() {
               disabled={trialBusy}
               onClick={handleStartTrial}
               aria-describedby="trial-offer-description"
-              className="absolute -bottom-4 right-1 min-h-11 rounded-full bg-black px-6 py-2 text-sm text-white disabled:cursor-not-allowed lg:right-3 lg:px-9 lg:text-lg"
+              className="relative z-10 -mt-2 mr-2 ml-auto block min-h-11 max-w-[calc(100%-16px)] rounded-full bg-black px-4 py-2 text-xs leading-tight text-white disabled:cursor-not-allowed lg:absolute lg:-bottom-4 lg:right-3 lg:m-0 lg:px-9 lg:text-lg"
             >
               {trialBusy ? "Перевіряємо…" : trialActivated ? "Продовжити" : !token ? "Увійти та спробувати" : "Спробувати Pro"}
             </button>
@@ -483,3 +472,4 @@ export default function PublicHomePage() {
     </div>
   );
 }
+

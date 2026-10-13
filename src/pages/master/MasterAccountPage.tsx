@@ -83,7 +83,7 @@ export default function MasterAccountPage() {
 
   function handleLogout() {
     logout();
-    navigate("/login", { replace: true });
+    navigate("/home", { replace: true });
   }
 
   const fullName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "";
@@ -184,3 +184,4 @@ export default function MasterAccountPage() {
     </div>
   );
 }
+

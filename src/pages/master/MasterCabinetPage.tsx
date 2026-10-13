@@ -4,8 +4,10 @@ import { TrendingUp } from "lucide-react";
 import { ApiError } from "../../api/api";
 import { getMasterBookings, changeBookingStatus, type MasterBooking, type BookingStatus } from "../../api/bookings";
 import MasterBookingCard from "../../components/master/MasterBookingCard";
+import MasterReviewCard from "../../components/master/MasterReviewCard";
 import { getOwnProfile, type UserProfile } from "../../api/users";
 import { useAuth } from "../../hooks/useAuth";
+import { getMasterReviews, type MasterReview } from "../../api/reviews";
 
 // Однакові місяць і рік дають однаковий текст, наприклад «жовтень 2026 р.».
 function formatMonth(value: string | number) {
@@ -43,6 +45,14 @@ export default function MasterCabinetPage() {
   const { token } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+
+
+  const [reviews, setReviews] = useState<MasterReview[]>([]);
+  const [visibleReviewsCount, setVisibleReviewsCount] = useState(2);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -82,6 +92,8 @@ export default function MasterCabinetPage() {
     }
     setLoading(true);
     setError("");
+    setReviewsLoading(true);
+    setReviewsError("");
     setRevision((value) => {
       return value + 1;
     });
@@ -116,6 +128,43 @@ export default function MasterCabinetPage() {
       active = false;
     };
   }, [token]);
+
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadReviews() {
+      try {
+        const result = await getMasterReviews();
+
+        if (active) {
+          setReviews(result.reviews);
+          setAverageRating(result.averageRating);
+          setTotalReviews(result.totalCount);
+          setReviewsError("");
+        }
+      } catch (error) {
+        if (active) {
+          setError(
+            error instanceof ApiError
+              ? error.message
+              : "Не вдалося виконати запит. Спробуйте ще раз."
+          );
+        }
+      } finally {
+        if (active) {
+          setReviewsLoading(false);
+        }
+      }
+    }
+
+    void loadReviews();
+
+    return () => {
+      active = false;
+    };
+  }, [revision]);
+
 
   async function handleChangeStatus(id: number, status: BookingStatus) {
     if (pendingUpdates.current.has(id)) {
@@ -248,6 +297,8 @@ export default function MasterCabinetPage() {
     { label: "Найближчі підтверджені", value: confirmed.length },
   ];
 
+  const latestReviews = reviews.slice(0, visibleReviewsCount);
+
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
       <header>
@@ -370,8 +421,62 @@ export default function MasterCabinetPage() {
         <h2 id="reviews-heading" className="text-lg font-semibold">
           Відгуки
         </h2>
-        <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Перегляд відгуків поки недоступний.</p>
+
+        {reviewsLoading ? (
+          <p className="text-sm text-neutral-500">
+            Завантаження відгуків…
+          </p>
+        ) : reviewsError ? (
+          <p role="alert" className="text-sm text-red-600">
+            {reviewsError}
+          </p>
+        ) : totalReviews === 0 ? (
+          <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">
+            Відгуків поки немає.
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-neutral-600">
+              <span className="text-2xl font-semibold text-black">
+                {averageRating.toFixed(1)}
+              </span>
+              <span className="ml-1 text-amber-500" aria-hidden="true">
+                ★
+              </span>
+              {" • Відгуків: "}
+              {totalReviews}
+            </p>
+
+            {latestReviews.map((review) => {
+              return (
+                <MasterReviewCard
+                  key={review.id}
+                  review={review}
+                  onReplySaved={(id, reply) => {
+                    // Оновлюємо відповідь у списку після успішного PUT.
+                    setReviews((current) => {
+                      return current.map((item) => {
+                        return item.id === id ? { ...item, reply } : item;
+                      });
+                    });
+                  }}
+                />
+              );
+            })}
+            {visibleReviewsCount < reviews.length && (
+              <button
+                type="button"
+                onClick={() => { setVisibleReviewsCount((count) => { return count + 10; }); }}
+                className="min-h-12 w-full rounded-full border border-neutral-400 px-5 py-3 font-medium text-neutral-600 transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Дивитись більше
+              </button>
+            )}
+          </>
+        )}
       </section>
     </div>
   );
 }
+
+
