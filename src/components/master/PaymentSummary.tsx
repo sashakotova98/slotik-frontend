@@ -10,13 +10,15 @@ type Props = {
   plan: PaidPlan;
   masterName?: string;
   periodLabel?: string;
+  // Умови покупки або зміни тарифу, які потрібно показати до оплати.
+  notice?: string;
   paying: boolean;
   error: string;
   onPay: () => void;
   onBack: () => void;
 };
 
-export default function PaymentSummary({ plan, masterName, periodLabel, paying, error, onPay, onBack }: Props) {
+export default function PaymentSummary({ plan, masterName, periodLabel, notice, paying, error, onPay, onBack }: Props) {
   return (
     <>
       <h1 className="mb-5 text-lg font-semibold">Оплата підписки</h1>
@@ -39,9 +41,16 @@ export default function PaymentSummary({ plan, masterName, periodLabel, paying, 
 
         <div className="mt-3 flex justify-between gap-4 border-t border-neutral-300 pt-3 font-semibold">
           <dt>Орієнтовна вартість</dt>
-          <dd>{plan.price} ₴/міс</dd>
+          <dd>{plan.price} ₴ за {periodLabel ?? "обраний період"}</dd>
         </div>
       </dl>
+
+      {/* Пояснюємо умови до переходу на платіжну сторінку LiqPay. */}
+      {notice && (
+        <p className="mt-4 rounded-xl bg-amber-50 p-3 text-sm leading-5 text-amber-900">
+          {notice}
+        </p>
+      )}
 
       <button
         type="button"

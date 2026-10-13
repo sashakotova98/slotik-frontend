@@ -28,7 +28,7 @@ function formatPeriod(period: string | null) {
   return "";
 }
 
-// Показуємо лише явно заплановану оплату, а не дату завершення підписки. автоматическое списание не настроено
+// Дата завершення тарифу не означає, що цього дня буде списання.
 function getNextPaymentText(subscription: Subscription | undefined) {
   if (!subscription) return "Поточну підписку не визначено.";
   if (subscription.plan === 0) return "Для безкоштовного тарифу оплата не потрібна.";
@@ -36,10 +36,11 @@ function getNextPaymentText(subscription: Subscription | undefined) {
   const { nextPaymentAt, nextPaymentAmount, currency } = subscription;
 
   if (nextPaymentAt === null && nextPaymentAmount === null) {
-    return `Автоматичного списання не буде. Поточний тариф діє до ${formatDate(subscription.expiresAt)}.`;
+    const periodName = subscription.isTrial ? "Пробний період" : "Поточний тариф";
+    return `Автоматичного списання не буде. ${periodName} діє до ${formatDate(subscription.expiresAt)}. Оплату ви здійснюєте вручну після вибору тарифу.`;
   }
 
-  // зараз показуємо дату та суму наступного платежу, якщо вони відомі. але немає зараз автоматичного списання. nextPaymentAt: null nextPaymentAmount: null
+  // Якщо бек повернув дані наступної оплати, показуємо їх без вигаданих значень.
   const date = nextPaymentAt ? formatDate(nextPaymentAt) : "Дату не вказано";
   const amount = nextPaymentAmount !== null
     ? formatMoney(nextPaymentAmount, currency)
@@ -182,6 +183,17 @@ export default function MasterTariffPage() {
               )}
             </div>
           </section>
+          {/* Відкриваємо вибір тарифу в режимі зміни з кабінету. */}
+          <Link
+            to="/cabinet/plans?mode=change"
+            className="flex min-h-11 items-center justify-center rounded-xl border border-neutral-400 px-5 py-3 text-sm font-medium hover:bg-neutral-100"
+          >
+            {currentSubscription ? "Змінити тариф" : "Обрати тариф"}
+          </Link>
+
+          <p className="text-center text-xs text-neutral-500">
+            Оплата на захищеній сторінці LiqPay.
+          </p>
         </>
       )}
     </div>

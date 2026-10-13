@@ -1,14 +1,20 @@
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PaymentSummary, { type PaidPlan } from "../../components/master/PaymentSummary";
 import { useEffect, useRef, useState } from "react";
 import { apiCreateCheckout, openLiqPay } from "../../api/payments";
 // import PaymentSuccess from "../../components/master/PaymentSuccess";
 import { getOwnProfile } from "../../api/users";
 
-import { activateFreePlan, getOwnSubscriptions } from "../../api/subscriptions";
 import { apiGetMe } from "../../api/auth";
 import { ApiError } from "../../api/api";
+import { activateFreePlan, getOwnSubscriptions, type Subscription } from "../../api/subscriptions";
+
+const planCodes: Record<Plan["id"], Subscription["plan"]> = {
+  free: 0,
+  basic: 1,
+  pro: 2,
+};
 
 type Plan = {
   id: "free" | "basic" | "pro";
@@ -16,7 +22,6 @@ type Plan = {
   price: number;
   description: string;
 };
-
 
 const plans: Plan[] = [
   {
@@ -41,6 +46,9 @@ const plans: Plan[] = [
 
 export default function MasterPlansPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // При зміні тарифу з кабінету повертаємося до тарифу, а не до онбордингу.
+  const isChangingPlan = searchParams.get("mode") === "change";
   const { token, logout } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<PaidPlan | null>(null);
   const [message, setMessage] = useState("");
@@ -59,7 +67,18 @@ export default function MasterPlansPage() {
   const [savingFree, setSavingFree] = useState(false); //true, showing «Зберігаємо…»
   const freeInFlight = useRef(false); //protection against repeated requests
 
-  const busy = paying || savingFree;//Blocks the button both during the start of the paid plan and while maintaining the free plan.
+  const busy = paying || savingFree; //Blocks the button both during the start of the paid plan and while maintaining the free plan.
+
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
+  const [subscriptionsError, setSubscriptionsError] = useState("");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    // Оновлюємо строк дії для підказки, поки сторінка відкрита.
+    const timer = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -85,11 +104,80 @@ export default function MasterPlansPage() {
       }
     };
     loadProfile();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [token]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadSubscriptions() {
+      setSubscriptionsLoading(true);
+      setSubscriptionsError("");
+
+      try {
+        const result = await getOwnSubscriptions();
+
+        if (active) {
+          setSubscriptions(result);
+          setNow(Date.now());
+        }
+      } catch (error) {
+        if (active) {
+          setSubscriptionsError(
+            error instanceof ApiError
+              ? error.message
+              : "Не вдалося завантажити підписки. Оновіть сторінку."
+          );
+        }
+      } finally {
+        if (active) {
+          setSubscriptionsLoading(false);
+        }
+      }
+    }
+
+    void loadSubscriptions();
+
+    return () => {
+      active = false;
+    };
+  }, [token]);
+
+
+  // Знаходимо чинну оплачену підписку.
+  const activePaidSubscription = subscriptions.find(
+    (subscription) =>
+      subscription.plan !== 0 &&
+      !subscription.isTrial &&
+      subscription.status === 0 &&
+      Date.parse(subscription.expiresAt) > now
+  );
+
+  // Пробний період також припиняється після активації платного тарифу.
+  const activeTrial = subscriptions.find(
+    (subscription) =>
+      subscription.isTrial &&
+      subscription.status === 0 &&
+      Date.parse(subscription.expiresAt) > now
+  );
+
+  let paymentNotice =
+    "Після успішної оплати тариф активується на 30 днів. Автоматичного списання немає.";
+
+  if (activePaidSubscription) {
+    paymentNotice =
+      "Після успішної оплати поточний тариф буде замінено одразу. Невикористані оплачені дні не переносяться, їхня вартість не зараховується. Ви сплачуєте повну вартість нового тарифу на 30 днів. Автоматичного списання немає.";
+  } else if (activeTrial) {
+    paymentNotice =
+      "Після успішної оплати пробний період завершиться. Платний тариф активується на 30 днів. Залишок пробного періоду не переноситься. Автоматичного списання немає.";
+  }
 
   const handlePay = async () => {
     if (!selectedPlan || paymentInFlight.current || freeInFlight.current) return;
+    // Без даних підписок не можемо показати коректні умови зміни тарифу.
+    if (subscriptionsLoading || subscriptionsError) return;
 
     paymentInFlight.current = true;
     setPaying(true);
@@ -98,13 +186,8 @@ export default function MasterPlansPage() {
     try {
       const result = await apiCreateCheckout(selectedPlan.id); // створємо платіж
       openLiqPay(result.checkout); // відкриваємо отриманні дані на liqpay
-    }
-    catch (error) {
-      setPaymentError(
-        error instanceof Error
-          ? error.message
-          : "Не вдалося відкрити оплату. Спробуйте пізніше."
-      );
+    } catch (error) {
+      setPaymentError(error instanceof Error ? error.message : "Не вдалося відкрити оплату. Спробуйте пізніше.");
     } finally {
       paymentInFlight.current = false;
       setPaying(false);
@@ -113,12 +196,31 @@ export default function MasterPlansPage() {
 
   const handleSelect = async (plan: Plan) => {
     if (paymentInFlight.current || freeInFlight.current) return;
+    if (subscriptionsLoading || subscriptionsError) return;
 
     setMessage("");
     setPaymentError("");
 
     // Платний тариф: відкриваємо підсумок оплати.
     if (plan.id !== "free") {
+      const selectedCode = planCodes[plan.id]; //["free"]; // 0
+
+      // Перевіряємо саме обраний тариф серед усіх підписок.
+      const alreadyActive = subscriptions.some(
+        (subscription) =>
+          subscription.plan === selectedCode &&
+          !subscription.isTrial &&
+          subscription.status === 0 &&
+          Date.parse(subscription.expiresAt) > Date.now()
+      );
+
+      if (alreadyActive) {
+        setMessage(
+          "Цей платний тариф уже активний. Повторна оплата доступна після завершення його строку."
+        );
+        return;
+      }
+
       setSelectedPlan({
         id: plan.id,
         name: plan.name,
@@ -128,9 +230,7 @@ export default function MasterPlansPage() {
     }
 
     if (!token || userId === null || !slug) {
-      setMessage(
-        "Дані профілю ще не завантажено. Оновіть сторінку та спробуйте ще раз."
-      );
+      setMessage("Дані профілю ще не завантажено. Оновіть сторінку та спробуйте ще раз.");
       return;
     }
 
@@ -141,16 +241,11 @@ export default function MasterPlansPage() {
       const subscriptions = await getOwnSubscriptions();
 
       const hasActivePaidPlan = subscriptions.some(
-        (subscription) =>
-          subscription.plan !== 0 &&
-          subscription.status === 0 &&
-          Date.parse(subscription.expiresAt) > Date.now()
+        (subscription) => subscription.plan !== 0 && subscription.status === 0 && Date.parse(subscription.expiresAt) > Date.now(),
       );
 
       if (hasActivePaidPlan) {
-        setMessage(
-          "У вас уже діє платний тариф. Його не було змінено."
-        );
+        setMessage("У вас уже діє платний тариф. Його не було змінено.");
         return;
       }
 
@@ -158,19 +253,16 @@ export default function MasterPlansPage() {
       const me = await apiGetMe();
 
       if (me.isOnboardingCompleted === true) {
-        navigate("/cabinet/created", { replace: true });
-      } else {
-        setMessage(
-          "Налаштування ще не завершено. Перевірте профіль, послуги та робочий графік."
+        // Після зміни тарифу повертаємося до нього; онбординг має свій екран успіху.
+        navigate(
+          isChangingPlan ? "/cabinet/account/tariff" : "/cabinet/created",
+          { replace: true }
         );
+      } else {
+        setMessage("Налаштування ще не завершено. Перевірте профіль, послуги та робочий графік.");
       }
-
     } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Не вдалося зберегти тариф. Спробуйте ще раз."
-      );
+      setMessage(error instanceof Error ? error.message : "Не вдалося зберегти тариф. Спробуйте ще раз.");
     } finally {
       freeInFlight.current = false;
       setSavingFree(false);
@@ -209,11 +301,25 @@ export default function MasterPlansPage() {
               {profileError}
             </p>
           )}
+
+          {subscriptionsLoading && (
+            <p role="status" className="mb-4 text-sm text-neutral-500">
+              Завантажуємо ваш тариф…
+            </p>
+          )}
+
+          {subscriptionsError && (
+            <p role="alert" className="mb-4 text-sm text-red-600">
+              {subscriptionsError}
+            </p>
+          )}
+
           {selectedPlan ? (
             <PaymentSummary
               plan={selectedPlan}
               masterName={masterName}
               periodLabel="30 днів"
+              notice={paymentNotice}
               paying={paying}
               error={paymentError}
               onPay={handlePay}
@@ -231,20 +337,16 @@ export default function MasterPlansPage() {
                   <button
                     key={plan.id}
                     type="button"
-                    disabled={busy}
+                    disabled={busy || subscriptionsLoading || Boolean(subscriptionsError)}
                     onClick={() => handleSelect(plan)}
                     className="w-full rounded-xl border border-neutral-400 p-4 text-left transition hover:border-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
                   >
                     <span className="flex items-start justify-between gap-3 font-semibold">
                       <span>{plan.name}</span>
-                      <span className="shrink-0">
-                        {plan.price === 0 ? "0 ₴" : `${plan.price} ₴/міс`}
-                      </span>
+                      <span className="shrink-0">{plan.price === 0 ? "0 ₴" : `${plan.price} ₴/міс`}</span>
                     </span>
 
-                    <span className="mt-2 block text-sm leading-5 text-neutral-600">
-                      {plan.description}
-                    </span>
+                    <span className="mt-2 block text-sm leading-5 text-neutral-600">{plan.description}</span>
                   </button>
                 ))}
               </div>
@@ -264,7 +366,7 @@ export default function MasterPlansPage() {
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => navigate("/cabinet/setup")}
+                onClick={() => navigate(isChangingPlan ? "/cabinet/account/tariff" : "/cabinet/setup")}
                 className="mt-4 w-full py-2 text-sm text-neutral-500 hover:text-black"
               >
                 Назад
