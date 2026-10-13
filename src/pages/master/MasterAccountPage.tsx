@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users } from "lucide-react";
+import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users, MapPin } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../api/api";
 import { getOwnProfile, type UserProfile } from "../../api/users";
@@ -26,6 +26,11 @@ const menuItems = [
     to: "/faq",
     label: "Часті запитання",
     icon: HelpCircle,
+  },
+  {
+    to: "/cabinet/account/location",
+    label: "Адреса та місце прийому",
+    icon: MapPin,
   },
 ];
 

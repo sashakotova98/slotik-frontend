@@ -54,8 +54,7 @@ export function toggleMasterBlock(id: number): Promise<BlockMasterResponse> {
 }
 
 export function isSubscriptionExpiring(master: Master, now: number): boolean {
-  if (master.isBlocked || master.tariff === "free" || !master.subscriptionUntil)
-    return false;
+  if (master.isBlocked || master.tariff === "free" || !master.subscriptionUntil) return false;
   const expiresAt = new Date(master.subscriptionUntil).getTime();
   return expiresAt > now && expiresAt <= now + 27 * 60 * 60 * 1000;
 }
@@ -67,10 +66,7 @@ export type SubscriptionUpdate = {
   days?: number;
 };
 
-export async function updateMasterSubscription(
-  masterId: number,
-  data: SubscriptionUpdate,
-): Promise<void> {
+export async function updateMasterSubscription(masterId: number, data: SubscriptionUpdate): Promise<void> {
   const params = new URLSearchParams();
 
   if (data.plan !== undefined) {
@@ -86,11 +82,9 @@ export async function updateMasterSubscription(
   });
 }
 
-
 //frontend/master-profile GET /api/Master/slug/{slug}
 //GET /api/Service?masterId=900001 services.ts id, serviceId, photoUrl, sortOrder
 //src/api/servicePhotos.ts
-
 
 export type PublicMasterProfile = {
   id: number;
@@ -109,17 +103,12 @@ export type PublicMasterProfile = {
   latitude: number | null;
   longitude: number | null;
 
-  user: {
-    firstName: string;
-    lastName: string;
-    createdAt?: string | null;
-  };
+  firstName: string;
+  lastName: string;
 };
 export function getMasterBySlug(slug: string): Promise<PublicMasterProfile> {
   return api<PublicMasterProfile>(`/Master/slug/${encodeURIComponent(slug)}`);
 }
-
-
 
 // Тело запроса для POST /api/Master и PUT /api/Master/{id}
 export type MasterProfileData = {
@@ -139,8 +128,10 @@ function createMasterFormData(data: MasterProfileData, files: File[]): FormData 
   const formData = new FormData();
 
   for (const [key, value] of Object.entries(data)) {
-    // Статус блокировки не меняется через форму мастера.
-    if (key === "isBlocked") continue;
+    // Не надсилаємо статус блокування та координати. Текстову адресу зберігаємо.
+    if (key === "isBlocked" || key === "latitude" || key === "longitude") {
+      continue;
+    }
 
     if (value !== null && value !== undefined) {
       formData.append(key, String(value));
@@ -170,8 +161,6 @@ export async function saveMasterProfile(data: MasterProfileData, files: File[] =
   });
 }
 
-
-
 // кнопка далі бек зберіг потом повернулись getOwnProfile() завантажив збережений файл форма заповнена
 // export async function getOwnProfile(): Promise<CurrentUserProfile> {
 //   const token = localStorage.getItem("token");
@@ -199,7 +188,6 @@ export async function saveMasterProfile(data: MasterProfileData, files: File[] =
 
 //   return api<CurrentUserProfile>(`/User/${userId}`);
 
-  
 // }
 
 // Відповідь GET /api/User/me.
@@ -218,28 +206,23 @@ type MasterProfileResponse = MasterProfileData & {
   id: number;
 };
 
-
 //// Об'єднані дані для MasterOnboardingPage.
 type CurrentUserProfile = UserMe & {
   photoId: string | null;
   master: MasterProfileResponse | null;
 };
 
-
-
 export async function getOwnProfile(): Promise<CurrentUserProfile> {
-   // api() додає токен із localStorage.
+  // api() додає токен із localStorage.
   const user = await api<UserMe>("/User/me");
 
   let master: MasterProfileResponse | null = null;
 
-   if (user.masterId !== null) {
-    master = await api<MasterProfileResponse>(
-      `/Master/${user.masterId}`
-    );
+  if (user.masterId !== null) {
+    master = await api<MasterProfileResponse>(`/Master/${user.masterId}`);
   }
 
-    return {
+  return {
     ...user,
     // Новий endpoint не повертає photoId.
     // Залишаємо null для сумісності з поточною формою.
@@ -247,8 +230,6 @@ export async function getOwnProfile(): Promise<CurrentUserProfile> {
     master,
   };
 }
-
-
 
 export type PortfolioPhoto = {
   id: number;
@@ -258,9 +239,7 @@ export type PortfolioPhoto = {
 };
 
 export async function getMasterPortfolio(masterId: number): Promise<PortfolioPhoto[]> {
-  const master = await api<{ portfolioPhotos: PortfolioPhoto[] }>(
-    `/Master/${masterId}`
-  );
+  const master = await api<{ portfolioPhotos: PortfolioPhoto[] }>(`/Master/${masterId}`);
 
   return master.portfolioPhotos;
 }
@@ -268,5 +247,19 @@ export async function getMasterPortfolio(masterId: number): Promise<PortfolioPho
 export async function deletePortfolioPhoto(id: number): Promise<void> {
   await api<{ message: string }>(`/Master/portfolio-photo/${id}`, {
     method: "DELETE",
+  });
+}
+
+export type MasterLocationData = {
+  districtId: number;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+};
+
+export async function saveMasterLocation(masterId: number, data: MasterLocationData): Promise<void> {
+  await api(`/Master/${masterId}/location`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
   });
 }

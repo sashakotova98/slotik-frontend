@@ -5,12 +5,15 @@ import { apiUploadPhoto, type UploadedPhoto } from "../../api/photos";
 import { type CategoryOption, getCategoryOptions } from "../../api/categories";
 import { getCities, type City } from "../../api/cities";
 import { ApiError } from "../../api/api";
+import MasterLocationPicker from "./MasterLocationPicker";
 
 export type ProfileFields = {
   cityId: number | null;
   districtId: number | null;
   address: string;
   about: string;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 type Props = {
@@ -443,6 +446,18 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
             className="h-12 w-full rounded-xl border border-neutral-400 bg-transparent px-3 text-base outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
           />
         </div>
+
+        <MasterLocationPicker
+          latitude={profile.latitude}
+          longitude={profile.longitude}
+          onChange={(latitude, longitude) => {
+            onProfileChange({
+              ...profile,
+              latitude,
+              longitude,
+            });
+          }}
+        />
 
         <div>
           <label htmlFor="master-about" className="mb-1 block text-lg text-neutral-600">

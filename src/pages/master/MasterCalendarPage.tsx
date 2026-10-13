@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { CalendarDays, LockKeyhole, Search } from "lucide-react";
+import { Link } from "react-router-dom";
+import { getOwnSubscriptions, type Subscription } from "../../api/subscriptions";
 import { ApiError } from "../../api/api";
 import { changeBookingStatus, getMasterBookings, type BookingStatus, type MasterBooking } from "../../api/bookings";
 import { getOwnSchedule, type WeeklySchedule } from "../../api/schedules";
@@ -26,6 +28,153 @@ function getKyivDate(value: string | Date): string {
 }
 
 export default function MasterCalendarPage() {
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [accessError, setAccessError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadAccess() {
+      try {
+        const subscriptions = await getOwnSubscriptions();
+        const current = subscriptions.find((item) => {
+          return item.isEffective;
+        });
+
+        if (active) {
+          setSubscription(current ?? null);
+          setNow(Date.now());
+          setAccessError("");
+        }
+      } catch {
+        if (active) {
+          setAccessError("Не вдалося перевірити тариф. Перевірте з’єднання та спробуйте ще раз.");
+        }
+      } finally {
+        if (active) {
+          setChecking(false);
+        }
+      }
+    }
+
+    void loadAccess();
+    return () => {
+      active = false;
+    };
+  }, [retry]);
+
+  // Після повернення з оплати або іншої вкладки перевіряємо тариф знову.
+  useEffect(() => {
+    function recheckAccess() {
+      setChecking(true);
+      setRetry((previous) => {
+        return previous + 1;
+      });
+    }
+
+    window.addEventListener("focus", recheckAccess);
+    return () => {
+      window.removeEventListener("focus", recheckAccess);
+    };
+  }, []);
+
+  // Якщо тариф закінчиться на відкритій сторінці, календар також закриється.
+  useEffect(() => {
+    if (!subscription || subscription.plan === 0) {
+      return;
+    }
+
+    const remaining = Date.parse(subscription.expiresAt) - Date.now();
+    if (!Number.isFinite(remaining) || remaining <= 0) {
+      return;
+    }
+
+    // У браузера є обмеження максимальної тривалості одного таймера.
+    const timer = window.setTimeout(() => {
+      setNow(Date.now());
+    }, Math.min(remaining + 1, 2_147_483_647));
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [subscription, now]);
+
+  function retryAccess() {
+    setChecking(true);
+    setAccessError("");
+    setRetry((previous) => {
+      return previous + 1;
+    });
+  }
+
+  if (checking) {
+    return (
+      <div role="status" className="mx-auto max-w-md rounded-3xl border border-neutral-200 bg-white p-8 text-center">
+        <CalendarDays size={28} className="mx-auto mb-4 text-neutral-400" aria-hidden="true" />
+        <p className="text-sm text-neutral-500">Перевіряємо доступ до календаря…</p>
+      </div>
+    );
+  }
+
+  if (accessError) {
+    return (
+      <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
+        <h1 className="text-xl font-semibold">Календар</h1>
+        <p role="alert" className="text-sm leading-relaxed text-red-600">{accessError}</p>
+        <button type="button" onClick={retryAccess} className="min-h-11 w-full rounded-xl bg-black px-5 py-3 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-4">
+          Спробувати ще раз
+        </button>
+      </div>
+    );
+  }
+
+  let canUseCalendar = false;
+  if (subscription) {
+    const isPaidPlan = subscription.plan === 1 || subscription.plan === 2;
+    const isActive = subscription.status === 0;
+    const hasNotExpired = Date.parse(subscription.expiresAt) > now;
+    canUseCalendar = isPaidPlan && isActive && hasNotExpired;
+  }
+
+  if (!canUseCalendar) {
+    return (
+      <div className="mx-auto w-full max-w-md space-y-6">
+        <h1 className="text-2xl font-semibold">Календар</h1>
+        <section className="rounded-3xl border border-neutral-200 bg-white px-5 py-8 text-center shadow-sm sm:px-8">
+          <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-3xl bg-neutral-100">
+            <CalendarDays size={36} strokeWidth={1.5} aria-hidden="true" />
+            <span className="absolute -bottom-1 -right-1 rounded-full border-4 border-white bg-black p-2 text-white">
+              <LockKeyhole size={14} aria-hidden="true" />
+            </span>
+          </div>
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Базовий · Професійний</p>
+          <h2 className="text-xl font-semibold">Усі записи — в одному календарі</h2>
+          <p className="mt-3 text-sm leading-relaxed text-neutral-500">
+            Переглядайте записи за датами, робочі дні та відпустки.
+            Календар доступний з активним тарифом «Базовий», «Професійний» або пробним Pro.
+          </p>
+          <Link to="/cabinet/plans?mode=change" className="mt-6 flex min-h-12 items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4">
+            Обрати тариф
+          </Link>
+          <Link to="/cabinet/account/bookings" className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 px-5 py-3 text-sm font-medium transition-colors hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-4">
+            Переглянути мої записи
+          </Link>
+          <p className="mt-4 text-xs leading-relaxed text-neutral-500">
+            Наявні записи збережені. Ви можете переглядати їх і змінювати статус у розділі «Ваші записи».
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  // Дані календаря завантажуються лише після успішної перевірки тарифу.
+  return <MasterCalendarContent />;
+}
+
+function MasterCalendarContent() {
   // Вибрана дата та текст пошуку. Порожня дата означає, що день не вибрано.
   const [selectedDate, setSelectedDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");

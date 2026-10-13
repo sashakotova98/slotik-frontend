@@ -27,6 +27,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import PaymentResultPage from "./pages/master/PaymentResultPage";
 import MasterEntryRedirect from "./components/master/MasterEntryRedirect";
 import MasterCreatedPage from "./pages/master/MasterCreatedPage";
+import MasterLocationPage from "./pages/master/MasterLocationPage";
 
 //Збереження адреси результату платежу перед входом
 function PaymentResultRoute() {
@@ -110,6 +111,7 @@ function App() {
           <Route path="account" element={<MasterAccountPage />} />
           <Route path="account/bookings" element={<MasterBookingsPage />} />
           <Route path="account/tariff" element={<MasterTariffPage />} />
+          <Route path="account/location" element={<MasterLocationPage />} />
         </Route>
 
         <Route path="/admin" element={isAdmin ? <AdminDashboardPage /> : <Navigate to="/login" replace />} />

@@ -128,18 +128,39 @@ export async function api<T>(path: string, options: RequestInit = {}, responseTy
     // Форми зараз показують спільне повідомлення, тому назви полів не зберігаємо.
     const messages: string[] = [];
     if (typeof data.errors === "object" && data.errors !== null && !Array.isArray(data.errors)) {
-      for (const values of Object.values(data.errors)) {
+      for (const [field, values] of Object.entries(data.errors)) {
         if (!Array.isArray(values)) continue;
 
         for (const value of values) {
           if (typeof value === "string" && value.trim()) {
-            messages.push(value.trim());
+            // ASP.NET повертає англійські помилки координат без окремого коду.
+            const fieldName = field.split(".").pop()?.toLowerCase();
+            if (fieldName === "latitude" || fieldName === "longitude") {
+              const coordinatesMessage = "Не вдалося зберегти координати адреси. Спробуйте вибрати адресу повторно.";
+              if (!messages.includes(coordinatesMessage)) {
+                messages.push(coordinatesMessage);
+              }
+            } else {
+              messages.push(value.trim());
+            }
           }
         }
       }
     }
     if (messages.length > 0) {
       message = messages.join(" ");
+    }
+
+    // Ці відповіді реєстрації поки містять лише текст, без коду помилки.
+    if (
+      message === "User with the same Email already exists" ||
+      message === "User already exists with the same Email."
+    ) {
+      message = "Користувач із такою електронною адресою вже існує.";
+    }
+
+    if (message === "This Email is already on confirmation.") {
+      message = "Для цієї електронної адреси вже було розпочато підтвердження реєстрації.";
     }
 
     // Якщо знаємо код — показуємо його український переклад зі словника.

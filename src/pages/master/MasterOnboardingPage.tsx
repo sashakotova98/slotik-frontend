@@ -10,7 +10,7 @@ import type { UploadedPhoto } from "../../api/photos";
 import Header from "../../components/Header";
 import MasterProfileStep, { type ProfileFields } from "../../components/master/MasterProfileStep";
 import { getCities } from "../../api/cities";
-import { deletePortfolioPhoto, getMasterPortfolio, type PortfolioPhoto } from "../../api/masters";
+import { deletePortfolioPhoto, getMasterPortfolio, type PortfolioPhoto, saveMasterLocation } from "../../api/masters";
 
 function createUuid(): string {
   if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -57,6 +57,8 @@ export default function MasterOnboardingPage() {
     districtId: null,
     address: "",
     about: "",
+    latitude: null,
+    longitude: null,
   });
 
   const [saving, setSaving] = useState(false);
@@ -136,6 +138,8 @@ export default function MasterOnboardingPage() {
           districtId: city ? master.districtId : null,
           address: master.address ?? "",
           about: master.about ?? "",
+          latitude: master.latitude ?? null,
+          longitude: master.longitude ?? null,
         });
       } catch (error) {
         if (!active) return;
@@ -218,8 +222,8 @@ export default function MasterOnboardingPage() {
       experienceYears: savedMaster?.experienceYears ?? 0,
       slotStepMin: savedMaster?.slotStepMin ?? 30,
       isBlocked: savedMaster?.isBlocked ?? false,
-      latitude: savedMaster?.latitude ?? null,
-      longitude: savedMaster?.longitude ?? null,
+      latitude: profile.latitude,
+      longitude: profile.longitude,
     };
 
     setSaving(true);
@@ -240,6 +244,28 @@ export default function MasterOnboardingPage() {
       // Сохранение уже успешно: не отправляем эти файлы повторно.
       setPortfolioFiles([]);
       setPortfolioError("");
+
+      // Координати зберігаємо окремим JSON-запитом.
+      // Без позначки додатковий запит не потрібен:
+      // поточне збереження профілю вже передає відсутність координат.
+      if (profile.latitude !== null && profile.longitude !== null) {
+        try {
+          await saveMasterLocation(savedId, {
+            districtId: data.districtId,
+            address: data.address ?? "",
+            latitude: profile.latitude,
+            longitude: profile.longitude,
+          });
+        } catch (error) {
+          // Профіль уже збережено, тому не повідомляємо про повний провал.
+          setSaveError(
+            error instanceof Error
+              ? `Профіль збережено, але позначку на карті — ні. ${error.message}`
+              : "Профіль збережено, але не вдалося зберегти позначку на карті."
+          );
+          return;
+        }
+      }
 
       try {
         const savedPhotos = await getMasterPortfolio(savedId);

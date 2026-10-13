@@ -84,15 +84,7 @@ export default function MasterProfilePage() {
 
   const profileUrl = `${window.location.origin}/m/${encodeURIComponent(masterProfile.slug)}`;
 
-  const joinedAt = new Date(masterProfile.user.createdAt ?? "");
-  const joinedDate = Number.isNaN(joinedAt.getTime())
-    ? null
-    : new Intl.DateTimeFormat("uk-UA", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "Europe/Kyiv",
-    }).format(joinedAt);
+  // Публічний API не повертає дату реєстрації, тому її не показуємо.
 
   const { latitude, longitude } = masterProfile;
   const hasCoordinates =
@@ -125,9 +117,9 @@ export default function MasterProfilePage() {
     });
     directionsUrl = "https://www.google.com/maps/dir/?" + directionsParams.toString();
   }
-  const fullName = [masterProfile.user.firstName, masterProfile.user.lastName].filter(Boolean).join(" ");
+  const fullName = [masterProfile.firstName, masterProfile.lastName].filter(Boolean).join(" ");
 
-  const initials = [masterProfile.user.firstName, masterProfile.user.lastName]
+  const initials = [masterProfile.firstName, masterProfile.lastName]
     .map((part) => part.trim().charAt(0))
     .join("")
     .toUpperCase();
@@ -161,7 +153,6 @@ export default function MasterProfilePage() {
             <p className="mt-3 text-sm text-neutral-500">{masterProfile.districtName}</p>
             {masterProfile.about && <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-600">{masterProfile.about}</p>}
             <div className="mt-6 hidden border-t border-neutral-200 pt-5 lg:block">
-              {joinedDate && <p className="mb-5 text-xs text-neutral-500">В Slotik з <time dateTime={joinedAt.toISOString()}>{joinedDate}</time></p>}
               <a href="#services" className="flex min-h-11 items-center justify-center rounded-lg bg-black px-4 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2">Переглянути послуги</a>
               {directionsUrl ? (
                 <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="mt-3 flex min-h-11 w-full items-center justify-center rounded-lg border border-neutral-200 px-4 text-sm hover:bg-white focus-visible:outline-2">Прокласти маршрут</a>
@@ -230,9 +221,10 @@ export default function MasterProfilePage() {
                           </p>
                           <button
                             type="button"
-                            disabled
-                            aria-describedby="booking-unavailable"
-                            className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-400 disabled:cursor-not-allowed lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white/60"
+                            onClick={() => {
+                              navigate("/login");
+                            }}
+                            className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-900 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white lg:hover:bg-neutral-800"
                           >
                             Обрати
                           </button>
@@ -240,9 +232,6 @@ export default function MasterProfilePage() {
                       </li>
                     ))}
                   </ul>
-                  <p id="booking-unavailable" className="mt-2 text-xs leading-relaxed text-neutral-500">
-                    Онлайн-запис поки недоступний.
-                  </p>
                 </>
               )}
             </section>
@@ -321,11 +310,6 @@ export default function MasterProfilePage() {
           </div>
         </main>
 
-        {joinedDate && (
-          <footer className="px-5 pb-8 pt-6 text-center text-sm text-neutral-600 lg:hidden">
-            В Slotik з <time dateTime={joinedAt.toISOString()}>{joinedDate}</time>
-          </footer>
-        )}
 
         {shareOpen && <ProfileShareModal profileUrl={profileUrl} onClose={() => setShareOpen(false)} />}
       </div>
