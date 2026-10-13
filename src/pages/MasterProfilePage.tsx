@@ -232,7 +232,9 @@ function MasterProfileContent({ slug }: { slug: string }) {
                           <button
                             type="button"
                             onClick={() => {
-                              navigate("/login");
+                              navigate(
+                                `/m/${encodeURIComponent(slug)}/services/${service.id}`
+                              );
                             }}
                             className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-900 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white lg:hover:bg-neutral-800"
                           >

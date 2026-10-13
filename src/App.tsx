@@ -30,6 +30,7 @@ import MasterCreatedPage from "./pages/master/MasterCreatedPage";
 import MasterLocationPage from "./pages/master/MasterLocationPage";
 import MasterServicesPage from "./pages/master/MasterServicesPage";
 import MasterPortfolioPage from "./pages/master/MasterPortfolioPage";
+import ServiceDetailsPage from "./pages/services/ServiceDetailsPage";
 
 //Збереження адреси результату платежу перед входом
 function PaymentResultRoute() {
@@ -88,6 +89,7 @@ function App() {
         <Route path="/support" element={<SupportPage />} />
 
         <Route path="/m/:slug" element={<MasterProfilePage />} />
+        <Route path="/m/:slug/services/:serviceId" element={<ServiceDetailsPage />} />
 
         <Route path="/login" element={token ? <Navigate to="/" replace /> : <LoginPage />} />
 
@@ -136,4 +138,3 @@ function App() {
 }
 
 export default App;
-
