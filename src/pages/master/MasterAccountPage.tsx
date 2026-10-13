@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
+// import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users, MapPin } from "lucide-react";
+import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users, MapPin, Images, Scissors } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../api/api";
 import { getOwnProfile, type UserProfile } from "../../api/users";
@@ -16,6 +17,16 @@ const menuItems = [
     to: "/cabinet/account/bookings",
     label: "Ваші записи",
     icon: CalendarDays,
+  },
+  {
+    to: "/cabinet/account/services",
+    label: "Мої послуги",
+    icon: Scissors,
+  },
+  {
+    to: "/cabinet/account/portfolio",
+    label: "Портфоліо",
+    icon: Images,
   },
   {
     to: "/support",
@@ -82,8 +93,10 @@ export default function MasterAccountPage() {
   }, [token, retry]);
 
   function handleLogout() {
-    logout();
-    navigate("/home", { replace: true });
+    startTransition(() => {
+      logout();
+      navigate("/home", { replace: true });
+    });
   }
 
   const fullName = profile ? [profile.firstName, profile.lastName].filter(Boolean).join(" ") : "";
@@ -184,4 +197,5 @@ export default function MasterAccountPage() {
     </div>
   );
 }
+
 

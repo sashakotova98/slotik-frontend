@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Users } from "lucide-react";
-import { getServicePhotosByMasterId, type ServicePhoto } from "../../api/servicePhotos";
+import { getMasterPortfolio, type PortfolioPhoto } from "../../api/masters";
 import { getCatalogMasters, type CatalogMaster } from "../../api/catalogMasters";
 import { getPublicMasterReviews, type ReviewsResponse } from "../../api/reviews";
 
 type HomeMaster = {
   master: CatalogMaster;
   reviewsData: ReviewsResponse | null;
-  servicePhotos: ServicePhoto[];
+  portfolioPhotos: PortfolioPhoto[];
   photosFailed: boolean;
 };
 
@@ -60,14 +60,14 @@ export default function HomeMastersReviews() {
         if (!active) {
           return;
         }
-        // Фото послуг завантажуємо лише для вибраних майстрів.
+        // Портфоліо завантажуємо лише для вибраних майстрів.
         const result = await Promise.all(
           selected.map(async ({ master, reviewsData }) => {
             try {
-              const servicePhotos = await getServicePhotosByMasterId(master.id);
-              return { master, reviewsData, servicePhotos: servicePhotos.slice(0, 3), photosFailed: false };
+              const portfolioPhotos = await getMasterPortfolio(master.id);
+              return { master, reviewsData, portfolioPhotos: portfolioPhotos.slice(0, 3), photosFailed: false };
             } catch {
-              return { master, reviewsData, servicePhotos: [], photosFailed: true };
+              return { master, reviewsData, portfolioPhotos: [], photosFailed: true };
             }
           }),
         );
@@ -112,7 +112,7 @@ export default function HomeMastersReviews() {
   return (
     <section aria-label="Майстри та відгуки клієнтів" className="px-4 py-8">
       <div className="mx-auto max-w-2xl space-y-8">
-        {items.map(({ master, reviewsData, servicePhotos, photosFailed }) => {
+        {items.map(({ master, reviewsData, portfolioPhotos, photosFailed }) => {
           const latestReview = reviewsData?.reviews[0];
           const clientName = latestReview?.clientFirstName || "Клієнт";
           const fullName = `${master.firstName} ${master.lastName}`;
@@ -155,9 +155,9 @@ export default function HomeMastersReviews() {
                     </div>
                   </div>
                   <div className="min-w-0">
-                    {servicePhotos.length > 0 ? (
+                    {portfolioPhotos.length > 0 ? (
                       <div className="grid grid-cols-3 gap-2">
-                        {servicePhotos.map((photo, index) => {
+                        {portfolioPhotos.map((photo, index) => {
                           return (
                             <Link
                               key={photo.id}
@@ -245,4 +245,5 @@ export default function HomeMastersReviews() {
     </section>
   );
 }
+
 

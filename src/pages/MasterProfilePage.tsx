@@ -2,8 +2,8 @@ import { ApiError } from "../api/api";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { type PublicMasterProfile, getMasterBySlug } from "../api/masters";
-import { getServicePhotosByMasterId, type ServicePhoto } from "../api/servicePhotos";
+import { type PublicMasterProfile, type PortfolioPhoto, getMasterBySlug, getMasterPortfolio } from "../api/masters";
+
 import { type Service, getServicesByMasterId } from "../api/services";
 import MasterProfileHeader from "../components/master/MasterProfileHeader";
 import ProfileShareModal from "../components/master/ProfileShareModal";
@@ -27,7 +27,7 @@ function MasterProfileContent({ slug }: { slug: string }) {
 
   const [masterProfile, setMasterProfile] = useState<PublicMasterProfile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
-  const [servicePhotos, setServicePhotos] = useState<ServicePhoto[]>([]);
+  const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,13 +42,13 @@ function MasterProfileContent({ slug }: { slug: string }) {
 
         const [services, photos] = await Promise.all([
           getServicesByMasterId(profile.id),
-          getServicePhotosByMasterId(profile.id),
+          getMasterPortfolio(profile.id),
         ]);
         // Ігноруємо відповідь, якщо користувач уже відкрив іншу сторінку.
         if (!active) { return; }
         setMasterProfile(profile);
         setServices(services);
-        setServicePhotos(photos);
+        setPortfolioPhotos(photos);
       } catch (error) {
         if (active) {
           setError(error instanceof ApiError ? error.message : "Не вдалося завантажити профіль майстра.");
@@ -250,15 +250,15 @@ function MasterProfileContent({ slug }: { slug: string }) {
               <h2 id="portfolio-title" className="mb-4 text-2xl font-medium text-neutral-600 lg:text-lg lg:text-black">
                 Портфоліо
               </h2>
-              {servicePhotos.length === 0 ? (
-                <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-500">Майстер ще не додав фотографій.</p>
+              {portfolioPhotos.length === 0 ? (
+                <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-500">Майстер ще не додав фото до портфоліо.</p>
               ) : (
                 <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-3 lg:gap-4">
-                  {servicePhotos.map((photo) => (
+                  {portfolioPhotos.map((photo) => (
                     <li key={photo.id} className="overflow-hidden rounded-xl bg-neutral-100">
                       <img
                         src={photo.photoUrl}
-                        alt={services.find((service) => service.id === photo.serviceId)?.name ?? "Робота майстра"}
+                        alt="Робота з портфоліо майстра"
                         loading="lazy"
                         className="aspect-square w-full object-cover lg:aspect-4/3"
                       />
@@ -323,6 +323,7 @@ function MasterProfileContent({ slug }: { slug: string }) {
     </div>
   );
 }
+
 
 
 

@@ -100,7 +100,7 @@ export default function MasterLocationPicker({ latitude, longitude, disabled = f
             onClick={() => {
               onChange(null, null);
             }}
-            className="min-h-11 rounded-xl px-3 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="min-h-11 rounded-xl bg-neutral-50 px-3 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-50"
           >
             Прибрати позначку
           </button>
@@ -111,3 +111,4 @@ export default function MasterLocationPicker({ latitude, longitude, disabled = f
     </section>
   );
 }
+
