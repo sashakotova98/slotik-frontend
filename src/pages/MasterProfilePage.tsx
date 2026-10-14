@@ -21,6 +21,12 @@ export default function MasterProfilePage() {
 function MasterProfileContent({ slug }: { slug: string }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const navigationState = location.state as { catalogPath?: string; returnTo?: string } | null;
+  const catalogPath = navigationState?.catalogPath;
+  const backPath = typeof catalogPath === "string" &&
+    (catalogPath === "/catalog" || catalogPath.startsWith("/catalog?"))
+    ? catalogPath
+    : "/home";
   const serviceListRef = useRef<HTMLUListElement>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -68,18 +74,12 @@ function MasterProfileContent({ slug }: { slug: string }) {
 
   function handleBack() {
     // Повернення з перегляду після створення сторінки майстра.
-    if (location.state?.returnTo === "/cabinet") {
+    if (navigationState?.returnTo === "/cabinet") {
       navigate("/cabinet", { replace: true });
       return;
     }
 
-    const historyIndex = window.history.state?.idx;
-
-    if (typeof historyIndex === "number" && historyIndex > 0) {
-      navigate(-1);
-    } else {
-      navigate("/home", { replace: true });
-    }
+    navigate(backPath, { replace: true });
   }
 
   if (loading) {
@@ -233,7 +233,8 @@ function MasterProfileContent({ slug }: { slug: string }) {
                             type="button"
                             onClick={() => {
                               navigate(
-                                `/m/${encodeURIComponent(slug)}/services/${service.id}`
+                                `/m/${encodeURIComponent(slug)}/services/${service.id}`,
+                                { state: { fromProfile: true, catalogPath: backPath } }
                               );
                             }}
                             className="min-h-11 rounded-full border border-neutral-300 px-5 text-sm text-neutral-900 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 lg:mt-4 lg:w-full lg:rounded-lg lg:border-black lg:bg-black lg:text-white lg:hover:bg-neutral-800"
@@ -325,6 +326,7 @@ function MasterProfileContent({ slug }: { slug: string }) {
     </div>
   );
 }
+
 
 
 

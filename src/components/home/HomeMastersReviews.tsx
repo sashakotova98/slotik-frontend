@@ -209,7 +209,13 @@ export default function HomeMastersReviews() {
                     <div className="min-w-0">
                       <p className="text-xs font-medium">{clientName}</p>
                       <p className="mt-1 rounded-lg bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600">
-                        {latestReview.serviceName} • {latestReview.price.toLocaleString("uk-UA")} ₴ • {latestReview.durationMin} хв
+                        {latestReview.serviceName || "Послуга"}
+                        {latestReview.price != null && (
+                          <> • {latestReview.price.toLocaleString("uk-UA")} ₴</>
+                        )}
+                        {latestReview.durationMin != null && (
+                          <> • {latestReview.durationMin} хв</>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -245,5 +251,6 @@ export default function HomeMastersReviews() {
     </section>
   );
 }
+
 
 

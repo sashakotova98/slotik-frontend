@@ -12,8 +12,8 @@ export type MasterReview = {
   clientFirstName: string | null;
   clientAvatarUrl: string | null;
   serviceName: string;
-  durationMin: number;
-  price: number;
+  durationMin: number | null;
+  price: number | null;
   startsAt: string | null;
   endsAt: string | null;
   reply: string | null;
@@ -51,3 +51,4 @@ export async function saveReviewReply(reviewId: number, text: string): Promise<R
     body: JSON.stringify(text),
   });
 }
+

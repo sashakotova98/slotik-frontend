@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { useAuth } from "./hooks/useAuth";
 import SplashPage from "./pages/SplashPage";
 import LoginPage from "./pages/LoginPage";
-import ClientHomePage from "./pages/ClientHomePage";
+
 import PublicHomePage from "./pages/PublicHomePage";
 import MasterProfilePage from "./pages/MasterProfilePage";
 import MasterCabinetPage from "./pages/master/MasterCabinetPage";
@@ -31,6 +31,14 @@ import MasterLocationPage from "./pages/master/MasterLocationPage";
 import MasterServicesPage from "./pages/master/MasterServicesPage";
 import MasterPortfolioPage from "./pages/master/MasterPortfolioPage";
 import ServiceDetailsPage from "./pages/services/ServiceDetailsPage";
+import ClientLayout from "./components/client/ClientLayout";
+import ClientHomePage from "./pages/client/ClientHomePage";
+import ClientSearchPage from "./pages/client/ClientSearchPage";
+import ClientBookingsPage from "./pages/client/ClientBookingsPage";
+import ClientAccountPage from "./pages/client/ClientAccountPage";
+import ClientBookingDatePage from "./pages/client/ClientBookingDatePage";
+import ClientBookingConfirmPage from "./pages/client/ClientBookingConfirmPage";
+import ClientBookingSuccessPage from "./pages/client/ClientBookingSuccessPage";
 
 //Збереження адреси результату платежу перед входом
 function PaymentResultRoute() {
@@ -76,8 +84,10 @@ function App() {
               <MasterEntryRedirect key={token} />
             ) : role === "Superadmin" ? (
               <Navigate to="/admin" replace />
+            ) : role === "Client" ? (
+              <Navigate to="/client" replace />
             ) : (
-              <ClientHomePage />
+              <Navigate to="/home" replace />
             )
           }
         />
@@ -120,6 +130,30 @@ function App() {
           <Route path="account/services" element={<MasterServicesPage />} />
         </Route>
 
+        <Route path="/client" element={token && role === "Client" ? <ClientLayout /> : <Navigate to="/login" replace />}>
+          <Route index element={<ClientHomePage />} />
+          <Route path="search" element={<ClientSearchPage />} />
+          <Route path="bookings" element={<ClientBookingsPage />} />
+          <Route path="account" element={<ClientAccountPage />} />
+        </Route>
+
+        <Route
+          path="/m/:slug/services/:serviceId/book"
+          element={
+            token && role === "Client"
+              ? <ClientBookingDatePage />
+              : <Navigate to="/login" replace />
+          }
+        />
+
+        <Route
+          path="/m/:slug/services/:serviceId/book/confirm"
+          element={token && role === "Client" ? <ClientBookingConfirmPage /> : <Navigate to="/login" replace />}
+        />
+        <Route
+          path="/client/bookings/:bookingId/success"
+          element={token && role === "Client" ? <ClientBookingSuccessPage /> : <Navigate to="/login" replace />}
+        />
         <Route path="/admin" element={isAdmin ? <AdminDashboardPage /> : <Navigate to="/login" replace />} />
         <Route path="/admin/masters" element={isAdmin ? <AdminMastersPage /> : <Navigate to="/login" replace />} />
         <Route path="/admin/finance" element={isAdmin ? <AdminFinancePage /> : <Navigate to="/login" replace />} />
@@ -138,3 +172,6 @@ function App() {
 }
 
 export default App;
+
+
+

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { ChevronLeft, Clock3, UserRound } from "lucide-react";
 import { getMasterBySlug, type PublicMasterProfile } from "../../api/masters";
 import { getServicesByMasterId, type Service } from "../../api/services";
@@ -31,6 +32,10 @@ export default function ServiceDetailsPage() {
 
 function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: number }) {
   const navigate = useNavigate();
+  const { token, role } = useAuth();
+  const [bookingError, setBookingError] = useState("");
+  const location = useLocation();
+  const navigationState = location.state as { fromProfile?: boolean; catalogPath?: string } | null;
 
   const [details, setDetails] = useState<Details | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +43,41 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
 
   const profilePath = `/m/${encodeURIComponent(slug)}`;
   const servicePath = `${profilePath}/services/${serviceId}`;
+  const bookingPath = `${servicePath}/book`;
+
+  function handleBook() {
+    if (!token) {
+      navigate("/login", {
+        state: {
+          from: {
+            pathname: bookingPath,
+            search: "",
+            hash: "",
+          },
+        },
+      });
+      return;
+    }
+
+    if (role === "Client") {
+      navigate(bookingPath);
+      return;
+    }
+
+    setBookingError("Для запису увійдіть як клієнт.");
+  }
+
+  function handleBack() {
+    const historyIndex = window.history.state?.idx;
+    if (navigationState?.fromProfile && typeof historyIndex === "number" && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate(profilePath, {
+      replace: true,
+      state: { catalogPath: navigationState?.catalogPath },
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -112,9 +152,9 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
       <main className="mx-auto max-w-md p-6 text-center">
         <p role="alert">{error || "Послугу не знайдено."}</p>
 
-        <Link to={profilePath} className="mt-4 inline-block underline underline-offset-4">
+        <button type="button" onClick={handleBack} className="mt-4 inline-block underline underline-offset-4">
           До профілю майстра
-        </Link>
+        </button>
       </main>
     );
   }
@@ -133,13 +173,14 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
         <article className="rounded-[28px] border border-neutral-400 px-4 pb-6 pt-4 sm:px-5">
           <header>
             <div className="flex items-start gap-2">
-              <Link
-                to={profilePath}
+              <button
+                type="button"
+                onClick={handleBack}
                 aria-label="Назад до профілю майстра"
                 className="-ml-2 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2"
               >
                 <ChevronLeft size={28} strokeWidth={1.75} aria-hidden="true" />
-              </Link>
+              </button>
 
               <h1 className="min-w-0 pt-1 text-xl font-medium wrap-break-word">{service.name}</h1>
             </div>
@@ -205,20 +246,14 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
 
         <button
           type="button"
-          onClick={() => {
-            navigate("/login", {
-              state: {
-                from: {
-                  pathname: servicePath,
-                },
-              },
-            });
-          }}
+          onClick={handleBook}
           className="mt-4 flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 py-3 text-lg font-medium text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
           Обрати зараз
         </button>
+        {bookingError && <p role="alert" className="mt-3 text-sm text-red-600">{bookingError}</p>}
       </div>
     </main>
   );
 }
+

@@ -279,3 +279,7 @@ export async function uploadMasterPortfolio(data: MasterProfileData, files: File
   }
   await api<void>("/Master", { method: "PUT", body: formData });
 }
+
+export function getMasterById(masterId: number): Promise<PublicMasterProfile> {
+  return api<PublicMasterProfile>(`/Master/${masterId}`);
+}

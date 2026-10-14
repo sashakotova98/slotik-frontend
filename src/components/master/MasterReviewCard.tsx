@@ -58,7 +58,9 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{name}</p>
             <p className="mt-1 inline-block rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-600">
-              {review.serviceName} • {review.durationMin} хв • {review.price.toLocaleString("uk-UA")} ₴
+              {review.serviceName || "Послуга"}
+              {review.durationMin != null && <> • {review.durationMin} хв</>}
+              {review.price != null && <> • {review.price.toLocaleString("uk-UA")} ₴</>}
             </p>
           </div>
           <div aria-label={`Оцінка: ${review.rating} з 5`} className="flex gap-1 text-lg">
@@ -142,3 +144,4 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
     </article>
   );
 }
+

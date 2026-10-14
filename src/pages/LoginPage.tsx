@@ -113,13 +113,14 @@ export default function LoginPage() {
     try {
       if (tab === "login") {
         const data = await apiLogin(values.email, values.password);
-
         login(data.token, data.role);
 
-        if (
-          data.role === "Master" &&
-          from?.pathname === "/payment/result"
-        ) {
+        const bookingPath = from?.pathname;
+        const isBookingPath =
+          typeof bookingPath === "string" &&
+          /^\/m\/[a-zA-Z0-9_-]+\/services\/[1-9]\d*\/book$/.test(bookingPath);
+
+        if (data.role === "Master" && from?.pathname === "/payment/result") {
           navigate(
             {
               pathname: "/payment/result",
@@ -130,6 +131,8 @@ export default function LoginPage() {
           );
         } else if (data.role === "Superadmin") {
           navigate("/admin", { replace: true });
+        } else if (data.role === "Client" && isBookingPath) {
+          navigate(bookingPath, { replace: true });
         } else {
           navigate("/", { replace: true });
         }
@@ -138,279 +141,279 @@ export default function LoginPage() {
       }
 
       await apiRegister({
-        firstName: values.firstName.trim(),
-        lastName: values.lastName.trim(),
-        email: values.email,
-        phone: values.phone,
-        password: values.password,
-        role,
-      });
+      firstName: values.firstName.trim(),
+      lastName: values.lastName.trim(),
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+      role,
+    });
 
-      setShowRegistrationSuccess(true);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        // Перекладаємо повідомлення про неправильні дані входу.
-        setServerError(
-          tab === "login" && err.message.trim() === "Wrong Email or Password"
-            ? "Неправильна електронна пошта або пароль."
-            : err.message
-        );
-      } else if (err instanceof TypeError) {
-        // Зокрема, сюди потрапляє Failed to fetch.
-        setServerError(
-          "Не вдалося з’єднатися із сервером. Спробуйте ще раз пізніше."
-        );
-      } else {
-        setServerError("Не вдалося виконати запит. Спробуйте ще раз.");
-      }
-    } finally {
-      setLoading(false);
+    setShowRegistrationSuccess(true);
+  } catch (err) {
+    if (err instanceof ApiError) {
+      // Перекладаємо повідомлення про неправильні дані входу.
+      setServerError(
+        tab === "login" && err.message.trim() === "Wrong Email or Password"
+          ? "Неправильна електронна пошта або пароль."
+          : err.message
+      );
+    } else if (err instanceof TypeError) {
+      // Зокрема, сюди потрапляє Failed to fetch.
+      setServerError(
+        "Не вдалося з’єднатися із сервером. Спробуйте ще раз пізніше."
+      );
+    } else {
+      setServerError("Не вдалося виконати запит. Спробуйте ще раз.");
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const shownError = (field: string) => {
-    if (!touched[field]) return "";
-    return errors[field] || "";
-  };
+const shownError = (field: string) => {
+  if (!touched[field]) return "";
+  return errors[field] || "";
+};
 
-  return (
-    <div className="min-h-screen bg-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-sm">
-        <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
-          <button
-            disabled={loading}
-            // onClick={() => setTab("login")}
-            onClick={() => {
-              setTab("login");
-              setValues({ firstName: "", lastName: "", phone: "", email: "", password: "", confirmPassword: "", agree: false });
-              setErrors({});
-              setTouched({});
-              setServerError("");
-            }}
-            className={`py-2.5 text-sm font-medium ${tab === "login" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
-          >
-            Вхід
-          </button>
-          <button
-            disabled={loading}
-            onClick={() => { setTab("register"); setServerError(""); setErrors({}); setTouched({}); }}
-            className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
-          >
-            Реєстрація
-          </button>
-        </div>
-
-        {tab === "login" && passwordChanged && (
-          <div className="mb-4 rounded-[14px] border border-green-200 bg-green-100 px-4 py-3 text-sm text-green-800">
-            <div className="font-semibold">
-              Готово!
-            </div>
-
-            <div>
-              Новий пароль успішно збережено.
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} noValidate>
-          {tab === "login" ? (
-            <>
-              <Field
-                id="email"
-                name="email"
-                label="Email"
-                type="email"
-                placeholder="oksana@gmail.com"
-                value={values.email}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("email")}
-              />
-              <Field
-                id="password"
-                name="password"
-                label="Пароль"
-                type="password"
-                value={values.password}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("password")}
-              />
-              <p className="text-right mb-4">
-                <a
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowForgotPassword(true);
-                  }}
-                  className="text-sm text-accent underline"
-                >
-                  Забули пароль?
-                </a>
-              </p>
-            </>
-          ) : (
-            <>
-              <Field
-                id="reg-firstName"
-                name="firstName"
-                label="Ім'я"
-                type="text"
-                value={values.firstName}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("firstName")}
-              />
-              <Field
-                id="reg-lastName"
-                name="lastName"
-                label="Прізвище"
-                type="text"
-                value={values.lastName}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("lastName")}
-              />
-              <Field
-                id="reg-phone"
-                name="phone"
-                label="Телефон"
-                type="tel"
-                placeholder="+380XXXXXXXXX"
-                value={values.phone}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("phone")}
-              />
-              <Field
-                id="reg-email"
-                name="email"
-                label="Email"
-                type="email"
-                placeholder="oksana@gmail.com"
-                value={values.email}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("email")}
-              />
-              <Field
-                id="reg-password"
-                name="password"
-                label="Пароль"
-                type="password"
-                placeholder="мінімум 8 символів"
-                value={values.password}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("password")}
-              />
-              <Field
-                id="reg-confirmPassword"
-                name="confirmPassword"
-                label="Підтвердити пароль"
-                type="password"
-                value={values.confirmPassword}
-                onChange={handleInputChange}
-                onBlur={handleBlur}
-                error={shownError("confirmPassword")}
-              />
-
-              <div className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
-                <input
-                  id="registration-agree"
-                  type="checkbox"
-                  checked={values.agree}
-                  disabled={!isRegFormValid}
-                  onChange={(e) => setValues({ ...values, agree: e.target.checked })}
-                  className="mt-0.5 size-4 shrink-0"
-                />
-                <span>
-                  <label htmlFor="registration-agree">Погоджуюсь з</label>{" "}
-                  <a
-                    href="/terms"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setShowTerms(true);
-                    }}
-                    aria-haspopup="dialog"
-                    className="inline underline underline-offset-2 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    умовами користування та обробкою персональних даних
-                  </a>
-                </span>
-              </div>
-              {!isRegFormValid && <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>}
-
-              <div className="grid grid-cols-2 gap-3 my-4">
-                <button
-                  type="button"
-                  onClick={() => setRole("Client")}
-                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Client" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
-                >
-                  <span className="flex items-center justify-center gap-1.5">{role === "Client" && <Check size={16} />}Я клієнт</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole("Master")}
-                  className={`rounded-field border py-4 text-sm transition-colors ${role === "Master" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
-                >
-                  <span className="flex items-center justify-center gap-1.5">{role === "Master" && <Check size={16} />}Я майстер</span>
-                </button>
-              </div>
-            </>
-          )}
-          {serverError && <p className="text-sm text-danger mb-2 text-center">{serverError}</p>}
-          <button
-            type="submit"
-            disabled={loading || (tab === "register" && !values.agree)}
-            className="w-full bg-accent text-on-accent rounded-field py-3 font-medium mt-2 disabled:opacity-50"
-          >
-            {loading ? "Зачекайте..." : tab === "login" ? "Увійти" : "Створити акаунт"}
-          </button>
-        </form>
+return (
+  <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+    <div className="w-full max-w-sm bg-surface rounded-card p-6 shadow-sm">
+      <div className="grid grid-cols-2 rounded-field border border-border overflow-hidden mb-6">
+        <button
+          disabled={loading}
+          // onClick={() => setTab("login")}
+          onClick={() => {
+            setTab("login");
+            setValues({ firstName: "", lastName: "", phone: "", email: "", password: "", confirmPassword: "", agree: false });
+            setErrors({});
+            setTouched({});
+            setServerError("");
+          }}
+          className={`py-2.5 text-sm font-medium ${tab === "login" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
+        >
+          Вхід
+        </button>
+        <button
+          disabled={loading}
+          onClick={() => { setTab("register"); setServerError(""); setErrors({}); setTouched({}); }}
+          className={`py-2.5 text-sm font-medium ${tab === "register" ? "bg-accent text-on-accent" : "bg-surface text-text"}`}
+        >
+          Реєстрація
+        </button>
       </div>
-      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
 
-      {
-        showForgotPassword && (
-          <ForgotPasswordModal
-            onClose={() =>
-              setShowForgotPassword(false)
-            }
-          />
-        )
-      }
+      {tab === "login" && passwordChanged && (
+        <div className="mb-4 rounded-[14px] border border-green-200 bg-green-100 px-4 py-3 text-sm text-green-800">
+          <div className="font-semibold">
+            Готово!
+          </div>
 
-      {
-        showRegistrationSuccess && (
-          <RegistrationSuccessModal
-            email={values.email}
-            onClose={() => setShowRegistrationSuccess(false)}
-            onGoToLogin={() => {
-              const registeredEmail = values.email;
+          <div>
+            Новий пароль успішно збережено.
+          </div>
+        </div>
+      )}
 
-              setShowRegistrationSuccess(false);
-              setTab("login");
+      <form onSubmit={handleSubmit} noValidate>
+        {tab === "login" ? (
+          <>
+            <Field
+              id="email"
+              name="email"
+              label="Email"
+              type="email"
+              placeholder="oksana@gmail.com"
+              value={values.email}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("email")}
+            />
+            <Field
+              id="password"
+              name="password"
+              label="Пароль"
+              type="password"
+              value={values.password}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("password")}
+            />
+            <p className="text-right mb-4">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowForgotPassword(true);
+                }}
+                className="text-sm text-accent underline"
+              >
+                Забули пароль?
+              </a>
+            </p>
+          </>
+        ) : (
+          <>
+            <Field
+              id="reg-firstName"
+              name="firstName"
+              label="Ім'я"
+              type="text"
+              value={values.firstName}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("firstName")}
+            />
+            <Field
+              id="reg-lastName"
+              name="lastName"
+              label="Прізвище"
+              type="text"
+              value={values.lastName}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("lastName")}
+            />
+            <Field
+              id="reg-phone"
+              name="phone"
+              label="Телефон"
+              type="tel"
+              placeholder="+380XXXXXXXXX"
+              value={values.phone}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("phone")}
+            />
+            <Field
+              id="reg-email"
+              name="email"
+              label="Email"
+              type="email"
+              placeholder="oksana@gmail.com"
+              value={values.email}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("email")}
+            />
+            <Field
+              id="reg-password"
+              name="password"
+              label="Пароль"
+              type="password"
+              placeholder="мінімум 8 символів"
+              value={values.password}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("password")}
+            />
+            <Field
+              id="reg-confirmPassword"
+              name="confirmPassword"
+              label="Підтвердити пароль"
+              type="password"
+              value={values.confirmPassword}
+              onChange={handleInputChange}
+              onBlur={handleBlur}
+              error={shownError("confirmPassword")}
+            />
 
-              setValues({
-                firstName: "",
-                lastName: "",
-                phone: "",
-                email: registeredEmail,
-                password: "",
-                confirmPassword: "",
-                agree: false,
-              });
+            <div className={`flex items-start gap-2 my-4 text-sm ${isRegFormValid ? "text-muted" : "text-muted opacity-50"}`}>
+              <input
+                id="registration-agree"
+                type="checkbox"
+                checked={values.agree}
+                disabled={!isRegFormValid}
+                onChange={(e) => setValues({ ...values, agree: e.target.checked })}
+                className="mt-0.5 size-4 shrink-0"
+              />
+              <span>
+                <label htmlFor="registration-agree">Погоджуюсь з</label>{" "}
+                <a
+                  href="/terms"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setShowTerms(true);
+                  }}
+                  aria-haspopup="dialog"
+                  className="inline underline underline-offset-2 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  умовами користування та обробкою персональних даних
+                </a>
+              </span>
+            </div>
+            {!isRegFormValid && <p className="text-xs text-muted -mt-2 mb-4">Спочатку заповніть усі поля вище</p>}
 
-              setErrors({});
-              setTouched({});
-              setServerError("");
-            }}
-          />
-        )
-      }
-    </div >
-  );
+            <div className="grid grid-cols-2 gap-3 my-4">
+              <button
+                type="button"
+                onClick={() => setRole("Client")}
+                className={`rounded-field border py-4 text-sm transition-colors ${role === "Client" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
+              >
+                <span className="flex items-center justify-center gap-1.5">{role === "Client" && <Check size={16} />}Я клієнт</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole("Master")}
+                className={`rounded-field border py-4 text-sm transition-colors ${role === "Master" ? "bg-accent text-on-accent border-accent font-medium" : "bg-surface text-muted border-border"}`}
+              >
+                <span className="flex items-center justify-center gap-1.5">{role === "Master" && <Check size={16} />}Я майстер</span>
+              </button>
+            </div>
+          </>
+        )}
+        {serverError && <p className="text-sm text-danger mb-2 text-center">{serverError}</p>}
+        <button
+          type="submit"
+          disabled={loading || (tab === "register" && !values.agree)}
+          className="w-full bg-accent text-on-accent rounded-field py-3 font-medium mt-2 disabled:opacity-50"
+        >
+          {loading ? "Зачекайте..." : tab === "login" ? "Увійти" : "Створити акаунт"}
+        </button>
+      </form>
+    </div>
+    {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+
+    {
+      showForgotPassword && (
+        <ForgotPasswordModal
+          onClose={() =>
+            setShowForgotPassword(false)
+          }
+        />
+      )
+    }
+
+    {
+      showRegistrationSuccess && (
+        <RegistrationSuccessModal
+          email={values.email}
+          onClose={() => setShowRegistrationSuccess(false)}
+          onGoToLogin={() => {
+            const registeredEmail = values.email;
+
+            setShowRegistrationSuccess(false);
+            setTab("login");
+
+            setValues({
+              firstName: "",
+              lastName: "",
+              phone: "",
+              email: registeredEmail,
+              password: "",
+              confirmPassword: "",
+              agree: false,
+            });
+
+            setErrors({});
+            setTouched({});
+            setServerError("");
+          }}
+        />
+      )
+    }
+  </div >
+);
 
 
 }
