@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { ChevronLeft, Clock3, UserRound } from "lucide-react";
 import { getMasterBySlug, type PublicMasterProfile } from "../../api/masters";
 import { getServicesByMasterId, type Service } from "../../api/services";
@@ -31,6 +31,8 @@ export default function ServiceDetailsPage() {
 
 function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: number }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationState = location.state as { fromProfile?: boolean; catalogPath?: string } | null;
 
   const [details, setDetails] = useState<Details | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +40,18 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
 
   const profilePath = `/m/${encodeURIComponent(slug)}`;
   const servicePath = `${profilePath}/services/${serviceId}`;
+
+  function handleBack() {
+    const historyIndex = window.history.state?.idx;
+    if (navigationState?.fromProfile && typeof historyIndex === "number" && historyIndex > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate(profilePath, {
+      replace: true,
+      state: { catalogPath: navigationState?.catalogPath },
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -112,9 +126,9 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
       <main className="mx-auto max-w-md p-6 text-center">
         <p role="alert">{error || "Послугу не знайдено."}</p>
 
-        <Link to={profilePath} className="mt-4 inline-block underline underline-offset-4">
+        <button type="button" onClick={handleBack} className="mt-4 inline-block underline underline-offset-4">
           До профілю майстра
-        </Link>
+        </button>
       </main>
     );
   }
@@ -133,13 +147,14 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
         <article className="rounded-[28px] border border-neutral-400 px-4 pb-6 pt-4 sm:px-5">
           <header>
             <div className="flex items-start gap-2">
-              <Link
-                to={profilePath}
+              <button
+                type="button"
+                onClick={handleBack}
                 aria-label="Назад до профілю майстра"
                 className="-ml-2 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2"
               >
                 <ChevronLeft size={28} strokeWidth={1.75} aria-hidden="true" />
-              </Link>
+              </button>
 
               <h1 className="min-w-0 pt-1 text-xl font-medium wrap-break-word">{service.name}</h1>
             </div>
@@ -222,3 +237,4 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
     </main>
   );
 }
+

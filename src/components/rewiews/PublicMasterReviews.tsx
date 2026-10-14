@@ -144,20 +144,24 @@ export default function PublicMasterReviews({ masterId }: Props) {
 
                 <div className="mt-1.5 space-y-1 text-xs text-neutral-600">
                   <p className="wrap-break-word leading-4">{review.serviceName}</p>
+                  {(review.durationMin != null || review.price != null) && (
                   <p className="hidden flex-wrap items-center gap-x-2 gap-y-1 rounded-lg bg-neutral-100 px-2 py-1 text-xs sm:inline-flex">
-                    <span className="whitespace-nowrap">{review.durationMin} хв</span>
-                    <span aria-hidden="true">•</span>
-                    <span className="whitespace-nowrap">{review.price.toLocaleString("uk-UA")} ₴</span>
+                    {review.durationMin != null && <span className="whitespace-nowrap">{review.durationMin} хв</span>}
+                    {review.durationMin != null && review.price != null && <span aria-hidden="true">•</span>}
+                    {review.price != null && <span className="whitespace-nowrap">{review.price.toLocaleString("uk-UA")} ₴</span>}
                   </p>
+                  )}
                 </div>
               </div>
 
               <div className="col-start-3 row-start-1 flex flex-col items-end gap-2">
-                <p className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600 sm:hidden">
-                  <span>{review.durationMin} хв</span>
-                  <span aria-hidden="true">•</span>
-                  <span>{review.price.toLocaleString("uk-UA")} ₴</span>
-                </p>
+                {(review.durationMin != null || review.price != null) && (
+                  <p className="inline-flex items-center gap-1 whitespace-nowrap rounded-lg bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600 sm:hidden">
+                    {review.durationMin != null && <span className="whitespace-nowrap">{review.durationMin} хв</span>}
+                    {review.durationMin != null && review.price != null && <span aria-hidden="true">•</span>}
+                    {review.price != null && <span className="whitespace-nowrap">{review.price.toLocaleString("uk-UA")} ₴</span>}
+                  </p>
+                  )}
               <span
                 role="img"
                 aria-label={`Оцінка: ${review.rating} з 5`}
@@ -237,5 +241,6 @@ export default function PublicMasterReviews({ masterId }: Props) {
     </div>
   );
 }
+
 
 
