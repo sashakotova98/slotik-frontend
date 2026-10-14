@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Search, ChevronRight, CloudOff, RefreshCw } from "lucide-react";
+import { Menu, ChevronRight, CloudOff, RefreshCw } from "lucide-react";
 import Header from "../components/Header";
+import ServiceSearchForm from "../components/search/ServiceSearchForm";
 import { Link } from "react-router-dom";
 import chooseService from "../assets/public-home/choose-service.svg";
 import chooseTime from "../assets/public-home/choose-time.svg";
 import chooseBook from "../assets/public-home/book.svg";
 import bookingGirl from "../assets/public-home/booking-person.svg";
-import { CategoryIcon } from "../components/categories/CategoryIcon";
+import CategoryGrid from "../components/search/CategoryGrid";
 import joinMasterLeft from "../assets/public-home/join-master-left.svg";
 import joinMasterRight from "../assets/public-home/join-master-right.svg";
 import telegramIcon from "../assets/social/telegram.svg";
@@ -28,7 +29,7 @@ export default function PublicHomePage() {
   const [categoriesError, setCategoriesError] = useState("");
   const [categoriesRetry, setCategoriesRetry] = useState(0);
 
-  const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
   const { token, role } = useAuth();
   const [trialBusy, setTrialBusy] = useState(false);
@@ -128,10 +129,7 @@ export default function PublicHomePage() {
 
 
 
-  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const query = search.trim();
+  function handleSearch(query: string) {
 
     if (!query) return;
 
@@ -217,28 +215,7 @@ export default function PublicHomePage() {
           <p className="mt-1 text-[15px] leading-snug lg:mt-2 lg:text-xl">з краси і здоров’я поруч із вами</p>
 
           <div className="relative z-10 mx-auto mt-6 w-full max-w-2xl lg:mt-8">
-            <form
-              onSubmit={handleSearch}
-              role="search"
-              className="relative z-10 mx-auto mt-6 w-full max-w-2xl lg:mt-8"
-            >
-              <button
-                type="submit"
-                aria-label="Знайти"
-                className="absolute left-1 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-              >
-                <Search aria-hidden="true" className="size-5" />
-              </button>
-
-              <input
-                type="search"
-                aria-label="Пошук категорії послуги або майстра"
-                placeholder="Послуга, категорія або майстер..."
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                className="block h-14 w-full rounded-full bg-white pl-12 pr-5 text-sm text-black placeholder:text-border shadow-[0_5px_8px_rgba(0,0,0,0.2)] outline-none focus-visible:ring-2 focus-visible:ring-black lg:h-16 lg:text-base"
-              />
-            </form>
+            <ServiceSearchForm onSearch={handleSearch} className="z-10 mx-auto mt-6 w-full max-w-2xl lg:mt-8" />
           </div>
 
           <nav
@@ -281,24 +258,7 @@ export default function PublicHomePage() {
                   Категорій поки немає.
                 </p>
               )}
-            <ul className="grid grid-cols-4 gap-x-2 gap-y-5 lg:gap-6">
-              {categories.map((category) => (
-                <li key={category.id} className="min-w-0">
-                  <Link
-                    to={`/catalog?categoryId=${category.id}`}
-                    className="group flex h-full flex-col items-center gap-2 rounded-xl text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
-                  >
-                    <span className="flex h-14.5 w-14.5 items-center justify-center rounded-[17px] border border-border/11 bg-[#f5f5f5] transition-colors group-hover:bg-white lg:h-20 lg:w-20">
-                      <CategoryIcon name={category.icon} className="h-9 w-9 object-contain lg:h-12 lg:w-12" />
-                    </span>
-
-                    <span className="text-center text-xs lg:text-sm">
-                      {category.name}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <CategoryGrid categories={categories} />
           </nav>
         </section>
 
@@ -472,4 +432,6 @@ export default function PublicHomePage() {
     </div>
   );
 }
+
+
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { ChevronLeft, Clock3, UserRound } from "lucide-react";
 import { getMasterBySlug, type PublicMasterProfile } from "../../api/masters";
@@ -31,6 +32,8 @@ export default function ServiceDetailsPage() {
 
 function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: number }) {
   const navigate = useNavigate();
+  const { token, role } = useAuth();
+  const [bookingError, setBookingError] = useState("");
   const location = useLocation();
   const navigationState = location.state as { fromProfile?: boolean; catalogPath?: string } | null;
 
@@ -40,6 +43,29 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
 
   const profilePath = `/m/${encodeURIComponent(slug)}`;
   const servicePath = `${profilePath}/services/${serviceId}`;
+  const bookingPath = `${servicePath}/book`;
+
+  function handleBook() {
+    if (!token) {
+      navigate("/login", {
+        state: {
+          from: {
+            pathname: bookingPath,
+            search: "",
+            hash: "",
+          },
+        },
+      });
+      return;
+    }
+
+    if (role === "Client") {
+      navigate(bookingPath);
+      return;
+    }
+
+    setBookingError("Для запису увійдіть як клієнт.");
+  }
 
   function handleBack() {
     const historyIndex = window.history.state?.idx;
@@ -220,19 +246,12 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
 
         <button
           type="button"
-          onClick={() => {
-            navigate("/login", {
-              state: {
-                from: {
-                  pathname: servicePath,
-                },
-              },
-            });
-          }}
+          onClick={handleBook}
           className="mt-4 flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 py-3 text-lg font-medium text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
           Обрати зараз
         </button>
+        {bookingError && <p role="alert" className="mt-3 text-sm text-red-600">{bookingError}</p>}
       </div>
     </main>
   );
