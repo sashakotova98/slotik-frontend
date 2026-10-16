@@ -24,7 +24,7 @@ function MasterProfileContent({ slug }: { slug: string }) {
   const navigationState = location.state as { catalogPath?: string; returnTo?: string } | null;
   const catalogPath = navigationState?.catalogPath;
   const backPath = typeof catalogPath === "string" &&
-    (catalogPath === "/catalog" || catalogPath.startsWith("/catalog?"))
+    (["/catalog", "/client/search"].some((path) => catalogPath === path || catalogPath.startsWith(`${path}?`)))
     ? catalogPath
     : "/home";
   const serviceListRef = useRef<HTMLUListElement>(null);

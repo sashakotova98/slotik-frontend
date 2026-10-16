@@ -5,13 +5,12 @@ import CityPicker from "../components/search/CityPicker";
 import DistrictPicker from "../components/search/DistrictPicker";
 import { useEffect, useState } from "react";
 import { getCatalogMasters, type CatalogMaster, } from "../api/catalogMasters";
-import { Link, useSearchParams, useLocation } from "react-router-dom";
-import { ChevronRight, ImageIcon, Star, Users } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import CatalogMasterCard from "../components/catalog/CatalogMasterCard";
 import { getHomeCategories, type HomeCategory, } from "../api/homeCategories";
 import { getCities, type City } from "../api/cities";
 
 export default function CatalogPage() {
-  const location = useLocation();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryIdParam = searchParams.get("categoryId");
@@ -232,93 +231,7 @@ export default function CatalogPage() {
                 masters.length > 0 ? (
                   <ul className="mx-auto mt-6 w-full max-w-2xl space-y-7">
                     {masters.map((master) => (
-                      <li
-                        key={master.id}
-                        className="relative rounded-2xl bg-white p-3 pb-5 shadow-lg sm:p-5 sm:pb-6"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-4">
-                          <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-lg font-semibold text-slate-600 sm:size-20 sm:text-2xl">
-                            {master.avatarUrl ? (
-                              <img
-                                src={master.avatarUrl}
-                                alt={`${master.firstName} ${master.lastName}`}
-                                className="size-full object-cover"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <span>
-                                {master.firstName?.trim().charAt(0)}
-                                {master.lastName?.trim().charAt(0)}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <h2 className="wrap-break-word text-xs font-semibold leading-tight text-black sm:text-base">
-                              {master.firstName} {master.lastName}
-                            </h2>
-
-                            <p className="mt-1 inline-block max-w-full rounded-full bg-gray-100 px-2 py-0.5 text-[9px] text-gray-600 sm:text-xs">
-                              {master.category}
-                            </p>
-
-                            <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[9px] text-gray-500 sm:text-xs">
-                              {master.rating !== null && master.rating > 0 ? (
-                                <span className="inline-flex items-center gap-1">
-                                  <Star
-                                    aria-hidden="true"
-                                    className="size-3 fill-amber-400 text-amber-400"
-                                  />
-                                  {master.rating}
-                                </span>
-                              ) : (
-                                <span>Ще немає відгуків</span>
-                              )}
-
-                              {(master.districtName || master.city) && (
-                                <span>
-                                  · {master.districtName || master.city}
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="mt-1 flex items-center gap-1 text-[9px] text-gray-500 sm:text-xs">
-                              <Users aria-hidden="true" className="size-3 shrink-0" />
-                              Клієнтів: {master.clientsCount}
-                            </p>
-                          </div>
-
-                          <div
-                            role="img"
-                            aria-label="Фото робіт поки недоступні"
-                            className="grid w-24 shrink-0 grid-cols-3 gap-1 sm:w-48 sm:gap-2"
-                          >
-                            {[0, 1, 2].map((index) => (
-                              <div
-                                key={index}
-                                className="flex aspect-3/4 items-center justify-center rounded-lg bg-gray-100"
-                              >
-                                <ImageIcon
-                                  aria-hidden="true"
-                                  className="size-4 text-gray-300 sm:size-6"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-
-                        <Link
-                          to={`/m/${encodeURIComponent(master.slug)}`}
-
-                          state={{
-                            catalogPath: location.pathname + location.search,
-                          }}
-                          aria-label={`Переглянути профіль: ${master.firstName} ${master.lastName}`}
-                          className="absolute -bottom-3 right-3 flex size-11 items-center justify-center rounded-full bg-blue-100 text-blue-500 shadow-sm transition-colors hover:bg-blue-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 sm:right-5"
-                        >
-                          <ChevronRight aria-hidden="true" className="size-7" />
-                        </Link>
-                      </li>
+                      <CatalogMasterCard key={master.id} master={master} />
                     ))}
                   </ul>
                 ) : (
