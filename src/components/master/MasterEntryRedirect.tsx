@@ -95,7 +95,7 @@ export default function MasterEntryRedirect({ children }: Props) {
         <button
           type="button"
           onClick={handleChangeAccount}
-          className="rounded-field border border-neutral-300 px-6 py-3 text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-black"
+          className="rounded-field border border-border px-6 py-3 text-copy-700 hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-text"
         >
           Увійти в інший акаунт
         </button>

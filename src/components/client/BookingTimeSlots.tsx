@@ -47,7 +47,7 @@ export default function BookingTimeSlots({ slots, selectedSlot, onSelect }: Prop
   ];
 
   if (slots.length === 0) {
-    return <p className="mt-6 text-sm text-neutral-500">На цей день немає вільного часу.</p>;
+    return <p className="mt-6 text-sm text-copy-500">На цей день немає вільного часу.</p>;
   }
 
   return (
@@ -57,7 +57,7 @@ export default function BookingTimeSlots({ slots, selectedSlot, onSelect }: Prop
 
         return (
           <section key={group.title} aria-label={group.title}>
-            <h3 className="text-base text-neutral-400">{group.title}</h3>
+            <h3 className="text-base text-copy-400">{group.title}</h3>
 
             <div className="mt-3 grid grid-cols-3 gap-3">
               {group.slots.map((slot) => {
@@ -69,7 +69,7 @@ export default function BookingTimeSlots({ slots, selectedSlot, onSelect }: Prop
                     type="button"
                     onClick={() => onSelect(slot)}
                     aria-pressed={isSelected}
-                    className={`min-h-12 min-w-0 rounded-2xl border px-2 py-3 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isSelected ? "border-black bg-black text-white" : "border-neutral-300 bg-white text-black hover:bg-neutral-100"
+                    className={`min-h-12 min-w-0 rounded-2xl border px-2 py-3 text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isSelected ? "border-black bg-black text-white" : "border-border bg-surface text-text hover:bg-panel-100"
                       }`}
                   >
                     {formatTime(slot.startsAt)}

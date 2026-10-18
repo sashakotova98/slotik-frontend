@@ -149,13 +149,13 @@ export default function MasterBookingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-5">
-      <header className="flex items-center justify-between border-b border-neutral-300 pb-3">
+      <header className="flex items-center justify-between border-b border-border pb-3">
         <h1 className="text-xl font-semibold">Ваші записи</h1>
 
         <Link
           to="/cabinet/account"
           aria-label="Повернутися до акаунта"
-          className="flex size-10 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100"
+          className="flex size-10 items-center justify-center rounded-full text-copy-500 hover:bg-panel-100"
         >
           <X size={22} aria-hidden="true" />
         </Link>
@@ -179,7 +179,7 @@ export default function MasterBookingsPage() {
       )}
 
       {loading ? (
-        <p role="status" className="text-sm text-neutral-500">
+        <p role="status" className="text-sm text-copy-500">
           Завантажуємо ваші записи…
         </p>
       ) : error ? (
@@ -192,20 +192,20 @@ export default function MasterBookingsPage() {
       ) : (
         <>
           <section className="space-y-3">
-            <h2 className="text-sm text-neutral-500">Поточні та майбутні ({upcoming.length})</h2>
+            <h2 className="text-sm text-copy-500">Поточні та майбутні ({upcoming.length})</h2>
 
             {upcoming.length === 0 ? (
-              <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Майбутніх активних записів поки немає.</p>
+              <p className="rounded-2xl border border-border p-4 text-sm text-copy-500">Майбутніх активних записів поки немає.</p>
             ) : (
               upcoming.map((booking) => <MasterBookingCard key={booking.id} booking={booking} currentTime={now} onChangeStatus={handleChangeStatus} />)
             )}
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-sm text-neutral-500">Минулі та скасовані ({history.length})</h2>
+            <h2 className="text-sm text-copy-500">Минулі та скасовані ({history.length})</h2>
 
             {history.length === 0 ? (
-              <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Історія записів поки порожня.</p>
+              <p className="rounded-2xl border border-border p-4 text-sm text-copy-500">Історія записів поки порожня.</p>
             ) : (
               history.map((booking) => <MasterBookingCard key={booking.id} booking={booking} currentTime={now} onChangeStatus={handleChangeStatus} />)
             )}

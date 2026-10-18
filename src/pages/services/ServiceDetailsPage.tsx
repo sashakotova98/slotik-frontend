@@ -140,7 +140,7 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
   if (loading) {
     return (
       <main className="p-6 text-center">
-        <p role="status" className="text-sm text-neutral-500">
+        <p role="status" className="text-sm text-copy-500">
           Завантаження послуги…
         </p>
       </main>
@@ -168,16 +168,16 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
   }).format(service.price);
 
   return (
-    <main className="min-h-dvh bg-white px-4 py-4 text-neutral-900 sm:py-8">
+    <main className="min-h-dvh bg-surface px-4 py-4 text-copy-900 sm:py-8">
       <div className="mx-auto w-full max-w-md">
-        <article className="rounded-[28px] border border-neutral-400 px-4 pb-6 pt-4 sm:px-5">
+        <article className="rounded-[28px] border border-border px-4 pb-6 pt-4 sm:px-5">
           <header>
             <div className="flex items-start gap-2">
               <button
                 type="button"
                 onClick={handleBack}
                 aria-label="Назад до профілю майстра"
-                className="-ml-2 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2"
+                className="-ml-2 -mt-1 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-panel-100 focus-visible:outline-2"
               >
                 <ChevronLeft size={28} strokeWidth={1.75} aria-hidden="true" />
               </button>
@@ -185,7 +185,7 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
               <h1 className="min-w-0 pt-1 text-xl font-medium wrap-break-word">{service.name}</h1>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-neutral-600">
+            <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-copy-600">
               <span className="inline-flex items-center gap-2">
                 <Clock3 size={16} aria-hidden="true" />
                 {service.durationMin} хв
@@ -220,7 +220,7 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
               })}
             </div>
           ) : (
-            <p className="mt-5 rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">Фото послуги ще не додано.</p>
+            <p className="mt-5 rounded-xl bg-panel-50 p-4 text-sm text-copy-500">Фото послуги ще не додано.</p>
           )}
 
           <section aria-labelledby="description-title" className="mt-5">
@@ -228,7 +228,7 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
               Опис
             </h2>
 
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-neutral-600 wrap-break-word">
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-copy-600 wrap-break-word">
               {service.description?.trim() || "Майстер ще не додав опис процедури."}
             </p>
           </section>
@@ -239,13 +239,13 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
             </h2>
 
             {service.included?.trim() ? (
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-neutral-600 wrap-break-word">
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-copy-600 wrap-break-word">
                 {service.included.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).map((item, index) => (
                   <li key={index}>{item}</li>
                 ))}
               </ul>
             ) : (
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">Майстер ще не вказав, що входить у послугу.</p>
+              <p className="mt-2 text-sm leading-relaxed text-copy-600">Майстер ще не вказав, що входить у послугу.</p>
             )}
           </section>
         </article>
@@ -253,7 +253,7 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
         <button
           type="button"
           onClick={handleBook}
-          className="mt-4 flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 py-3 text-lg font-medium text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          className="mt-4 flex min-h-12 w-full items-center justify-center rounded-2xl bg-black px-5 py-3 text-lg font-medium text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
         >
           Обрати зараз
         </button>

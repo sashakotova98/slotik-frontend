@@ -336,7 +336,7 @@ return (
                     setShowTerms(true);
                   }}
                   aria-haspopup="dialog"
-                  className="inline underline underline-offset-2 hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2"
+                  className="inline underline underline-offset-2 hover:text-text focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                   умовами користування та обробкою персональних даних
                 </a>

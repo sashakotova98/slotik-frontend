@@ -81,7 +81,7 @@ export default function MasterServicesPage() {
           type="button"
           onClick={handleBack}
           disabled={saving}
-          className="min-h-11 rounded-xl px-4 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-50"
+          className="min-h-11 rounded-xl px-4 text-sm text-copy-600 hover:bg-panel-100 disabled:opacity-50"
         >
           Назад
         </button>

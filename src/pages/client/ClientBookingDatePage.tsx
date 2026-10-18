@@ -151,7 +151,7 @@ export default function ClientBookingDatePage() {
 
   if (loading) {
     return (
-      <p role="status" className="p-4 text-sm text-neutral-500">
+      <p role="status" className="p-4 text-sm text-copy-500">
         Завантаження послуги…
       </p>
     );
@@ -185,20 +185,20 @@ export default function ClientBookingDatePage() {
   }
 
   return (
-    <main className="min-h-dvh bg-white px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-black">
+    <main className="min-h-dvh bg-surface px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] text-text">
       <div className="mx-auto flex min-h-[calc(100dvh-2rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col gap-4">
-        <section className="min-w-0 flex-1 rounded-[28px] border border-neutral-400 px-4 py-5 sm:px-5">
+        <section className="min-w-0 flex-1 rounded-[28px] border border-border px-4 py-5 sm:px-5">
           <div className="flex items-center gap-2">
-            <Link to={servicePath} replace aria-label="Назад до послуги" className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2">
+            <Link to={servicePath} replace aria-label="Назад до послуги" className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-panel-100 focus-visible:outline-2">
               <ArrowLeft aria-hidden="true" className="size-6" />
             </Link>
             <h1 className="text-xl font-semibold">Оберіть дату і час</h1>
           </div>
 
-          <p className="mt-4 text-sm leading-relaxed text-neutral-400">
+          <p className="mt-4 text-sm leading-relaxed text-copy-400">
             {service.name} • {service.durationMin} хв • <span className="whitespace-nowrap">{service.price.toLocaleString("uk-UA")} ₴</span>
           </p>
-          <hr className="my-6 border-neutral-300" />
+          <hr className="my-6 border-border" />
 
           <BookingDateStrip
             selectedDate={selectedDate}
@@ -213,11 +213,11 @@ export default function ClientBookingDatePage() {
           />
 
           {loadingSlots ? (
-            <p role="status" className="mt-8 text-sm leading-relaxed text-neutral-500">Завантаження вільного часу…</p>
+            <p role="status" className="mt-8 text-sm leading-relaxed text-copy-500">Завантаження вільного часу…</p>
           ) : slotsError ? (
             <p role="alert" className="mt-8 text-sm leading-relaxed text-red-600">{slotsError}</p>
           ) : slots.length === 0 ? (
-            <p className="mt-8 rounded-2xl bg-neutral-50 px-4 py-5 text-sm leading-relaxed text-neutral-500">
+            <p className="mt-8 rounded-2xl bg-panel-50 px-4 py-5 text-sm leading-relaxed text-copy-500">
               На цей день немає вільного часу.
             </p>
           ) : (
@@ -229,7 +229,7 @@ export default function ClientBookingDatePage() {
           type="button"
           onClick={handleNext}
           disabled={!selectedSlot || loadingSlots || Boolean(slotsError)}
-          className="min-h-14 w-full shrink-0 rounded-2xl bg-black px-3 py-3 text-center text-base font-semibold leading-snug text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-600 sm:text-lg"
+          className="min-h-14 w-full shrink-0 rounded-2xl bg-black px-3 py-3 text-center text-base font-semibold leading-snug text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-panel-300 disabled:text-copy-600 sm:text-lg"
         >
           {selectedSlot ? `Далі • ${selectedDateTime}` : "Оберіть дату й час"}
         </button>

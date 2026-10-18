@@ -7,7 +7,7 @@ const stepTitles = ["Профіль", "Послуги", "Робочий граф
 export default function StepProgress({ step }: Props) {
   return (
     <div className="mb-5">
-      <h2 className="text-xl font-semibold text-black">
+      <h2 className="text-xl font-semibold text-text">
         Крок {step} з 3 • {stepTitles[step - 1]}
       </h2>
 
@@ -15,7 +15,7 @@ export default function StepProgress({ step }: Props) {
         {[1, 2, 3].map((item) => (
           <div
             key={item}
-            className={`h-1.5 flex-1 rounded-full ${item <= step ? "bg-black" : "bg-neutral-300"
+            className={`h-1.5 flex-1 rounded-full ${item <= step ? "bg-black" : "bg-panel-300"
               }`}
           />
         ))}

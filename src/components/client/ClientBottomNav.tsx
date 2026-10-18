@@ -34,7 +34,7 @@ export default function ClientBottomNav() {
       aria-label="Навігація клієнта"
       className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
     >
-      <div className="mx-auto grid w-full max-w-md grid-cols-4 gap-1 rounded-full border border-border bg-white p-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.14)]">
+      <div className="mx-auto grid w-full max-w-md grid-cols-4 gap-1 rounded-full border border-border bg-surface p-1.5 shadow-[0_4px_16px_rgba(0,0,0,0.14)]">
         {items.map((item) => {
           const Icon = item.icon;
 
@@ -49,10 +49,10 @@ export default function ClientBottomNav() {
                 return [
                   "flex min-h-12 min-w-0 items-center justify-center rounded-full",
                   "transition-colors focus-visible:outline-2",
-                  "focus-visible:outline-offset-2 focus-visible:outline-black",
+                  "focus-visible:outline-offset-2 focus-visible:outline-text",
                   isActive
-                    ? "bg-neutral-100 text-black"
-                    : "text-muted hover:bg-neutral-50 hover:text-black",
+                    ? "bg-panel-100 text-text"
+                    : "text-muted hover:bg-panel-50 hover:text-text",
                 ].join(" ");
               }}
             >

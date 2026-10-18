@@ -31,7 +31,7 @@ export default function ProfileShareModal({ profileUrl, onClose }: Props) {
         event.preventDefault();
         onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border-0 bg-white p-5 text-black shadow-xl backdrop:bg-black/40"
+      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border-0 bg-surface p-5 text-text shadow-xl backdrop:bg-black/40"
     >
       <div className="mb-4 flex items-center justify-between gap-3">
         <h2 id="profile-share-title" className="text-xl font-semibold">
@@ -43,7 +43,7 @@ export default function ProfileShareModal({ profileUrl, onClose }: Props) {
           autoFocus
           onClick={onClose}
           aria-label="Закрити вікно"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <X size={24} aria-hidden="true" />
         </button>

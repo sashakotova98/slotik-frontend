@@ -7,13 +7,13 @@ type Props = {
 
 export default function MasterProfileHeader({ onBack, onShare }: Props) {
   return (
-    <header className="bg-white px-3 pt-3 text-black sm:px-6">
+    <header className="bg-surface px-3 pt-3 text-text sm:px-6">
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={onBack}
           aria-label="Повернутися назад"
-          className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
         >
           <ChevronLeft size={24} strokeWidth={1.75} aria-hidden="true" />
         </button>
@@ -22,7 +22,7 @@ export default function MasterProfileHeader({ onBack, onShare }: Props) {
           type="button"
           onClick={onShare}
           aria-label="Поділитися профілем"
-          className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          className="flex size-11 items-center justify-center rounded-full transition-colors hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
         >
           <Share2 size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>

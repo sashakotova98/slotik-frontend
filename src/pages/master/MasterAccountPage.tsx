@@ -113,9 +113,9 @@ export default function MasterAccountPage() {
     <div className="mx-auto w-full max-w-md">
       <h1 className="sr-only">Мій акаунт</h1>
 
-      <section className="rounded-[36px] bg-white px-5 py-6 shadow-lg">
+      <section className="rounded-[36px] bg-surface px-5 py-6 shadow-lg">
         {loading ? (
-          <p role="status" className="py-6 text-center text-neutral-500">
+          <p role="status" className="py-6 text-center text-copy-500">
             Завантажуємо профіль…
           </p>
         ) : error ? (
@@ -137,7 +137,7 @@ export default function MasterAccountPage() {
         ) : profile ? (
           <>
             <header className="mb-5 flex items-center gap-3">
-              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-100">
+              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-panel-100">
                 {avatarUrl && failedAvatar !== avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -146,7 +146,7 @@ export default function MasterAccountPage() {
                     className="size-full object-cover"
                   />
                 ) : (
-                  <span className="text-lg font-semibold text-neutral-500">{initials || "М"}</span>
+                  <span className="text-lg font-semibold text-copy-500">{initials || "М"}</span>
                 )}
               </div>
 
@@ -154,11 +154,11 @@ export default function MasterAccountPage() {
                 <h2 className="wrap-break-word font-semibold">{fullName || "Ім’я не вказано"}</h2>
 
                 {profile.phone ? (
-                  <a href={`tel:${profile.phone}`} className="mt-1 block text-sm text-neutral-500">
+                  <a href={`tel:${profile.phone}`} className="mt-1 block text-sm text-copy-500">
                     {profile.phone}
                   </a>
                 ) : (
-                  <p className="mt-1 text-sm text-neutral-400">Телефон не вказано</p>
+                  <p className="mt-1 text-sm text-copy-400">Телефон не вказано</p>
                 )}
               </div>
             </header>
@@ -168,19 +168,19 @@ export default function MasterAccountPage() {
                 <ProfileShareCard profileUrl={profileUrl} />
               </div>
             ) : (
-              <p className="mb-5 rounded-xl bg-neutral-50 p-4 text-sm text-neutral-500">Посилання на профіль ще не створено.</p>
+              <p className="mb-5 rounded-xl bg-panel-50 p-4 text-sm text-copy-500">Посилання на профіль ще не створено.</p>
             )}
           </>
         ) : null}
 
-        <nav aria-label="Налаштування акаунта" className="divide-y divide-neutral-200 border-t border-neutral-200">
+        <nav aria-label="Налаштування акаунта" className="divide-y divide-border border-t border-border">
           {menuItems.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className="flex min-h-14 items-center gap-3 py-3 hover:text-blue-600">
               <Icon size={20} aria-hidden="true" />
 
               <span className="flex-1">{label}</span>
 
-              <ChevronRight size={20} aria-hidden="true" className="text-neutral-400" />
+              <ChevronRight size={20} aria-hidden="true" className="text-copy-400" />
             </Link>
           ))}
         </nav>
@@ -188,7 +188,7 @@ export default function MasterAccountPage() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex min-h-12 w-full items-center gap-3 border-t border-neutral-200 pt-3 text-red-600"
+          className="flex min-h-12 w-full items-center gap-3 border-t border-border pt-3 text-red-600"
         >
           <LogOut size={20} aria-hidden="true" />
           Вийти з акаунту

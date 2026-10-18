@@ -69,7 +69,7 @@ export default function BookingDateStrip({ selectedDate, onChange }: Props) {
             onClick={() => changeWeek(-7)}
             disabled={visibleStart <= today}
             aria-label="Попередній тиждень"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-30"
+            className="flex size-11 items-center justify-center rounded-full hover:bg-panel-100 focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-30"
           >
             <ChevronLeft aria-hidden="true" className="size-6" />
           </button>
@@ -78,7 +78,7 @@ export default function BookingDateStrip({ selectedDate, onChange }: Props) {
             type="button"
             onClick={() => changeWeek(7)}
             aria-label="Наступний тиждень"
-            className="flex size-11 items-center justify-center rounded-full hover:bg-neutral-100 focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-30"
+            className="flex size-11 items-center justify-center rounded-full hover:bg-panel-100 focus-visible:outline-2 disabled:pointer-events-none disabled:opacity-30"
           >
             <ChevronRight aria-hidden="true" className="size-6" />
           </button>
@@ -112,7 +112,7 @@ export default function BookingDateStrip({ selectedDate, onChange }: Props) {
               aria-pressed={isSelected}
               className={`flex min-h-20 min-w-0 flex-col items-center justify-center gap-1 rounded-2xl border px-1 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 ${isSelected
                 ? "border-black bg-black text-white"
-                : "border-neutral-300 bg-white text-black hover:bg-neutral-100"
+                : "border-border bg-surface text-text hover:bg-panel-100"
                 }`}
             >
               <span className="text-xs">{weekdayName}</span>

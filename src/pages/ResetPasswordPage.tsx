@@ -141,25 +141,25 @@ function ResetPasswordContent({ token }: { token: string | null }) {
   return (
     <div className="min-h-screen bg-[#d7d7d7] flex items-center justify-center p-4">
 
-      <div className="w-full max-w-90 rounded-3xl bg-white px-7 py-8 shadow-xl">
+      <div className="w-full max-w-90 rounded-3xl bg-surface px-7 py-8 shadow-xl">
 
         {pageState === "checking" && (
           <div className="py-16 text-center">
             <LoaderCircle className="mx-auto animate-spin" size={36} />
 
-            <p className="mt-4 text-sm text-neutral-500">Перевіряємо посилання...</p>
+            <p className="mt-4 text-sm text-copy-500">Перевіряємо посилання...</p>
           </div>
         )}
 
         {pageState === "form" && (
           <>
-            <div className="mx-auto flex size-18 items-center justify-center rounded-full bg-neutral-100">
+            <div className="mx-auto flex size-18 items-center justify-center rounded-full bg-panel-100">
               <KeyRound size={34} strokeWidth={1.6} />
             </div>
 
             <h1 className="mt-6 text-center text-[21px] font-semibold">Встановіть новий пароль</h1>
 
-            <p className="mt-2 text-center text-sm leading-5 text-neutral-500">Введіть новий пароль і підтвердіть його для доступу.</p>
+            <p className="mt-2 text-center text-sm leading-5 text-copy-500">Введіть новий пароль і підтвердіть його для доступу.</p>
 
             <form onSubmit={submit} className="mt-6">
               <Field
@@ -203,13 +203,13 @@ function ResetPasswordContent({ token }: { token: string | null }) {
 
         {pageState === "error" && (
           <div className="text-center">
-            <div className="mx-auto flex size-18 items-center justify-center rounded-full bg-neutral-100">
+            <div className="mx-auto flex size-18 items-center justify-center rounded-full bg-panel-100">
               <TriangleAlert size={34} strokeWidth={1.6} />
             </div>
 
             <h1 className="mt-6 text-[21px] font-semibold">Не вдалося відновити пароль</h1>
 
-            <p role="alert" className="mt-3 text-sm leading-6 text-neutral-500">{tokenError}</p>
+            <p role="alert" className="mt-3 text-sm leading-6 text-copy-500">{tokenError}</p>
 
             <button
               type="button"

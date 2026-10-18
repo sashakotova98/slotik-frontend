@@ -25,7 +25,7 @@ export default function CatalogMasterCard({
 
   return (
     <li
-      className="relative rounded-2xl bg-white p-3 pb-5 shadow-lg sm:p-5 sm:pb-6"
+      className="relative rounded-2xl bg-surface p-3 pb-5 shadow-lg sm:p-5 sm:pb-6"
     >
       <div className="flex items-center gap-2 sm:gap-4">
         <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-lg font-semibold text-slate-600 sm:size-20 sm:text-2xl">
@@ -45,15 +45,15 @@ export default function CatalogMasterCard({
         </div>
 
         <div className="min-w-0 flex-1">
-          <h2 className="wrap-break-word text-xs font-semibold leading-tight text-black sm:text-base">
+          <h2 className="wrap-break-word text-xs font-semibold leading-tight text-text sm:text-base">
             {master.firstName} {master.lastName}
           </h2>
 
-          <p className="mt-1 inline-block max-w-full rounded-full bg-gray-100 px-2 py-0.5 text-[9px] text-gray-600 sm:text-xs">
+          <p className="mt-1 inline-block max-w-full rounded-full bg-panel-100 px-2 py-0.5 text-[9px] text-copy-600 sm:text-xs">
             {master.category}
           </p>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[9px] text-gray-500 sm:text-xs">
+          <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-[9px] text-copy-500 sm:text-xs">
             {master.rating !== null && master.rating > 0 ? (
               <span className="inline-flex items-center gap-1">
                 <Star
@@ -73,7 +73,7 @@ export default function CatalogMasterCard({
             )}
           </div>
 
-          {master.clientsCount !== null && <p className="mt-1 flex items-center gap-1 text-[9px] text-gray-500 sm:text-xs">
+          {master.clientsCount !== null && <p className="mt-1 flex items-center gap-1 text-[9px] text-copy-500 sm:text-xs">
             <Users aria-hidden="true" className="size-3 shrink-0" />
             Клієнтів: {master.clientsCount}
           </p>}
@@ -86,12 +86,12 @@ export default function CatalogMasterCard({
           {[0, 1, 2].map((index) => (
             <div
               key={index}
-              className="flex aspect-3/4 items-center justify-center overflow-hidden rounded-lg bg-gray-100"
+              className="flex aspect-3/4 items-center justify-center overflow-hidden rounded-lg bg-panel-100"
             >
               {previewPhotos[index] ? (
                 <img src={previewPhotos[index].photoUrl} alt={`Робота майстра ${master.firstName} — ${index + 1}`} loading="lazy" className="size-full object-cover" />
               ) : (
-                <ImageIcon aria-hidden="true" className="size-4 text-gray-300 sm:size-6" />
+                <ImageIcon aria-hidden="true" className="size-4 text-copy-400 sm:size-6" />
               )}
             </div>
           ))}

@@ -159,27 +159,27 @@ export default function MasterScheduleStep({ onFormStateChange, onSlotStepLoaded
     }
   }
 
-  const fieldClass = "h-12 w-full min-w-0 rounded-[14px] border border-neutral-400 bg-transparent px-3 text-base text-neutral-600 outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 sm:text-lg";
+  const fieldClass = "h-12 w-full min-w-0 rounded-[14px] border border-border bg-transparent px-3 text-base text-copy-600 outline-none focus-visible:ring-2 focus-visible:ring-border sm:text-lg";
   const dayIsSaved = days.some((day) => day.weekday === weekday && day.isWorking);
 
-  if (loading) return <p role="status" className="py-6 text-neutral-500">Завантаження графіка…</p>;
+  if (loading) return <p role="status" className="py-6 text-copy-500">Завантаження графіка…</p>;
   if (loadError) return <div><p role="alert" className="text-sm text-red-500">{loadError}</p><button type="button" onClick={() => { setLoading(true); setLoadError(""); setRetry((value) => value + 1); }} className="mt-3 rounded-xl bg-black px-4 py-2 text-white">Спробувати знову</button></div>;
 
   return (
     <div className="space-y-4">
       {days.filter((day) => day.isWorking).map((day) => (
-        <div key={day.weekday} className="flex min-h-19 items-center gap-2 rounded-xl border border-neutral-400 px-3 py-3">
+        <div key={day.weekday} className="flex min-h-19 items-center gap-2 rounded-xl border border-border px-3 py-3">
           <CalendarDays size={28} strokeWidth={1.7} className="shrink-0" aria-hidden="true" />
           <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
             <p className="wrap-break-word text-sm font-semibold sm:text-base">{weekdays[day.weekday - 1]}</p>
             <div className="whitespace-nowrap text-sm leading-snug sm:text-base">{day.intervals.map((interval) => <p key={interval.id}>{interval.startTime.slice(0, 5)}–{interval.endTime.slice(0, 5)}</p>)}</div>
           </div>
-          <button type="button" disabled={saving || dirty} aria-label={`Редагувати ${weekdays[day.weekday - 1]}`} onClick={() => { selectDay(day.weekday); formRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); }} className="flex size-8 shrink-0 items-center justify-center text-neutral-500 disabled:opacity-40"><SquarePen size={22} strokeWidth={1.5} /></button>
+          <button type="button" disabled={saving || dirty} aria-label={`Редагувати ${weekdays[day.weekday - 1]}`} onClick={() => { selectDay(day.weekday); formRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" }); }} className="flex size-8 shrink-0 items-center justify-center text-copy-500 disabled:opacity-40"><SquarePen size={22} strokeWidth={1.5} /></button>
         </div>
       ))}
       {notice && <p role="status" className="text-sm text-green-700">{notice}</p>}
       <form ref={formRef} onSubmit={handleSubmit} onChange={() => { setDirty(true); setNotice(""); }}>
-        <fieldset disabled={saving} className="m-0 min-w-0 space-y-4 rounded-xl border border-dashed border-neutral-400 px-4 py-5">
+        <fieldset disabled={saving} className="m-0 min-w-0 space-y-4 rounded-xl border border-dashed border-border px-4 py-5">
           <h3 className="mb-5 text-lg font-semibold">{dayIsSaved ? "Редагування робочого дня" : "+ Нова робоча година"}</h3>
           <div className="grid grid-cols-2 gap-2.5">
             <ScheduleSelect label="День" value={String(weekday)} placeholder="Оберіть день" disabled={dirty || saving}
@@ -194,10 +194,10 @@ export default function MasterScheduleStep({ onFormStateChange, onSlotStepLoaded
               }} />
           </div>
           {isWorking && range === "custom" && <div className="grid grid-cols-2 gap-3">
-            <label className="min-w-0 text-neutral-600">Початок роботи<input type="time" step="60" value={start} onChange={(event) => setStart(event.target.value)} required className={fieldClass + " mt-1"} /></label>
-            <label className="min-w-0 text-neutral-600">Кінець роботи<input type="time" step="60" value={end} onChange={(event) => setEnd(event.target.value)} required className={fieldClass + " mt-1"} /></label>
+            <label className="min-w-0 text-copy-600">Початок роботи<input type="time" step="60" value={start} onChange={(event) => setStart(event.target.value)} required className={fieldClass + " mt-1"} /></label>
+            <label className="min-w-0 text-copy-600">Кінець роботи<input type="time" step="60" value={end} onChange={(event) => setEnd(event.target.value)} required className={fieldClass + " mt-1"} /></label>
           </div>}
-          <label className="flex items-center gap-2 text-sm text-neutral-500"><input type="checkbox" checked={!isWorking} onChange={(event) => setIsWorking(!event.target.checked)} className="size-4 accent-black" />Вихідний день</label>
+          <label className="flex items-center gap-2 text-sm text-copy-500"><input type="checkbox" checked={!isWorking} onChange={(event) => setIsWorking(!event.target.checked)} className="size-4 accent-black" />Вихідний день</label>
           {isWorking && pauses.map((pause, index) => (
             <div key={index} className="relative grid grid-cols-2 gap-3">
               <ScheduleSelect label="Пауза" value={pause.duration} disabled={saving}
@@ -206,13 +206,13 @@ export default function MasterScheduleStep({ onFormStateChange, onSlotStepLoaded
               <ScheduleSelect label="Початок" value={pause.start} placeholder="Оберіть час" disabled={saving}
                 options={Array.from(new Set([...Array.from({ length: 288 }, (_, i) => toTime(i * 5).slice(0, 5)), ...(pause.start ? [pause.start] : [])])).sort().map((value) => ({ value, label: value }))}
                 onChange={(value) => { setPauses((previous) => previous.map((item, i) => i === index ? { ...item, start: value } : item)); setDirty(true); setNotice(""); }} />
-              <button type="button" aria-label={`Прибрати паузу ${index + 1}`} onClick={() => { setPauses((previous) => previous.filter((_, i) => i !== index)); setDirty(true); }} className="absolute -right-2 -top-3 flex size-6 items-center justify-center rounded-full bg-neutral-200 text-neutral-600"><X size={14} /></button>
+              <button type="button" aria-label={`Прибрати паузу ${index + 1}`} onClick={() => { setPauses((previous) => previous.filter((_, i) => i !== index)); setDirty(true); }} className="absolute -right-2 -top-3 flex size-6 items-center justify-center rounded-full bg-panel-200 text-copy-600"><X size={14} /></button>
             </div>
           ))}
-          {isWorking && <button type="button" disabled={weekday === ""} onClick={() => { setPauses((previous) => [...previous, { start: "", duration: "60" }]); setDirty(true); setNotice(""); }} className="mx-auto flex h-10 w-40 items-center justify-center gap-2 rounded-[14px] border border-neutral-400 text-lg text-neutral-600 disabled:opacity-40">Пауза <Plus size={23} strokeWidth={1.5} /></button>}
+          {isWorking && <button type="button" disabled={weekday === ""} onClick={() => { setPauses((previous) => [...previous, { start: "", duration: "60" }]); setDirty(true); setNotice(""); }} className="mx-auto flex h-10 w-40 items-center justify-center gap-2 rounded-[14px] border border-border text-lg text-copy-600 disabled:opacity-40">Пауза <Plus size={23} strokeWidth={1.5} /></button>}
           {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-          <button type="submit" disabled={saving || weekday === "" || !dirty || (isWorking && (!start || !end))} className="min-h-13 w-full rounded-[14px] bg-black px-3 py-3 text-xl font-semibold text-white disabled:cursor-not-allowed disabled:bg-neutral-300">{saving ? "Збереження…" : "Зберегти"}</button>
-          {(dirty || weekday !== "") && <button type="button" onClick={clearForm} className="w-full text-sm text-neutral-500">Скасувати зміни</button>}
+          <button type="submit" disabled={saving || weekday === "" || !dirty || (isWorking && (!start || !end))} className="min-h-13 w-full rounded-[14px] bg-black px-3 py-3 text-xl font-semibold text-white disabled:cursor-not-allowed disabled:bg-panel-300">{saving ? "Збереження…" : "Зберегти"}</button>
+          {(dirty || weekday !== "") && <button type="button" onClick={clearForm} className="w-full text-sm text-copy-500">Скасувати зміни</button>}
         </fieldset>
       </form>
     </div>
@@ -238,17 +238,17 @@ function ScheduleSelect({ label, value, options, onChange, disabled = false, pla
     <div className={`relative min-w-0 ${expanded ? "z-40" : ""}`} onKeyDown={(event) => {
       if (event.key === "Escape") { event.preventDefault(); setOpen(false); triggerRef.current?.focus(); }
     }}>
-      <span id={id + "-label"} className="mb-1 block text-base text-neutral-600">{label}</span>
+      <span id={id + "-label"} className="mb-1 block text-base text-copy-600">{label}</span>
       {expanded && <button type="button" tabIndex={-1} aria-label={`Закрити список: ${label}`} onClick={() => setOpen(false)} className="fixed inset-0 z-10 cursor-default" />}
       <button ref={triggerRef} type="button" disabled={disabled} aria-labelledby={id + "-label " + id + "-value"} aria-expanded={expanded} aria-controls={expanded ? id + "-options" : undefined}
         onClick={() => setOpen((previous) => !previous)}
-        className="relative z-20 flex h-10 w-full items-center justify-between gap-1 rounded-xl border border-neutral-300 bg-transparent px-3 py-1 text-left outline-none transition-colors hover:border-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300 disabled:cursor-not-allowed disabled:opacity-50">
-        <span id={id + "-value"} title={selected?.label} className={selected ? "min-w-0 truncate text-sm text-neutral-600" : "min-w-0 truncate text-sm text-neutral-400"}>{selected?.label ?? placeholder}</span>
-        <ChevronDown size={17} strokeWidth={1.5} aria-hidden="true" className={`shrink-0 text-neutral-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
+        className="relative z-20 flex h-10 w-full items-center justify-between gap-1 rounded-xl border border-border bg-transparent px-3 py-1 text-left outline-none transition-colors hover:border-border focus-visible:ring-2 focus-visible:ring-border disabled:cursor-not-allowed disabled:opacity-50">
+        <span id={id + "-value"} title={selected?.label} className={selected ? "min-w-0 truncate text-sm text-copy-600" : "min-w-0 truncate text-sm text-copy-400"}>{selected?.label ?? placeholder}</span>
+        <ChevronDown size={17} strokeWidth={1.5} aria-hidden="true" className={`shrink-0 text-copy-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
       </button>
-      {expanded && <div id={id + "-options"} role="group" aria-labelledby={id + "-label"} className="absolute inset-x-0 top-full z-30 mt-2 max-h-56 space-y-1 overflow-y-auto overscroll-contain rounded-2xl border border-neutral-200 bg-white p-1.5 shadow-lg">
+      {expanded && <div id={id + "-options"} role="group" aria-labelledby={id + "-label"} className="absolute inset-x-0 top-full z-30 mt-2 max-h-56 space-y-1 overflow-y-auto overscroll-contain rounded-2xl border border-border bg-surface p-1.5 shadow-lg">
         {options.map((option) => <button key={option.value} type="button" aria-pressed={value === option.value} onClick={() => { onChange(option.value); setOpen(false); triggerRef.current?.focus(); }}
-          className={`flex min-h-10 w-full items-center justify-between gap-1 rounded-xl px-2 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-neutral-300 ${value === option.value ? "bg-neutral-100 font-medium text-neutral-700" : "text-neutral-600 hover:bg-neutral-50"}`}>
+          className={`flex min-h-10 w-full items-center justify-between gap-1 rounded-xl px-2 py-2 text-left text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border ${value === option.value ? "bg-panel-100 font-medium text-copy-700" : "text-copy-600 hover:bg-panel-50"}`}>
           <span>{option.label}</span>{value === option.value && <Check size={15} aria-hidden="true" className="shrink-0" />}
         </button>)}
       </div>}

@@ -43,12 +43,12 @@ export default function ForgotPasswordModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
-      <div className="relative w-full max-w-90 rounded-3xl bg-white px-7 py-7 shadow-2xl">
+      <div className="relative w-full max-w-90 rounded-3xl bg-surface px-7 py-7 shadow-2xl">
 
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-5 top-5 text-neutral-500"
+          className="absolute right-5 top-5 text-copy-500"
           aria-label="Закрити"
         >
           <X size={20} />
@@ -56,13 +56,13 @@ export default function ForgotPasswordModal({ onClose }: Props) {
 
         {!sent ? (
           <>
-            <div className="mx-auto mt-4 flex size-18 items-center justify-center rounded-full bg-neutral-100">
+            <div className="mx-auto mt-4 flex size-18 items-center justify-center rounded-full bg-panel-100">
               <Mail size={34} strokeWidth={1.6} />
             </div>
 
             <h2 className="mt-6 text-center text-[21px] font-semibold">Відновлення пароля</h2>
 
-            <p className="mt-2 text-center text-sm leading-5 text-neutral-500">Введіть електронну пошту — ми надішлемо лист, щоб скинути старий пароль.</p>
+            <p className="mt-2 text-center text-sm leading-5 text-copy-500">Введіть електронну пошту — ми надішлемо лист, щоб скинути старий пароль.</p>
 
             <form onSubmit={submit} className="mt-6">
               <Field
@@ -98,17 +98,17 @@ export default function ForgotPasswordModal({ onClose }: Props) {
           </>
         ) : (
           <>
-            <div className="mx-auto mt-4 flex size-18 items-center justify-center rounded-full bg-neutral-100">
+            <div className="mx-auto mt-4 flex size-18 items-center justify-center rounded-full bg-panel-100">
               <Mail size={34} strokeWidth={1.6} />
             </div>
 
             <h2 className="mt-6 text-center text-[21px] font-semibold">Перевірте пошту</h2>
 
-            <p className="mt-3 text-center text-sm leading-6 text-neutral-500">Ми надіслали посилання для відновлення пароля на</p>
+            <p className="mt-3 text-center text-sm leading-6 text-copy-500">Ми надіслали посилання для відновлення пароля на</p>
 
             <p className="mt-2 break-all text-center text-sm font-medium">{email}</p>
 
-            <p className="mt-3 text-center text-xs text-neutral-400">Перевірте також папку «Спам».</p>
+            <p className="mt-3 text-center text-xs text-copy-400">Перевірте також папку «Спам».</p>
 
             <button
               type="button"

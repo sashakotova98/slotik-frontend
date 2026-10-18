@@ -283,8 +283,8 @@ export default function PaymentResultPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-200 px-4 py-10">
-      <section className="flex min-h-140 w-full max-w-md flex-col rounded-[40px] bg-neutral-50 px-7 py-10 text-center shadow-xl">
+    <main className="flex min-h-screen items-center justify-center bg-panel-200 px-4 py-10">
+      <section className="flex min-h-140 w-full max-w-md flex-col rounded-[40px] bg-panel-50 px-7 py-10 text-center shadow-xl">
         <p className="text-xl font-semibold tracking-[0.3em]">
           SLOTIK
         </p>
@@ -297,30 +297,30 @@ export default function PaymentResultPage() {
                 size={96}
                 strokeWidth={1.5}
                 aria-hidden="true"
-                className="mx-auto text-neutral-500"
+                className="mx-auto text-copy-500"
               />
 
               <h1 className="mt-8 text-2xl font-semibold">
                 Не вдалося перевірити оплату
               </h1>
 
-              <p role="alert" className="mt-4 text-neutral-500">
+              <p role="alert" className="mt-4 text-copy-500">
                 {error}
               </p>
 
-              <p className="mt-3 text-sm text-neutral-500">
+              <p className="mt-3 text-sm text-copy-500">
                 Це не означає, що оплата не пройшла. Не оплачуйте повторно, поки не перевірите статус.
               </p>
 
               {errorAction === "back" ? (
-                <Link to="/cabinet" className="mt-auto rounded-full border border-neutral-500 px-5 py-3">
+                <Link to="/cabinet" className="mt-auto rounded-full border border-border px-5 py-3">
                   Повернутися до кабінету
                 </Link>
               ) : (
                 <button
                   type="button"
                   onClick={errorAction === "login" ? handleLogin : () => setRetry((prev) => prev + 1)}
-                  className="mt-auto rounded-full border border-neutral-500 px-5 py-3"
+                  className="mt-auto rounded-full border border-border px-5 py-3"
                 >
                   {errorAction === "login" ? "Увійти повторно" : "Повторити перевірку"}
                 </button>
@@ -333,20 +333,20 @@ export default function PaymentResultPage() {
                 size={96}
                 strokeWidth={1.5}
                 aria-hidden="true"
-                className="mx-auto text-neutral-500"
+                className="mx-auto text-copy-500"
               />
 
               <h1 className="mt-8 text-2xl font-semibold">
                 Перевіряємо оплату
               </h1>
 
-              <p className="mt-4 text-neutral-500">
+              <p className="mt-4 text-copy-500">
                 {checking
                   ? "Отримуємо інформацію про платіж…"
                   : "Очікуємо підтвердження від платіжної системи."}
               </p>
 
-              <p className="mt-6 text-sm text-neutral-400">
+              <p className="mt-6 text-sm text-copy-400">
                 {autoCheckFinished
                   ? "Підтвердження ще очікується. Автоматичну перевірку завершено. Перевірте статус трохи пізніше."
                   : "Перевіряємо автоматично кожні 5 секунд протягом однієї хвилини."}
@@ -356,7 +356,7 @@ export default function PaymentResultPage() {
                 type="button"
                 disabled={checking}
                 onClick={() => setRetry((prev) => prev + 1)}
-                className="mt-auto rounded-full border border-neutral-500 px-5 py-3 disabled:opacity-50"
+                className="mt-auto rounded-full border border-border px-5 py-3 disabled:opacity-50"
               >
                 {checking ? "Перевіряємо…" : "Перевірити статус"}
               </button>
@@ -375,7 +375,7 @@ export default function PaymentResultPage() {
             //       Оплату підтверджено
             //     </h1>
 
-            //     <p className="mt-4 text-neutral-500">
+            //     <p className="mt-4 text-copy-500">
             //       Ваш платіж успішно проведено.
             //     </p>
 
@@ -386,7 +386,7 @@ export default function PaymentResultPage() {
             //       Перейти в кабінет
             //     </Link>
 
-            //     <p className="mt-4 text-sm text-neutral-400">
+            //     <p className="mt-4 text-sm text-copy-400">
             //       Дякуємо, що обираєте Slotik
             //     </p>
             //   </>
@@ -404,7 +404,7 @@ export default function PaymentResultPage() {
                 Оплата не пройшла
               </h1>
 
-              <p className="mt-4 text-neutral-500">
+              <p className="mt-4 text-copy-500">
                 Не вдалося завершити оплату. Спробуйте ще раз.
               </p>
 

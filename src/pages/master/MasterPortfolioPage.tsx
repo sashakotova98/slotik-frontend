@@ -82,25 +82,15 @@ export default function MasterPortfolioPage() {
     setError("");
     setMessage("");
     try {
-      // PUT змінює весь профіль: беремо актуальні поля та координати.
-      const profile = await getOwnProfile();
-      if (!profile.master || profile.master.id !== masterId) {
-        throw new Error("Оновіть сторінку та спробуйте ще раз.");
-      }
-      await uploadMasterPortfolio(profile.master, files);
+      const savedPhotos = await uploadMasterPortfolio(files);
+      setPhotos(savedPhotos);
       // Очищаємо вже збережені файли, щоб не надіслати їх повторно.
       setFiles([]);
+      // Очищаємо поле вибору файлів (input)
       if (inputRef.current) {
         inputRef.current.value = "";
       }
       setMessage("Фотографії додано до портфоліо.");
-      try {
-        const savedPhotos = await getMasterPortfolio(masterId);
-        setPhotos(savedPhotos);
-      } catch {
-        setError("Фото збережено, але список не оновився. Натисніть «Оновити».");
-        setMasterId(null);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалося завантажити фото.");
     } finally {
@@ -153,13 +143,13 @@ export default function MasterPortfolioPage() {
               event.preventDefault();
             }
           }}
-          className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-neutral-100"
+          className="inline-flex min-h-11 items-center rounded-xl px-3 text-sm hover:bg-panel-100"
         >
           Назад
         </Link>
       </div>
 
-      <p className="text-sm text-neutral-500">
+      <p className="text-sm text-copy-500">
         До 10 фотографій ваших робіт. JPG, PNG або WebP — до 5 МБ кожне.
       </p>
 
@@ -188,7 +178,7 @@ export default function MasterPortfolioPage() {
       {!loading && (
         <>
           {photos.length === 0 && (
-            <p className="rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-500">
+            <p className="rounded-2xl bg-panel-50 p-5 text-sm text-copy-500">
               У портфоліо поки немає фотографій.
             </p>
           )}
@@ -196,7 +186,7 @@ export default function MasterPortfolioPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {photos.map((photo, index) => {
               return (
-                <div key={photo.id} className="overflow-hidden rounded-2xl border border-neutral-200">
+                <div key={photo.id} className="overflow-hidden rounded-2xl border border-border">
                   <img
                     src={photo.photoUrl}
                     alt={`Робота майстра ${index + 1}`}
@@ -218,7 +208,7 @@ export default function MasterPortfolioPage() {
             })}
           </div>
 
-          <form onSubmit={upload} className="space-y-3 rounded-2xl border border-neutral-200 p-4">
+          <form onSubmit={upload} className="space-y-3 rounded-2xl border border-border p-4">
             <label htmlFor="portfolio-files" className="block text-sm font-medium">
               Додати фотографії
             </label>
@@ -230,10 +220,10 @@ export default function MasterPortfolioPage() {
               accept="image/jpeg,image/png,image/webp"
               onChange={chooseFiles}
               disabled={cannotChooseFiles}
-              className="block w-full min-w-0 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-neutral-100 file:px-3 file:py-3 disabled:opacity-50"
+              className="block w-full min-w-0 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-panel-100 file:px-3 file:py-3 disabled:opacity-50"
             />
             {files.length > 0 && (
-              <p className="wrap-break-word text-xs text-neutral-500">
+              <p className="wrap-break-word text-xs text-copy-500">
                 Обрано: {selectedFileNames}
               </p>
             )}

@@ -51,13 +51,13 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
   }
 
   return (
-    <section aria-label="Календар записів" className="border-y border-neutral-300 py-4">
+    <section aria-label="Календар записів" className="border-y border-border py-4">
       <div className="mb-5 flex items-center justify-between">
         <button
           type="button"
           onClick={() => changeMonth(-1)}
           aria-label="Попередній місяць"
-          className="flex size-10 items-center justify-center rounded-full hover:bg-neutral-100"
+          className="flex size-10 items-center justify-center rounded-full hover:bg-panel-100"
         >
           <ChevronLeft size={22} />
         </button>
@@ -70,7 +70,7 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
           type="button"
           onClick={() => changeMonth(1)}
           aria-label="Наступний місяць"
-          className="flex size-10 items-center justify-center rounded-full hover:bg-neutral-100"
+          className="flex size-10 items-center justify-center rounded-full hover:bg-panel-100"
         >
           <ChevronRight size={22} />
         </button>
@@ -78,7 +78,7 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
 
       <div className="grid grid-cols-7">
         {weekdays.map((day, index) => (
-          <div key={day} className={`pb-3 text-center text-sm ${index >= 5 ? "text-blue-500" : "text-neutral-400"}`}>
+          <div key={day} className={`pb-3 text-center text-sm ${index >= 5 ? "text-blue-500" : "text-copy-400"}`}>
             {day}
           </div>
         ))}
@@ -102,10 +102,10 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
               : count > 0
                 ? "bg-[#c9eac3] text-neutral-800"
                 : isWorking
-                  ? "bg-neutral-200 text-neutral-600"
+                  ? "bg-panel-200 text-copy-600"
                   : isWeekend
                     ? "text-blue-500"
-                    : "text-neutral-600";
+                    : "text-copy-600";
 
           return (
             <button
@@ -130,7 +130,7 @@ export default function MasterMonthCalendar({ selectedDate, onSelectDate, bookin
                 {count > 0 && (
                   <span
                     aria-hidden="true"
-                    className="absolute -right-1 -bottom-1 flex min-w-3.5 items-center justify-center rounded-full bg-neutral-200 px-0.5 text-[9px] text-black"
+                    className="absolute -right-1 -bottom-1 flex min-w-3.5 items-center justify-center rounded-full bg-panel-200 px-0.5 text-[9px] text-text"
                   >
                     {count}
                   </span>

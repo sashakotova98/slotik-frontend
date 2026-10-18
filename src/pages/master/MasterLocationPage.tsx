@@ -121,7 +121,7 @@ export default function MasterLocationPage() {
         <Link
           to="/cabinet/account"
           aria-label="Повернутися до акаунта"
-          className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-neutral-100"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-panel-100"
         >
           <ChevronLeft size={22} aria-hidden="true" />
         </Link>
@@ -130,13 +130,13 @@ export default function MasterLocationPage() {
       </header>
 
       {loading && (
-        <p role="status" className="text-sm text-neutral-500">
+        <p role="status" className="text-sm text-copy-500">
           Завантажуємо місце прийому…
         </p>
       )}
 
       {!loading && loadError && (
-        <div className="rounded-2xl border border-neutral-200 p-5">
+        <div className="rounded-2xl border border-border p-5">
           <p role="alert" className="text-sm text-red-600">
             {loadError}
           </p>
@@ -156,7 +156,7 @@ export default function MasterLocationPage() {
           }}
         >
           <div>
-            <label htmlFor="location-address" className="mb-2 block text-sm text-neutral-600">
+            <label htmlFor="location-address" className="mb-2 block text-sm text-copy-600">
               Адреса *
             </label>
 
@@ -171,7 +171,7 @@ export default function MasterLocationPage() {
                 clearMessages();
               }}
               placeholder="Вулиця, будинок, кабінет"
-              className="min-h-12 w-full rounded-xl border border-neutral-300 px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 disabled:opacity-50"
+              className="min-h-12 w-full rounded-xl border border-border px-4 py-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-border disabled:opacity-50"
             />
           </div>
 

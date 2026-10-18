@@ -48,24 +48,24 @@ export default function ProfileShareCard({ profileUrl }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-neutral-600">
+      <p className="text-sm text-copy-600">
         Надішліть посилання на профіль майстра
       </p>
 
-      <div className="flex overflow-hidden rounded-xl border border-neutral-300">
+      <div className="flex overflow-hidden rounded-xl border border-border">
         <input
           type="text"
           aria-label="Посилання на профіль майстра"
           readOnly
           value={profileUrl}
           onFocus={(event) => event.target.select()}
-          className="min-w-0 flex-1 bg-white px-3 py-3 text-sm"
+          className="min-w-0 flex-1 bg-surface px-3 py-3 text-sm"
         />
 
         <button
           type="button"
           onClick={handleCopy}
-          className="shrink-0 px-3 py-3 text-sm text-blue-600 hover:bg-neutral-100"
+          className="shrink-0 px-3 py-3 text-sm text-blue-600 hover:bg-panel-100"
         >
           Копіювати
         </button>
@@ -90,7 +90,7 @@ export default function ProfileShareCard({ profileUrl }: Props) {
         {sharing ? "Зачекайте…" : "Поділитися"}
       </button>
 
-      <p role="status" className="text-sm text-neutral-600">
+      <p role="status" className="text-sm text-copy-600">
         {message}
       </p>
     </div>

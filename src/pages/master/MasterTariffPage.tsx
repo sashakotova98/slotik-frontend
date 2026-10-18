@@ -97,7 +97,7 @@ export default function MasterTariffPage() {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-6">
-      <header className="flex items-center justify-between border-b border-neutral-200 pb-3">
+      <header className="flex items-center justify-between border-b border-border pb-3">
         <h1 className="text-xl font-semibold">Ваш тариф</h1>
         <Link to="/cabinet/account" aria-label="Повернутися до акаунта" className="flex size-11 items-center justify-center">
           <X aria-hidden="true" />
@@ -111,8 +111,8 @@ export default function MasterTariffPage() {
         <>
           {/* Поточна підписка та її строк дії. Ціну беремо з API. */}
           <section className="space-y-3">
-            <h2 className="text-sm text-neutral-500">Поточний тариф</h2>
-            <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+            <h2 className="text-sm text-copy-500">Поточний тариф</h2>
+            <div className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
               {currentSubscription ? (
                 <>
                   <div className="flex items-start justify-between gap-3 font-semibold">
@@ -131,12 +131,12 @@ export default function MasterTariffPage() {
                   )}
 
                   {currentSubscription.plan === 0 && (
-                    <p className="mt-3 text-sm text-neutral-500">
+                    <p className="mt-3 text-sm text-copy-500">
                       Сторінка з прайсом і портфоліо, посилання та QR-код. Без онлайн-запису.
                     </p>
                   )}
 
-                  <p className="mt-4 border-t border-neutral-200 pt-3 text-sm text-neutral-500">
+                  <p className="mt-4 border-t border-border pt-3 text-sm text-copy-500">
                     {currentSubscription.plan === 0
                       ? "Безстроково"
                       : `Діє до ${formatDate(currentSubscription.expiresAt)}`}
@@ -144,7 +144,7 @@ export default function MasterTariffPage() {
                   <p className="mt-2 text-sm text-green-700">{statusNames[currentSubscription.status]}</p>
                 </>
               ) : (
-                <p className="text-sm text-neutral-600">
+                <p className="text-sm text-copy-600">
                   {subscriptions.length === 0
                     ? "Підписку ще не збережено."
                     : "Поточну підписку не визначено."}
@@ -155,18 +155,18 @@ export default function MasterTariffPage() {
 
           {/* null означає відсутність даних про заплановану оплату. */}
           <section className="space-y-3">
-            <h2 className="text-sm text-neutral-500">Наступна оплата</h2>
-            <p className="rounded-2xl border border-neutral-100 bg-white p-4 text-sm shadow-sm">
+            <h2 className="text-sm text-copy-500">Наступна оплата</h2>
+            <p className="rounded-2xl border border-border bg-surface p-4 text-sm shadow-sm">
               {getNextPaymentText(currentSubscription)}
             </p>
           </section>
 
           {/* Історія містить лише платежі, успішність яких підтвердив бек. */}
           <section className="space-y-3">
-            <h2 className="text-sm text-neutral-500">Попередні оплати</h2>
-            <div className="divide-y divide-neutral-200 rounded-2xl border border-neutral-100 bg-white px-4 shadow-sm">
+            <h2 className="text-sm text-copy-500">Попередні оплати</h2>
+            <div className="divide-y divide-border rounded-2xl border border-border bg-surface px-4 shadow-sm">
               {successfulPayments.length === 0 ? (
-                <p className="py-4 text-sm text-neutral-500">Оплат поки немає.</p>
+                <p className="py-4 text-sm text-copy-500">Оплат поки немає.</p>
               ) : (
                 successfulPayments.map((payment) => (
                   <div key={payment.id} className="py-3 text-sm">
@@ -174,7 +174,7 @@ export default function MasterTariffPage() {
                       <span>{formatDate(payment.paidAt ?? payment.createdAt)}</span>
                       <span>{formatMoney(payment.amount, payment.currency)}</span>
                     </div>
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-copy-500">
                       {planNames[payment.plan]}
                       {payment.providerStatus === "sandbox" ? " • Тестова оплата" : ""}
                     </p>
@@ -186,12 +186,12 @@ export default function MasterTariffPage() {
           {/* Відкриваємо вибір тарифу в режимі зміни з кабінету. */}
           <Link
             to="/cabinet/plans?mode=change"
-            className="flex min-h-11 items-center justify-center rounded-xl border border-neutral-400 px-5 py-3 text-sm font-medium hover:bg-neutral-100"
+            className="flex min-h-11 items-center justify-center rounded-xl border border-border px-5 py-3 text-sm font-medium hover:bg-panel-100"
           >
             {currentSubscription ? "Змінити тариф" : "Обрати тариф"}
           </Link>
 
-          <p className="text-center text-xs text-neutral-500">
+          <p className="text-center text-xs text-copy-500">
             Оплата на захищеній сторінці LiqPay.
           </p>
         </>
