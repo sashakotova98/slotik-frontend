@@ -19,6 +19,8 @@ export function getServicesByMasterId(masterId: number): Promise<Service[]> {
 }
 
 export type CreateServiceData = {
+  description?: string | null;
+  included?: string | null;
   masterId: number;
   name: string;
   price: number;
@@ -32,6 +34,9 @@ export async function createService(data: CreateServiceData, files: File[]): Pro
   formData.append("Name", data.name);
   formData.append("Price", String(data.price));
   formData.append("DurationMin", String(data.durationMin));
+  // Порожній текст у PUT очищає збережене значення.
+  formData.append("Description", data.description?.trim() ?? "");
+  formData.append("Included", data.included?.trim() ?? "");
 
   for (const file of files) {
     formData.append("files", file);
@@ -52,6 +57,9 @@ export function updateService(id: number, data: UpdateServiceData, files: File[]
   formData.append("Name", data.name);
   formData.append("Price", String(data.price));
   formData.append("DurationMin", String(data.durationMin));
+  // Порожній текст у PUT очищає збережене значення.
+  formData.append("Description", data.description?.trim() ?? "");
+  formData.append("Included", data.included?.trim() ?? "");
 
   // Зберігаємо налаштування, яких немає у формі.
   if (data.groupId !== null) formData.append("GroupId", String(data.groupId));
