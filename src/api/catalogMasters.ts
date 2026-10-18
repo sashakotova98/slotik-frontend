@@ -10,11 +10,13 @@ export type CatalogMaster = {
   avatarUrl: string | null;
   isBlocked: boolean;
   slug: string;
+  createdAt: string | null;
   rating: number | null;
-  clientsCount: number;
+  clientsCount: number | null;
+  portfolioPhotos: { id: number; photoUrl: string; sortOrder: number }[];
 };
 
-export function getCatalogMasters(categoryId?: number, cityId?: number, search: string = "",  districtId?: number): Promise<CatalogMaster[]> {
+export async function getCatalogMasters(categoryId?: number, cityId?: number, search: string = "",  districtId?: number): Promise<CatalogMaster[]> {
   const params = new URLSearchParams();
 
   params.set("status", "active");
@@ -38,5 +40,26 @@ export function getCatalogMasters(categoryId?: number, cityId?: number, search: 
     params.set("search", query);
   }
 
-   return api<CatalogMaster[]>(`/Master?${params.toString()}`);
+   const masters = await api<(Partial<CatalogMaster> & {
+     id: number;
+     categoryName?: string;
+     cityName?: string;
+   })[]>(`/Master?${params.toString()}`);
+
+   // Публічний DTO використовує categoryName/cityName; старі назви залишаємо для компонентів.
+   return masters.map((master) => ({
+     id: master.id,
+     firstName: master.firstName ?? "",
+     lastName: master.lastName ?? "",
+     category: master.categoryName ?? master.category ?? "",
+     city: master.cityName ?? master.city ?? "",
+     districtName: master.districtName ?? null,
+     avatarUrl: master.avatarUrl ?? null,
+     isBlocked: master.isBlocked ?? false,
+     slug: master.slug ?? "",
+     createdAt: master.createdAt ?? null,
+     rating: master.rating ?? null,
+     clientsCount: master.clientsCount ?? null,
+     portfolioPhotos: master.portfolioPhotos ?? [],
+   }));
 }

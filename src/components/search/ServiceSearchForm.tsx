@@ -6,9 +6,13 @@ type Props = {
   onSearch: (query: string) => void;
   onClear?: () => void;
   className?: string;
+  onOpenCategories?: () => void;
+  categoriesOpen?: boolean;
+  categoriesId?: string;
+  autoComplete?: "on" | "off";
 };
 
-export default function ServiceSearchForm({ defaultValue = "", onSearch, onClear, className = "" }: Props) {
+export default function ServiceSearchForm({ defaultValue = "", onSearch, onClear, className = "", onOpenCategories, categoriesOpen, categoriesId, autoComplete }: Props) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -16,7 +20,7 @@ export default function ServiceSearchForm({ defaultValue = "", onSearch, onClear
   }
 
   return (
-    <form onSubmit={handleSubmit} role="search" className={`relative min-w-0 w-full ${className}`}>
+    <form autoComplete={autoComplete} onSubmit={handleSubmit} role="search" className={`relative min-w-0 w-full ${className}`}>
       <button
         type="submit"
         aria-label="Знайти послугу, категорію або майстра"
@@ -27,7 +31,12 @@ export default function ServiceSearchForm({ defaultValue = "", onSearch, onClear
       <input
         key={defaultValue}
         name="search"
+        autoComplete={autoComplete}
         type="search"
+        onFocus={onOpenCategories}
+        onClick={onOpenCategories}
+        aria-expanded={categoriesOpen}
+        aria-controls={categoriesId}
         defaultValue={defaultValue}
         onChange={(event) => {
           if (event.target.value === "") {
