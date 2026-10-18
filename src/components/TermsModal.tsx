@@ -26,7 +26,7 @@ export default function TermsModal({ onClose }: Props) {
         event.preventDefault();
         onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-24px)] max-w-2xl overflow-y-auto rounded-2xl border-0 bg-white p-5 text-black shadow-xl backdrop:bg-black/40 sm:rounded-3xl sm:p-8"
+      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-24px)] max-w-2xl overflow-y-auto rounded-2xl border-0 bg-surface p-5 text-text shadow-xl backdrop:bg-black/40 sm:rounded-3xl sm:p-8"
     >
       <div className="mb-2 flex justify-end">
         <button
@@ -34,7 +34,7 @@ export default function TermsModal({ onClose }: Props) {
           autoFocus
           onClick={onClose}
           aria-label="Закрити умови користування"
-          className="flex size-11 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex size-11 items-center justify-center rounded-lg text-copy-500 hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <X aria-hidden="true" className="size-6" />
         </button>
@@ -43,7 +43,7 @@ export default function TermsModal({ onClose }: Props) {
       <button
         type="button"
         onClick={onClose}
-        className="mt-6 flex min-h-11 w-full items-center justify-center rounded-lg bg-neutral-200 px-3 py-3 text-center text-sm font-medium text-neutral-800 hover:bg-neutral-300 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="mt-6 flex min-h-11 w-full items-center justify-center rounded-lg bg-panel-200 px-3 py-3 text-center text-sm font-medium text-copy-800 hover:bg-panel-300 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         Повернутися до реєстрації
       </button>

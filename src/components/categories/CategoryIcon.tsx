@@ -51,7 +51,7 @@ export function CategoryIcon({ name, className = "h-9 w-9" }: Props) {
   const src = icons[name];
 
   if (src) {
-    return <img src={src} alt="" className={className} />;
+    return <img src={src} alt="" className={`theme-ink ${className}`} />;
   }
 
   const Icon = fallbackIcons[name] ?? Shapes;

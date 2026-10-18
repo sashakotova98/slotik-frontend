@@ -181,7 +181,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
   return (
     <div>
       <label className={`inline-flex items-center gap-5 ${uploading ? "cursor-wait" : "cursor-pointer"}`}>
-        <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-400">
+        <span className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border">
           {uploading ? (
             <LoaderCircle size={28} className="animate-spin" aria-hidden="true" />
           ) : photo ? (
@@ -211,7 +211,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
       )}
 
       <div className="mt-6">
-        <span id="master-category-label" className="mb-1 block text-lg text-neutral-600">
+        <span id="master-category-label" className="mb-1 block text-lg text-copy-600">
           Категорія *
         </span>
 
@@ -242,14 +242,14 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
             aria-expanded={categoryOpen}
             aria-controls="master-category-options"
             aria-labelledby="master-category-label master-category-value"
-            className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-neutral-400 bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 disabled:cursor-not-allowed disabled:opacity-50"
+            className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-border bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-border disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
               id="master-category-value"
               className={
                 selectedCategory
                   ? "truncate rounded-full bg-black px-5 py-1.5 text-base text-white"
-                  : "truncate px-2 text-sm text-neutral-500"
+                  : "truncate px-2 text-sm text-copy-500"
               }
             >
               {categoriesLoading
@@ -261,7 +261,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
               size={20}
               strokeWidth={1.5}
               aria-hidden="true"
-              className={`shrink-0 text-neutral-500 transition-transform ${categoryOpen ? "rotate-180" : ""
+              className={`shrink-0 text-copy-500 transition-transform ${categoryOpen ? "rotate-180" : ""
                 }`}
             />
           </button>
@@ -271,7 +271,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
               id="master-category-options"
               role="group"
               aria-labelledby="master-category-label"
-              className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl"
+              className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-xl"
             >
               {categoryOptions.map((category) => (
                 <button
@@ -279,9 +279,9 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
                   type="button"
                   aria-pressed={categoryId === category.id}
                   onClick={() => handleCategorySelect(category.id)}
-                  className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-inset ${categoryId === category.id
+                  className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-inset ${categoryId === category.id
                     ? "bg-black text-white"
-                    : "text-neutral-700 hover:bg-neutral-100"
+                    : "text-copy-700 hover:bg-panel-100"
                     }`}
                 >
                   <span>{category.name}</span>
@@ -293,7 +293,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
               ))}
 
               {categoryOptions.length === 0 && (
-                <p className="px-3 py-3 text-sm text-neutral-500">
+                <p className="px-3 py-3 text-sm text-copy-500">
                   Категорій поки немає.
                 </p>
               )}
@@ -310,7 +310,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
 
       <div className="mt-4 space-y-4">
         <div>
-          <span id="master-city-label" className="mb-1 block text-lg text-neutral-600">
+          <span id="master-city-label" className="mb-1 block text-lg text-copy-600">
             Місто *
           </span>
 
@@ -332,29 +332,29 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
               aria-expanded={cityOpen}
               aria-controls="master-city-options"
               aria-labelledby="master-city-label master-city-value"
-              className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-neutral-400 bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 disabled:cursor-not-allowed disabled:opacity-50"
+              className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-border bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-border disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span id="master-city-value" className={selectedCity ? "truncate rounded-full bg-black px-5 py-1.5 text-base text-white" : "truncate px-2 text-sm text-neutral-500"}>
+              <span id="master-city-value" className={selectedCity ? "truncate rounded-full bg-black px-5 py-1.5 text-base text-white" : "truncate px-2 text-sm text-copy-500"}>
                 {citiesLoading ? "Завантаження..." : selectedCity?.name ?? "Оберіть місто"}
               </span>
-              <ChevronDown size={20} aria-hidden="true" className={`shrink-0 text-neutral-500 transition-transform ${cityOpen ? "rotate-180" : ""}`} />
+              <ChevronDown size={20} aria-hidden="true" className={`shrink-0 text-copy-500 transition-transform ${cityOpen ? "rotate-180" : ""}`} />
             </button>
 
             {cityOpen && (
-              <div id="master-city-options" role="group" aria-labelledby="master-city-label" className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl">
+              <div id="master-city-options" role="group" aria-labelledby="master-city-label" className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-xl">
                 {cities.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     aria-pressed={profile.cityId === item.id}
                     onClick={() => handleCitySelect(item.id)}
-                    className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-inset ${profile.cityId === item.id ? "bg-black text-white" : "text-neutral-700 hover:bg-neutral-100"}`}
+                    className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-inset ${profile.cityId === item.id ? "bg-black text-white" : "text-copy-700 hover:bg-panel-100"}`}
                   >
                     <span>{item.name}</span>
                     {profile.cityId === item.id && <Check size={17} aria-hidden="true" className="shrink-0" />}
                   </button>
                 ))}
-                {cities.length === 0 && <p className="px-3 py-2 text-sm text-neutral-500">Список порожній.</p>}
+                {cities.length === 0 && <p className="px-3 py-2 text-sm text-copy-500">Список порожній.</p>}
               </div>
             )}
           </div>
@@ -366,7 +366,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
           )}
 
           {!citiesLoading && !citiesError && cities.length === 0 && (
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm text-copy-500">
               Міст поки немає.
             </p>
           )}
@@ -374,7 +374,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
 
         {profile.cityId !== null && (
           <div>
-            <span id="master-district-label" className="mb-1 block text-lg text-neutral-600">
+            <span id="master-district-label" className="mb-1 block text-lg text-copy-600">
               Район *
             </span>
 
@@ -396,35 +396,35 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
                 aria-expanded={districtOpen}
                 aria-controls="master-district-options"
                 aria-labelledby="master-district-label master-district-value"
-                className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-neutral-400 bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 disabled:cursor-not-allowed disabled:opacity-50"
+                className="relative z-20 flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-border bg-transparent p-1.5 pr-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-border disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span id="master-district-value" className={selectedDistrict ? "truncate rounded-full bg-black px-5 py-1.5 text-base text-white" : "truncate px-2 text-sm text-neutral-500"}>
+                <span id="master-district-value" className={selectedDistrict ? "truncate rounded-full bg-black px-5 py-1.5 text-base text-white" : "truncate px-2 text-sm text-copy-500"}>
                   {citiesLoading ? "Завантаження..." : selectedDistrict?.name ?? "Оберіть район"}
                 </span>
-                <ChevronDown size={20} aria-hidden="true" className={`shrink-0 text-neutral-500 transition-transform ${districtOpen ? "rotate-180" : ""}`} />
+                <ChevronDown size={20} aria-hidden="true" className={`shrink-0 text-copy-500 transition-transform ${districtOpen ? "rotate-180" : ""}`} />
               </button>
 
               {districtOpen && (
-                <div id="master-district-options" role="group" aria-labelledby="master-district-label" className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-2 shadow-xl">
+                <div id="master-district-options" role="group" aria-labelledby="master-district-label" className="absolute inset-x-0 top-full z-30 mt-2 max-h-60 space-y-1 overflow-y-auto rounded-2xl border border-border bg-surface p-2 shadow-xl">
                   {districts.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       aria-pressed={profile.districtId === item.id}
                       onClick={() => handleDistrictSelect(item.id)}
-                      className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-inset ${profile.districtId === item.id ? "bg-black text-white" : "text-neutral-700 hover:bg-neutral-100"}`}
+                      className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-border focus-visible:ring-inset ${profile.districtId === item.id ? "bg-black text-white" : "text-copy-700 hover:bg-panel-100"}`}
                     >
                       <span>{item.name}</span>
                       {profile.districtId === item.id && <Check size={17} aria-hidden="true" className="shrink-0" />}
                     </button>
                   ))}
-                  {districts.length === 0 && <p className="px-3 py-2 text-sm text-neutral-500">Список порожній.</p>}
+                  {districts.length === 0 && <p className="px-3 py-2 text-sm text-copy-500">Список порожній.</p>}
                 </div>
               )}
             </div>
 
             {!citiesLoading && !citiesError && districts.length === 0 && (
-              <p className="mt-2 text-sm text-neutral-500">
+              <p className="mt-2 text-sm text-copy-500">
                 Для цього міста ще не додано районів.
               </p>
             )}
@@ -432,7 +432,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
         )}
 
         <div>
-          <label htmlFor="master-address" className="mb-1 block text-lg text-neutral-600">
+          <label htmlFor="master-address" className="mb-1 block text-lg text-copy-600">
             Адреса *
           </label>
 
@@ -443,7 +443,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
             onChange={(e) => onProfileChange({ ...profile, address: e.target.value })}
             placeholder="Вулиця, будинок"
             required
-            className="h-12 w-full rounded-xl border border-neutral-400 bg-transparent px-3 text-base outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
+            className="h-12 w-full rounded-xl border border-border bg-transparent px-3 text-base outline-none placeholder:text-copy-400 focus-visible:ring-2 focus-visible:ring-border"
           />
         </div>
 
@@ -460,7 +460,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
         />
 
         <div>
-          <label htmlFor="master-about" className="mb-1 block text-lg text-neutral-600">
+          <label htmlFor="master-about" className="mb-1 block text-lg text-copy-600">
             Про себе *
           </label>
 
@@ -470,12 +470,12 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
             onChange={(e) => onProfileChange({ ...profile, about: e.target.value })}
             rows={4}
             required
-            className="min-h-28 w-full resize-y rounded-xl border border-neutral-400 bg-transparent px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-neutral-300"
+            className="min-h-28 w-full resize-y rounded-xl border border-border bg-transparent px-3 py-2 text-base outline-none focus-visible:ring-2 focus-visible:ring-border"
           />
         </div>
 
         <div>
-          <p className="mb-2 text-lg text-neutral-600">Портфоліо</p>
+          <p className="mb-2 text-lg text-copy-600">Портфоліо</p>
 
           {portfolioPhotos.length > 0 && (
             <div className="mb-3 grid grid-cols-3 gap-2">
@@ -490,7 +490,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
                       setPortfolioError("");
                       void onPortfolioDelete(item.id);
                     }}
-                    className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-black/70 text-xl text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-50"
+                    className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-black/70 text-xl text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text disabled:cursor-wait disabled:opacity-50"
                   >
                     {deletingPhotoId === item.id ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : "×"}
                   </button>
@@ -501,7 +501,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
 
           {portfolioFiles.length > 0 && (
             <>
-              <p className="mb-2 text-sm text-neutral-600">Нові фото — ще не збережені ({portfolioFiles.length}). Усього: {portfolioPhotos.length + portfolioFiles.length}/10:</p>
+              <p className="mb-2 text-sm text-copy-600">Нові фото — ще не збережені ({portfolioFiles.length}). Усього: {portfolioPhotos.length + portfolioFiles.length}/10:</p>
               <div className="mb-3 grid grid-cols-3 gap-2">
                 {portfolioFiles.map((file, index) => (
                   <div key={index} className="relative">
@@ -513,7 +513,7 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
                         onPortfolioChange(portfolioFiles.filter((_, fileIndex) => fileIndex !== index));
                         setPortfolioError("");
                       }}
-                      className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-black/70 text-xl text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                      className="absolute right-1 top-1 flex size-8 items-center justify-center rounded-full bg-black/70 text-xl text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
                     >
                       ×
                     </button>
@@ -523,16 +523,16 @@ export default function MasterProfileStep({ photo, onPhotoChange, uploading, onU
             </>
           )}
 
-          <label className="inline-block cursor-pointer rounded-xl border border-neutral-400 px-3 py-1 text-sm text-blue-500 focus-within:ring-2 focus-within:ring-blue-500">
+          <label className="inline-block cursor-pointer rounded-xl border border-border px-3 py-1 text-sm text-blue-500 focus-within:ring-2 focus-within:ring-blue-500">
             + Додати фото
             <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={handlePortfolioChange} aria-describedby="portfolio-note" className="sr-only" />
           </label>
 
-          <p id="portfolio-note" className="mt-2 text-xs text-neutral-500">
+          <p id="portfolio-note" className="mt-2 text-xs text-copy-500">
             До 10 фото, JPG, PNG або WebP, до 5 МБ кожне. Збереження після натискання «Далі».
           </p>
           {portfolioPhotos.length > 0 && (
-            <p className="mt-2 text-sm text-neutral-600">
+            <p className="mt-2 text-sm text-copy-600">
               Нові фото додадуться до збережених після натискання «Далі». Видалення збережених фото виконується одразу.
             </p>
           )}

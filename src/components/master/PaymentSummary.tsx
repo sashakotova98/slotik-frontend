@@ -23,23 +23,23 @@ export default function PaymentSummary({ plan, masterName, periodLabel, notice, 
     <>
       <h1 className="mb-5 text-lg font-semibold">Оплата підписки</h1>
 
-      <dl className="rounded-xl border border-neutral-400 p-4 text-sm">
+      <dl className="rounded-xl border border-border p-4 text-sm">
         <div className="flex justify-between gap-4">
-          <dt className="text-neutral-600">Тариф</dt>
+          <dt className="text-copy-600">Тариф</dt>
           <dd className="text-right">{plan.name}</dd>
         </div>
 
         <div className="mt-2 flex justify-between gap-4">
-          <dt className="text-neutral-600">Період</dt>
+          <dt className="text-copy-600">Період</dt>
           <dd className="text-right">{periodLabel ?? "Буде уточнено"}</dd>
         </div>
 
         <div className="mt-2 flex justify-between gap-4">
-          <dt className="text-neutral-600">Майстер</dt>
+          <dt className="text-copy-600">Майстер</dt>
           <dd className="text-right">{masterName ?? "Дані профілю ще не підключені"}</dd>
         </div>
 
-        <div className="mt-3 flex justify-between gap-4 border-t border-neutral-300 pt-3 font-semibold">
+        <div className="mt-3 flex justify-between gap-4 border-t border-border pt-3 font-semibold">
           <dt>Орієнтовна вартість</dt>
           <dd>{plan.price} ₴ за {periodLabel ?? "обраний період"}</dd>
         </div>
@@ -68,11 +68,11 @@ export default function PaymentSummary({ plan, masterName, periodLabel, notice, 
         </p>
       )}
 
-      <p className="mt-2 text-center text-xs text-neutral-500">
+      <p className="mt-2 text-center text-xs text-copy-500">
         Оплата на захищеній сторінці LiqPay.
       </p>
 
-      <button type="button" disabled={paying} onClick={onBack} className="mt-5 w-full py-2 text-sm text-neutral-500 hover:text-black">
+      <button type="button" disabled={paying} onClick={onBack} className="mt-5 w-full py-2 text-sm text-copy-500 hover:text-text">
         Назад
       </button>
     </>

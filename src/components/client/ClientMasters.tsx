@@ -97,7 +97,7 @@ export default function ClientMasters() {
                   {profile.avatarUrl ? (
                     <img src={profile.avatarUrl} alt="" className="size-14 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-lg text-neutral-600">
+                    <span aria-hidden="true" className="flex size-14 shrink-0 items-center justify-center rounded-full bg-panel-100 text-lg text-copy-600">
                       {profile.firstName?.[0]}{profile.lastName?.[0]}
                     </span>
                   )}

@@ -94,7 +94,7 @@ export default function HomeMastersReviews() {
   }, []);
 
   if (loading) {
-    return <p className="px-4 py-8 text-center text-sm text-neutral-500">Завантаження майстрів…</p>;
+    return <p className="px-4 py-8 text-center text-sm text-copy-500">Завантаження майстрів…</p>;
   }
 
   if (error) {
@@ -121,7 +121,7 @@ export default function HomeMastersReviews() {
           return (
             <article key={master.id}>
               {/* На вузькому екрані портфоліо переноситься під дані майстра. */}
-              <div className="relative rounded-3xl bg-white p-4 pb-7 shadow-[0_10px_24px_rgba(0,0,0,0.18)] sm:p-5 sm:pb-8">
+              <div className="relative rounded-3xl bg-surface p-4 pb-7 shadow-[0_10px_24px_rgba(0,0,0,0.18)] sm:p-5 sm:pb-8">
                 <div className="grid gap-4 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
                   <div className="flex min-w-0 items-center gap-3">
                     {master.avatarUrl ? (
@@ -129,7 +129,7 @@ export default function HomeMastersReviews() {
                     ) : (
                       <span
                         aria-hidden="true"
-                        className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-3xl sm:h-24 sm:w-24"
+                        className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-panel-200 text-3xl sm:h-24 sm:w-24"
                       >
                         {master.firstName.charAt(0)}
                       </span>
@@ -137,9 +137,9 @@ export default function HomeMastersReviews() {
                     <div className="min-w-0 space-y-1.5">
                       <h3 className="wrap-break-word text-base font-semibold leading-tight">{fullName}</h3>
                       {master.category && (
-                        <p className="inline-block rounded-full bg-neutral-100 px-3 py-1 text-[11px] text-neutral-600">{master.category}</p>
+                        <p className="inline-block rounded-full bg-panel-100 px-3 py-1 text-[11px] text-copy-600">{master.category}</p>
                       )}
-                      <p className="text-xs text-neutral-600">
+                      <p className="text-xs text-copy-600">
                         {rating !== null && (
                           <span>
                             <span className="text-amber-400">★</span> {rating.toFixed(1)}
@@ -148,7 +148,7 @@ export default function HomeMastersReviews() {
                         )}
                         {[master.city, master.districtName].filter(Boolean).join(", ")}
                       </p>
-                      <p className="flex items-center gap-2 text-xs text-neutral-500">
+                      <p className="flex items-center gap-2 text-xs text-copy-500">
                         <Users size={14} aria-hidden="true" />
                         Клієнтів: {master.clientsCount}
                       </p>
@@ -175,7 +175,7 @@ export default function HomeMastersReviews() {
                         })}
                       </div>
                     ) : (
-                      <p className="flex min-h-24 items-center justify-center rounded-xl bg-neutral-50 p-3 text-center text-xs text-neutral-500">
+                      <p className="flex min-h-24 items-center justify-center rounded-xl bg-panel-50 p-3 text-center text-xs text-copy-500">
                         {photosFailed ? "Не вдалося завантажити портфоліо." : "Майстер ще не додав фото робіт."}
                       </p>
                     )}
@@ -193,7 +193,7 @@ export default function HomeMastersReviews() {
               </div>
               {/* Останній відгук частково перекриває картку майстра. */}
               {latestReview && (
-                <div className="relative z-10 mt-3 mx-auto w-[92%] max-w-sm space-y-2 rounded-[20px] bg-white p-3 shadow-[0_10px_24px_rgba(0,0,0,0.22)] sm:-mt-14 sm:ml-[25%] sm:mr-0 sm:w-[47%]">
+                <div className="relative z-10 mt-3 mx-auto w-[92%] max-w-sm space-y-2 rounded-[20px] bg-surface p-3 shadow-[0_10px_24px_rgba(0,0,0,0.22)] sm:-mt-14 sm:ml-[25%] sm:mr-0 sm:w-[47%]">
                   <div className="flex items-center gap-2">
                     {latestReview.clientAvatarUrl ? (
                       <img src={latestReview.clientAvatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
@@ -208,7 +208,7 @@ export default function HomeMastersReviews() {
 
                     <div className="min-w-0">
                       <p className="text-xs font-medium">{clientName}</p>
-                      <p className="mt-1 rounded-lg bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600">
+                      <p className="mt-1 rounded-lg bg-panel-100 px-2 py-1 text-[11px] text-copy-600">
                         {latestReview.serviceName || "Послуга"}
                         {latestReview.price != null && (
                           <> • {latestReview.price.toLocaleString("uk-UA")} ₴</>
@@ -232,7 +232,7 @@ export default function HomeMastersReviews() {
 
                   <p className="whitespace-pre-wrap wrap-break-word text-xs leading-relaxed">{latestReview.text}</p>
 
-                  <div className="flex flex-wrap justify-between gap-2 text-[10px] text-neutral-500">
+                  <div className="flex flex-wrap justify-between gap-2 text-[10px] text-copy-500">
                     <span>
                       {latestReview.createdAt && new Date(latestReview.createdAt).toLocaleDateString("uk-UA", { timeZone: "Europe/Kyiv" })}
                     </span>

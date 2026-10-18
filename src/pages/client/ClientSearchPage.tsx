@@ -191,7 +191,7 @@ export default function ClientSearchPage() {
       return (b.rating ?? -1) - (a.rating ?? -1) || a.id - b.id;
     });
   const canShowResults = !citiesLoading && !mastersLoading && !citiesError && !invalidFilters && !mastersError && cityId !== null;
-  const noteClass = "rounded-2xl bg-neutral-50 px-4 py-4 text-sm leading-relaxed text-neutral-500";
+  const noteClass = "rounded-2xl bg-panel-50 px-4 py-4 text-sm leading-relaxed text-copy-500";
 
   function renderCard(master: CatalogMaster) {
     return (
@@ -208,7 +208,7 @@ export default function ClientSearchPage() {
   }
 
   return (
-    <section className="mx-auto w-full min-w-0 max-w-2xl pb-4 text-black" aria-labelledby="client-search-title">
+    <section className="mx-auto w-full min-w-0 max-w-2xl pb-4 text-text" aria-labelledby="client-search-title">
       <h1 id="client-search-title" className="sr-only">
         Пошук майстрів
       </h1>
@@ -252,31 +252,31 @@ export default function ClientSearchPage() {
             id={categoriesId}
             role="region"
             aria-label="Категорії послуг"
-            className="absolute inset-x-0 top-full -mt-7 rounded-b-2xl bg-white px-3 pb-5 pt-11 shadow-xl sm:px-5"
+            className="absolute inset-x-0 top-full -mt-7 rounded-b-2xl bg-surface px-3 pb-5 pt-11 shadow-xl sm:px-5"
           >
             <div className="max-h-[min(20rem,45dvh)] overflow-y-auto overscroll-contain px-1 pb-1">
               {categoriesLoading ? (
-                <p role="status" className="text-sm text-neutral-500">
+                <p role="status" className="text-sm text-copy-500">
                   Завантаження категорій…
                 </p>
               ) : categoriesError ? (
-                <p role="alert" className="text-sm text-neutral-500">
+                <p role="alert" className="text-sm text-copy-500">
                   {categoriesError}
                 </p>
               ) : categories.length === 0 ? (
-                <p className="text-sm text-neutral-500">Категорій поки немає.</p>
+                <p className="text-sm text-copy-500">Категорій поки немає.</p>
               ) : (
                 <CategoryGrid categories={categories} selectedCategoryId={categoryId} onSelect={changeCategory} />
               )}
             </div>
-            <button type="button" onClick={() => setCategoriesOpen(false)} className="mt-3 min-h-9 text-sm text-neutral-500 underline">
+            <button type="button" onClick={() => setCategoriesOpen(false)} className="mt-3 min-h-9 text-sm text-copy-500 underline">
               Закрити
             </button>
           </div>
         )}
       </div>
       {categoryId !== null && (
-        <button type="button" onClick={() => changeCategory(null)} className="mt-3 min-h-10 rounded-full bg-neutral-100 px-3 text-sm">
+        <button type="button" onClick={() => changeCategory(null)} className="mt-3 min-h-10 rounded-full bg-panel-100 px-3 text-sm">
           {categories.find((category) => category.id === categoryId)?.name ?? "Обрана категорія"} · Скинути ×
         </button>
       )}
@@ -301,9 +301,9 @@ export default function ClientSearchPage() {
         <h2 id="for-you-title" className="text-lg font-semibold sm:text-xl">
           Для Вас
         </h2>
-        <p className="mt-1 text-xs text-neutral-500">Обрані майстри за вашими фільтрами</p>
+        <p className="mt-1 text-xs text-copy-500">Обрані майстри за вашими фільтрами</p>
         {favoritesLoading ? (
-          <p role="status" className="mt-3 text-sm text-neutral-500">
+          <p role="status" className="mt-3 text-sm text-copy-500">
             Завантаження обраного…
           </p>
         ) : favoritesError ? (
@@ -330,7 +330,7 @@ export default function ClientSearchPage() {
               type="button"
               aria-pressed={sortBy === "rating"}
               onClick={() => changeSort("rating")}
-              className={`min-h-9 rounded-full border px-3 py-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 ${sortBy === "rating" ? "border-black bg-black text-white" : "border-neutral-300 bg-white text-black"}`}
+              className={`min-h-9 rounded-full border px-3 py-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 ${sortBy === "rating" ? "border-black bg-black text-white" : "border-border bg-surface text-text"}`}
             >
               За рейтингом
             </button>
@@ -338,15 +338,15 @@ export default function ClientSearchPage() {
               type="button"
               aria-pressed={sortBy === "newest"}
               onClick={() => changeSort("newest")}
-              className={`min-h-9 rounded-full border px-3 py-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 ${sortBy === "newest" ? "border-black bg-black text-white" : "border-neutral-300 bg-white text-black"}`}
+              className={`min-h-9 rounded-full border px-3 py-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 ${sortBy === "newest" ? "border-black bg-black text-white" : "border-border bg-surface text-text"}`}
             >
               Спочатку нові
             </button>
           </div>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-neutral-500">Зміна обраного поки недоступна.</p>
+        <p className="mt-2 text-xs leading-relaxed text-copy-500">Зміна обраного поки недоступна.</p>
         {ratingsError && (
-          <p role="status" className="mt-2 text-xs text-neutral-500">
+          <p role="status" className="mt-2 text-xs text-copy-500">
             {ratingsError}
           </p>
         )}

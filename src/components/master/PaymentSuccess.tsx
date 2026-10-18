@@ -34,7 +34,7 @@ export default function PaymentSuccess({ slug, title = "Сторінку ств�
   };
 
   return (
-    <section className="w-full max-w-xl rounded-[48px] bg-neutral-100 px-6 py-10 text-center shadow-2xl sm:rounded-[64px] sm:px-10 sm:py-14">
+    <section className="w-full max-w-xl rounded-[48px] bg-panel-100 px-6 py-10 text-center shadow-2xl sm:rounded-[64px] sm:px-10 sm:py-14">
       <div className="mx-auto flex size-24 items-center justify-center rounded-full bg-[#c9eac3]">
         <Check
           size={52}
@@ -48,13 +48,13 @@ export default function PaymentSuccess({ slug, title = "Сторінку ств�
         {title}
       </h1>
 
-      <div className="mt-4 flex items-center gap-2 rounded-lg border border-neutral-400 px-3 py-2">
+      <div className="mt-4 flex items-center gap-2 rounded-lg border border-border px-3 py-2">
         <input
           readOnly
           aria-label="Посилання на сторінку майстра"
           value={profileUrl}
           placeholder="Посилання ще не завантажено"
-          className="min-w-0 flex-1 bg-transparent text-sm text-neutral-600 outline-none focus-visible:ring-2 focus-visible:ring-neutral-300 sm:text-base"
+          className="min-w-0 flex-1 bg-transparent text-sm text-copy-600 outline-none focus-visible:ring-2 focus-visible:ring-border sm:text-base"
         />
 
         <button
@@ -85,7 +85,7 @@ export default function PaymentSuccess({ slug, title = "Сторінку ств�
         <Link
           to={profilePath}
           state={{ returnTo: "/cabinet" }}
-          className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-neutral-500 px-4 py-4 text-base font-medium text-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4"
+          className="mt-5 flex items-center justify-center gap-2 rounded-2xl border border-border px-4 py-4 text-base font-medium text-copy-600 focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <Eye size={21} aria-hidden="true" className="shrink-0" />
           Подивитись на сторінку очима клієнта
@@ -94,7 +94,7 @@ export default function PaymentSuccess({ slug, title = "Сторінку ств�
         <button
           type="button"
           disabled
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-300 px-4 py-4 text-base text-neutral-400"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl border border-border px-4 py-4 text-base text-copy-400"
         >
           <Eye size={21} aria-hidden="true" className="shrink-0" />
           Подивитись на сторінку очима клієнта

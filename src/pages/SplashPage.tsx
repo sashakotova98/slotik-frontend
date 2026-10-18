@@ -14,7 +14,7 @@ export default function SplashPage() {
 
   return (
     <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
-      <img src={logo} alt="Slotik" className="w-56 animate-pulse" />
+      <img src={logo} alt="Slotik" className="theme-ink w-56 animate-pulse" />
       <p className="text-muted text-sm mt-2">Онлайн-запис до майстрів</p>
     </div>
   );

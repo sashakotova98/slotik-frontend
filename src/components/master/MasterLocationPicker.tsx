@@ -64,17 +64,17 @@ export default function MasterLocationPicker({ latitude, longitude, disabled = f
   return (
     <section className="space-y-3">
       <div>
-        <h3 className="text-lg text-neutral-600">
+        <h3 className="text-lg text-copy-600">
           Місце на карті
-          <span className="ml-2 text-sm text-neutral-400">необов’язково</span>
+          <span className="ml-2 text-sm text-copy-400">необов’язково</span>
         </h3>
 
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-copy-500">
           Натисніть на карту, щоб позначити місце прийому. Повторне натискання перемістить позначку.
         </p>
       </div>
 
-      <div className="relative isolate overflow-hidden rounded-2xl border border-neutral-300">
+      <div className="relative isolate overflow-hidden rounded-2xl border border-border">
         <MapContainer
           center={[latitude ?? 50.4501, longitude ?? 30.5234]}
           zoom={hasLocation ? 16 : 11}
@@ -92,7 +92,7 @@ export default function MasterLocationPicker({ latitude, longitude, disabled = f
 
       {hasLocation ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-neutral-500">Місце обрано. Збережіть зміни у формі.</p>
+          <p className="text-sm text-copy-500">Місце обрано. Збережіть зміни у формі.</p>
 
           <button
             type="button"
@@ -100,13 +100,13 @@ export default function MasterLocationPicker({ latitude, longitude, disabled = f
             onClick={() => {
               onChange(null, null);
             }}
-            className="min-h-11 rounded-xl bg-neutral-50 px-3 text-sm text-neutral-600 hover:bg-neutral-100 disabled:opacity-50"
+            className="min-h-11 rounded-xl bg-panel-50 px-3 text-sm text-copy-600 hover:bg-panel-100 disabled:opacity-50"
           >
             Прибрати позначку
           </button>
         </div>
       ) : (
-        <p className="text-sm text-neutral-500">Позначку не обрано. Можна продовжити без неї.</p>
+        <p className="text-sm text-copy-500">Позначку не обрано. Можна продовжити без неї.</p>
       )}
     </section>
   );

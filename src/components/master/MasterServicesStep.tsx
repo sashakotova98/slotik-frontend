@@ -233,7 +233,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   }
 
   const canSubmit = Boolean(name.trim()) && price.trim() !== "" && Number.isFinite(Number(price)) && Number(price) >= 0 && Number.isSafeInteger(Number(duration)) && Number(duration) > 0 && (editingService !== null || files.length > 0) && totalPhotoCount <= 3 && hasChanges;
-  const inputClass = "block h-12 w-full min-w-0 rounded-[14px] border border-neutral-400 bg-transparent px-4 text-lg text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300";
+  const inputClass = "block h-12 w-full min-w-0 rounded-[14px] border border-border bg-transparent px-4 text-lg text-copy-600 outline-none placeholder:text-copy-400 focus-visible:ring-2 focus-visible:ring-border";
 
   return (
     <div className="space-y-5">
@@ -241,25 +241,25 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
       {services.map((service) => {
         const servicePhotos = photos.filter((photo) => photo.serviceId === service.id);
         return (
-          <div key={service.id} className="rounded-[14px] border border-neutral-400 px-4 py-3">
+          <div key={service.id} className="rounded-[14px] border border-border px-4 py-3">
             <div className="flex min-h-18 items-center gap-3">
               {servicePhotos[0] ? (
                 <img src={servicePhotos[0].photoUrl} alt={service.name} className="size-14 shrink-0 rounded-xl object-cover" />
               ) : (
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400"><ImageIcon size={24} aria-hidden="true" /></span>
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-panel-100 text-copy-400"><ImageIcon size={24} aria-hidden="true" /></span>
               )}
               <div className="min-w-0 flex-1">
                 <p className="wrap-break-word text-lg font-semibold leading-snug">{service.name}</p>
-                <p className="mt-1 text-base leading-snug text-neutral-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
+                <p className="mt-1 text-base leading-snug text-copy-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
               </div>
-              <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-neutral-500 hover:text-black disabled:cursor-wait disabled:opacity-50">
+              <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-copy-500 hover:text-text disabled:cursor-wait disabled:opacity-50">
                 <SquarePen size={22} strokeWidth={1.5} aria-hidden="true" />
               </button>
             </div>
             {servicePhotos.length > 0 && (
-              <details className="mt-2 border-t border-neutral-200 pt-2">
-                <summary className="cursor-pointer text-sm text-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2">Фотографії послуги ({servicePhotos.length})</summary>
-                <p className="mt-2 text-xs text-neutral-500">Збережене фото видаляється одразу.</p>
+              <details className="mt-2 border-t border-border pt-2">
+                <summary className="cursor-pointer text-sm text-copy-500 focus-visible:outline-2 focus-visible:outline-offset-2">Фотографії послуги ({servicePhotos.length})</summary>
+                <p className="mt-2 text-xs text-copy-500">Збережене фото видаляється одразу.</p>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {servicePhotos.map((photo, index) => (
                     <div key={photo.id} className="relative size-19 shrink-0">
@@ -269,7 +269,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
                         disabled={busy}
                         aria-label={`Видалити фото ${index + 1} послуги «${service.name}»`}
                         onClick={() => void handleDeletePhoto(photo.id)}
-                        className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-black/70 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-50"
+                        className="absolute -right-1 -top-1 flex size-7 items-center justify-center rounded-full bg-black/70 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text disabled:cursor-wait disabled:opacity-50"
                       >
                         {deletingPhotoId === photo.id ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : "×"}
                       </button>
@@ -277,7 +277,7 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
                   ))}
                 </div>
                 {deletingPhotoId !== null && servicePhotos.some((photo) => photo.id === deletingPhotoId) && (
-                  <p role="status" className="mt-2 text-xs text-neutral-500">Видалення фото…</p>
+                  <p role="status" className="mt-2 text-xs text-copy-500">Видалення фото…</p>
                 )}
               </details>
             )}
@@ -286,47 +286,47 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
       })}
 
       <form ref={formRef} onSubmit={handleSubmit}>
-        <fieldset disabled={busy} aria-labelledby="new-service-title" className="m-0 min-w-0 space-y-5 rounded-2xl border border-dashed border-neutral-400 p-4 sm:p-5">
+        <fieldset disabled={busy} aria-labelledby="new-service-title" className="m-0 min-w-0 space-y-5 rounded-2xl border border-dashed border-border p-4 sm:p-5">
           <h3 id="new-service-title" className="text-xl font-semibold">{editingService ? "Редагування послуги" : "+ Нова послуга"}</h3>
-          <label className="block text-lg text-neutral-600">
+          <label className="block text-lg text-copy-600">
             Назва
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Назва послуги" required className={inputClass + " mt-1.5"} />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
-            <label className="block min-w-0 text-lg text-neutral-600">
+            <label className="block min-w-0 text-lg text-copy-600">
               Ціна
               <span className="relative mt-1.5 block">
                 <input type="number" min="0" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} required placeholder="0" className={inputClass + " pr-10 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"} />
-                <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-neutral-500">₴</span>
+                <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-copy-500">₴</span>
               </span>
             </label>
-            <label className="block min-w-0 text-lg text-neutral-600">
+            <label className="block min-w-0 text-lg text-copy-600">
               Тривалість
               <span className="relative mt-1.5 block">
                 <input type="number" min="1" step="1" value={duration} onChange={(e) => setDuration(e.target.value)} required placeholder="0" className={inputClass + " pr-12 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"} />
-                <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-base text-neutral-500">хв</span>
+                <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-base text-copy-500">хв</span>
               </span>
             </label>
           </div>
 
           {/* Обидва поля необов’язкові та зберігаються незалежно. */}
-          <label className="block text-lg text-neutral-600">
+          <label className="block text-lg text-copy-600">
             Опис процедури
-            <span className="ml-2 text-sm text-neutral-400">(необов’язково)</span>
+            <span className="ml-2 text-sm text-copy-400">(необов’язково)</span>
             <textarea
               name="description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               rows={4}
               placeholder="Розкажіть, як проходить процедура"
-              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-neutral-400 bg-transparent px-4 py-3 text-base text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
+              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-border bg-transparent px-4 py-3 text-base text-copy-600 outline-none placeholder:text-copy-400 focus-visible:ring-2 focus-visible:ring-border"
             />
           </label>
 
-          <label className="block text-lg text-neutral-600">
+          <label className="block text-lg text-copy-600">
             Що входить у послугу
-            <span className="ml-2 text-sm text-neutral-400">(необов’язково)</span>
+            <span className="ml-2 text-sm text-copy-400">(необов’язково)</span>
             <textarea
               name="included"
               value={included}
@@ -334,14 +334,14 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
               rows={4}
               placeholder={"Зняття покриття\nОбробка кутикули\nПокриття гель-лаком"}
               aria-describedby="service-included-help"
-              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-neutral-400 bg-transparent px-4 py-3 text-base text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
+              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-border bg-transparent px-4 py-3 text-base text-copy-600 outline-none placeholder:text-copy-400 focus-visible:ring-2 focus-visible:ring-border"
             />
-            <span id="service-included-help" className="mt-1 block text-xs text-neutral-400">Кожен пункт — з нового рядка.</span>
+            <span id="service-included-help" className="mt-1 block text-xs text-copy-400">Кожен пункт — з нового рядка.</span>
           </label>
 
           <div>
-            <p id="service-photos-label" className="mb-2 text-lg text-neutral-600">Фото робіт <span className="text-sm text-neutral-400">{editingService ? `(збережено ${savedPhotoCount}, нових ${files.length}; разом до 3)` : "(від 1 до 3 фото)"}</span></p>
-            {editingService && <p className="mb-2 text-sm text-neutral-500">Нові фото необов’язкові. Збережені можна переглянути й видалити в картці послуги вище. Скасування форми не відновлює видалені фото.</p>}
+            <p id="service-photos-label" className="mb-2 text-lg text-copy-600">Фото робіт <span className="text-sm text-copy-400">{editingService ? `(збережено ${savedPhotoCount}, нових ${files.length}; разом до 3)` : "(від 1 до 3 фото)"}</span></p>
+            {editingService && <p className="mb-2 text-sm text-copy-500">Нові фото необов’язкові. Збережені можна переглянути й видалити в картці послуги вище. Скасування форми не відновлює видалені фото.</p>}
             <div className="flex flex-wrap gap-3">
               {files.map((file, index) => (
                 <div key={index} className="relative size-19 shrink-0">
@@ -349,11 +349,11 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
                   <button type="button" aria-label={`Прибрати фото ${index + 1}`} onClick={() => {
                     setFiles((previous) => previous.filter((_, itemIndex) => itemIndex !== index));
                     setSaveError("");
-                  }} className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-black/70 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">×</button>
+                  }} className="absolute -right-1 -top-1 flex size-6 items-center justify-center rounded-full bg-black/70 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text">×</button>
                 </div>
               ))}
               {totalPhotoCount < 3 && (
-                <label className="flex size-19 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-neutral-400 text-neutral-500 transition hover:bg-neutral-100 focus-within:ring-2 focus-within:ring-neutral-400">
+                <label className="flex size-19 shrink-0 cursor-pointer items-center justify-center rounded-2xl border border-dashed border-border text-copy-500 transition hover:bg-panel-100 focus-within:ring-2 focus-within:ring-border">
                   <Plus size={30} strokeWidth={1.5} aria-hidden="true" />
                   <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,image/webp" aria-label="Додати фото роботи" onChange={(e) => {
                     const selected = Array.from(e.target.files ?? []);
@@ -373,14 +373,14 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
           </div>
 
           {saveError && <p role="alert" className="text-sm text-red-500">{saveError}</p>}
-          <button type="submit" disabled={busy || !canSubmit} className="min-h-16 w-full rounded-2xl bg-black px-3 py-3 text-xl font-semibold text-white transition hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:bg-neutral-300 sm:text-2xl">
+          <button type="submit" disabled={busy || !canSubmit} className="min-h-16 w-full rounded-2xl bg-black px-3 py-3 text-xl font-semibold text-white transition hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text disabled:cursor-not-allowed disabled:bg-panel-300 sm:text-2xl">
             {saving ? "Збереження…" : editingService ? "Зберегти зміни" : "Додати послугу"}
           </button>
           {(hasChanges || editingService) && (
             <button type="button" disabled={busy} onClick={() => {
               if (hasChanges && !window.confirm("Відкинути незбережені зміни у формі?")) return;
               resetForm();
-            }} className="w-full py-2 text-sm text-neutral-500 hover:text-black disabled:cursor-not-allowed">
+            }} className="w-full py-2 text-sm text-copy-500 hover:text-text disabled:cursor-not-allowed">
               {editingService ? "Скасувати" : "Очистити форму"}
             </button>
           )}

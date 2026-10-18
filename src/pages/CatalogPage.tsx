@@ -151,7 +151,7 @@ export default function CatalogPage() {
 
 
   return (
-    <div className="min-h-screen bg-white text-black">
+    <div className="min-h-screen bg-surface text-text">
       <Header showBack backFallback="/home" />
       <main className="px-4 py-6 sm:px-6">
         <div className="mx-auto w-full max-w-2xl">
@@ -183,7 +183,7 @@ export default function CatalogPage() {
             />
             {searchParam && (
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <p className="wrap-break-word text-neutral-500">Пошук: «{searchParam}»</p>
+                <p className="wrap-break-word text-copy-500">Пошук: «{searchParam}»</p>
                 <button type="button" onClick={clearSearch} className="min-h-11 rounded-lg px-2 font-medium text-blue-600 underline-offset-4 hover:underline focus-visible:outline-2">
                   Очистити пошук
                 </button>

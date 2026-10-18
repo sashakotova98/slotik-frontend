@@ -112,16 +112,16 @@ export default function MasterCalendarPage() {
 
   if (checking) {
     return (
-      <div role="status" className="mx-auto max-w-md rounded-3xl border border-neutral-200 bg-white p-8 text-center">
-        <CalendarDays size={28} className="mx-auto mb-4 text-neutral-400" aria-hidden="true" />
-        <p className="text-sm text-neutral-500">Перевіряємо доступ до календаря…</p>
+      <div role="status" className="mx-auto max-w-md rounded-3xl border border-border bg-surface p-8 text-center">
+        <CalendarDays size={28} className="mx-auto mb-4 text-copy-400" aria-hidden="true" />
+        <p className="text-sm text-copy-500">Перевіряємо доступ до календаря…</p>
       </div>
     );
   }
 
   if (accessError) {
     return (
-      <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-neutral-200 bg-white p-6">
+      <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-border bg-surface p-6">
         <h1 className="text-xl font-semibold">Календар</h1>
         <p role="alert" className="text-sm leading-relaxed text-red-600">{accessError}</p>
         <button type="button" onClick={retryAccess} className="min-h-11 w-full rounded-xl bg-black px-5 py-3 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-4">
@@ -143,26 +143,26 @@ export default function MasterCalendarPage() {
     return (
       <div className="mx-auto w-full max-w-md space-y-6">
         <h1 className="text-2xl font-semibold">Календар</h1>
-        <section className="rounded-3xl border border-neutral-200 bg-white px-5 py-8 text-center shadow-sm sm:px-8">
-          <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-3xl bg-neutral-100">
+        <section className="rounded-3xl border border-border bg-surface px-5 py-8 text-center shadow-sm sm:px-8">
+          <div className="relative mx-auto mb-6 flex size-20 items-center justify-center rounded-3xl bg-panel-100">
             <CalendarDays size={36} strokeWidth={1.5} aria-hidden="true" />
-            <span className="absolute -bottom-1 -right-1 rounded-full border-4 border-white bg-black p-2 text-white">
+            <span className="absolute -bottom-1 -right-1 rounded-full border-4 border-surface bg-black p-2 text-white">
               <LockKeyhole size={14} aria-hidden="true" />
             </span>
           </div>
-          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-neutral-500">Базовий · Професійний</p>
+          <p className="mb-3 text-xs font-medium uppercase tracking-widest text-copy-500">Базовий · Професійний</p>
           <h2 className="text-xl font-semibold">Усі записи — в одному календарі</h2>
-          <p className="mt-3 text-sm leading-relaxed text-neutral-500">
+          <p className="mt-3 text-sm leading-relaxed text-copy-500">
             Переглядайте записи за датами, робочі дні та відпустки.
             Календар доступний з активним тарифом «Базовий», «Професійний» або пробним Pro.
           </p>
           <Link to="/cabinet/plans?mode=change" className="mt-6 flex min-h-12 items-center justify-center rounded-xl bg-black px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-4">
             Обрати тариф
           </Link>
-          <Link to="/cabinet/account/bookings" className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-neutral-300 px-5 py-3 text-sm font-medium transition-colors hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-offset-4">
+          <Link to="/cabinet/account/bookings" className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-panel-50 focus-visible:outline-2 focus-visible:outline-offset-4">
             Переглянути мої записи
           </Link>
-          <p className="mt-4 text-xs leading-relaxed text-neutral-500">
+          <p className="mt-4 text-xs leading-relaxed text-copy-500">
             Наявні записи збережені. Ви можете переглядати їх і змінювати статус у розділі «Ваші записи».
           </p>
         </section>
@@ -400,7 +400,7 @@ function MasterCalendarContent() {
     if (bookingsError) return <p role="alert" className="text-red-600">{bookingsError}</p>;
     if (visibleBookings.length === 0) {
       return (
-        <p role="status" className="rounded-2xl border border-neutral-200 p-5 text-sm text-neutral-500">
+        <p role="status" className="rounded-2xl border border-border p-5 text-sm text-copy-500">
           {emptyMessage}
         </p>
       );
@@ -421,7 +421,7 @@ function MasterCalendarContent() {
       <h1 className="sr-only">Календар записів</h1>
 
       {/* Пошук фільтрує вже завантажені записи без нового запиту. */}
-      <label className="flex items-center gap-3 rounded-full bg-white px-5 py-4 shadow-md">
+      <label className="flex items-center gap-3 rounded-full bg-surface px-5 py-4 shadow-md">
         <Search size={20} aria-hidden="true" />
         <input
           aria-label="Пошук за послугою, клієнтом або датою"
@@ -429,7 +429,7 @@ function MasterCalendarContent() {
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Послуга, клієнт або дата…"
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-neutral-300"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none focus-visible:ring-2 focus-visible:ring-border"
         />
       </label>
 
@@ -441,7 +441,7 @@ function MasterCalendarContent() {
         daysOff={daysOff}
         todayDate={getKyivDate(new Date(currentTime))}
       />
-      <p className="text-xs text-neutral-500">
+      <p className="text-xs text-copy-500">
         Червоні дні — відпустка. Зелені — активні записи. Сірі — робочі дні за тижневим графіком. Час — за Києвом.
       </p>
 

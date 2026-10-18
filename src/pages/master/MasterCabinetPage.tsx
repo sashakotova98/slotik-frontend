@@ -308,7 +308,7 @@ export default function MasterCabinetPage() {
             : "Кабінет майстра"}
         </h1>
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-sm capitalize text-neutral-500">{monthLabel}</p>
+          <p className="text-sm capitalize text-copy-500">{monthLabel}</p>
           <button
             type="button"
             onClick={refresh}
@@ -326,7 +326,7 @@ export default function MasterCabinetPage() {
       )}
 
       {loading && (
-        <p role="status" className="text-sm text-neutral-500">
+        <p role="status" className="text-sm text-copy-500">
           Завантажуємо ваші записи…
         </p>
       )}
@@ -347,7 +347,7 @@ export default function MasterCabinetPage() {
 
       {!loading && !error && (
         <>
-          <section aria-label="Статистика записів" className="grid grid-cols-2 gap-x-5 gap-y-7 border-y border-neutral-200 py-6">
+          <section aria-label="Статистика записів" className="grid grid-cols-2 gap-x-5 gap-y-7 border-y border-border py-6">
             {stats.map((stat) => {
               return (
                 <div key={stat.label}>
@@ -357,45 +357,45 @@ export default function MasterCabinetPage() {
               );
             })}
           </section>
-          <p className="text-xs leading-relaxed text-neutral-500">
+          <p className="text-xs leading-relaxed text-copy-500">
             За місяць — усі записи, включно зі скасованими. Очікування — усі актуальні заявки. Найближчі підтверджені — поточні та майбутні
             процедури. Час — за Києвом.
           </p>
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">Потребують підтвердження</h2>
             {/* Бек обмежує строк: 24 години від створення або до початку процедури. */}
-            <p className="text-sm leading-relaxed text-neutral-500">
+            <p className="text-sm leading-relaxed text-copy-500">
               Підтвердьте заявку протягом 24 годин після її створення.
               Якщо процедура починається раніше — підтвердьте до її початку.
               Після завершення цього строку підтвердження недоступне.
             </p>
             {pending.length === 0 && (
-              <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">Нових заявок поки немає.</p>
+              <p className="rounded-2xl border border-border p-4 text-sm text-copy-500">Нових заявок поки немає.</p>
             )}
 
             {pending.slice(0, 3).map((booking) => {
               return <MasterBookingCard key={booking.id} booking={booking} currentTime={now} onChangeStatus={handleChangeStatus} />;
             })}
 
-            {pending.length > 3 && <p className="text-sm text-neutral-500">Показано 3 із {pending.length} заявок.</p>}
+            {pending.length > 3 && <p className="text-sm text-copy-500">Показано 3 із {pending.length} заявок.</p>}
             <Link to="/cabinet/account/bookings" className="inline-flex min-h-11 items-center text-sm text-blue-600">
               Усі записи
             </Link>
           </section>
-          <section className="rounded-3xl border border-neutral-200 p-5 shadow-sm">
-            <h2 className="text-sm text-neutral-500">Найближчий запис</h2>
+          <section className="rounded-3xl border border-border p-5 shadow-sm">
+            <h2 className="text-sm text-copy-500">Найближчий запис</h2>
             {nearest ? (
               <div className="mt-3 space-y-2">
                 {isInProgress && <p className="text-sm text-green-700">Триває зараз</p>}
                 <p className="font-semibold">
                   {nearestDate} • {formatTime(nearest.startsAt)}–{formatTime(nearest.endsAt)}
                 </p>
-                <p className="wrap-break-word text-sm text-neutral-600">
+                <p className="wrap-break-word text-sm text-copy-600">
                   {nearestClient} • {nearest.serviceName}
                 </p>
               </div>
             ) : (
-              <p className="mt-3 text-sm text-neutral-500">Найближчих підтверджених записів поки немає.</p>
+              <p className="mt-3 text-sm text-copy-500">Найближчих підтверджених записів поки немає.</p>
             )}
             <Link to="/cabinet/calendar" className="mt-3 inline-flex min-h-11 items-center text-sm text-blue-600">
               Відкрити календар
@@ -423,7 +423,7 @@ export default function MasterCabinetPage() {
         </h2>
 
         {reviewsLoading ? (
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-copy-500">
             Завантаження відгуків…
           </p>
         ) : reviewsError ? (
@@ -431,13 +431,13 @@ export default function MasterCabinetPage() {
             {reviewsError}
           </p>
         ) : totalReviews === 0 ? (
-          <p className="rounded-2xl border border-neutral-200 p-4 text-sm text-neutral-500">
+          <p className="rounded-2xl border border-border p-4 text-sm text-copy-500">
             Відгуків поки немає.
           </p>
         ) : (
           <>
-            <p className="text-sm text-neutral-600">
-              <span className="text-2xl font-semibold text-black">
+            <p className="text-sm text-copy-600">
+              <span className="text-2xl font-semibold text-text">
                 {averageRating.toFixed(1)}
               </span>
               <span className="ml-1 text-amber-500" aria-hidden="true">
@@ -467,7 +467,7 @@ export default function MasterCabinetPage() {
               <button
                 type="button"
                 onClick={() => { setVisibleReviewsCount((count) => { return count + 10; }); }}
-                className="min-h-12 w-full rounded-full border border-neutral-400 px-5 py-3 font-medium text-neutral-600 transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+                className="min-h-12 w-full rounded-full border border-border px-5 py-3 font-medium text-copy-600 transition hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2"
               >
                 Дивитись більше
               </button>

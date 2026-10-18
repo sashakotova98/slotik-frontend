@@ -317,8 +317,8 @@ export default function MasterOnboardingPage() {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center px-4 py-12">
-        <div className="relative w-full max-w-md rounded-3xl bg-white px-6 pt-6 pb-12 text-black shadow">
+      <div className="min-h-screen bg-panel-100 flex items-center justify-center px-4 py-12">
+        <div className="relative w-full max-w-md rounded-3xl bg-surface px-6 pt-6 pb-12 text-text shadow">
           <StepProgress step={step} />
           {portfolioError && (
             <p role="alert" className="mb-4 text-sm text-red-500">
@@ -351,7 +351,7 @@ export default function MasterOnboardingPage() {
                 </p>
               )}
               {saving && (
-                <p role="status" className="mt-3 text-sm text-neutral-500">
+                <p role="status" className="mt-3 text-sm text-copy-500">
                   Збереження…
                 </p>
               )}
@@ -371,7 +371,7 @@ export default function MasterOnboardingPage() {
               aria-label="Попередній крок"
               disabled={saving || photoUploading || deletingPhotoId !== null || serviceSaving || (step === 3 && scheduleBusy)}
               onClick={() => handleStepChange(Math.max(step - 1, 1))}
-              className="absolute bottom-0 left-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+              className="absolute bottom-0 left-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text"
             >
               <ChevronLeft size={36} strokeWidth={2} aria-hidden="true" />
             </button>
@@ -383,7 +383,7 @@ export default function MasterOnboardingPage() {
             aria-label={saving ? "Збереження профілю" : step === 3 ? "Обрати тариф" : "Наступний крок"}
             disabled={photoUploading || saving || deletingPhotoId !== null || serviceSaving || (step === 3 && scheduleBusy)}
             onClick={step === 2 ? () => handleStepChange(3) : step === 3 ? handleFinish : undefined}
-            className="absolute bottom-0 right-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-neutral-500/80"
+            className="absolute bottom-0 right-6 flex size-16 translate-y-1/2 items-center justify-center rounded-full bg-neutral-500/80 text-white transition hover:bg-neutral-600 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-neutral-500/80"
           >
             <ChevronRight size={36} strokeWidth={2} aria-hidden="true" />
           </button>

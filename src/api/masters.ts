@@ -267,17 +267,19 @@ export async function saveMasterLocation(masterId: number, data: MasterLocationD
   });
 }
 
-// Окремого POST для портфоліо поки немає: передаємо актуальні поля профілю.
-// Координати також надсилаємо, щоб PUT не очистив збережену точку.
-export async function uploadMasterPortfolio(data: MasterProfileData, files: File[]): Promise<void> {
-  const formData = createMasterFormData(data, files);
-  if (data.latitude !== null) {
-    formData.append("latitude", String(data.latitude));
+export async function uploadMasterPortfolio(files: File[]): Promise<PortfolioPhoto[]> {
+  const formData = new FormData();
+
+  for (const file of files) {
+    formData.append("files", file);
   }
-  if (data.longitude !== null) {
-    formData.append("longitude", String(data.longitude));
-  }
-  await api<void>("/Master", { method: "PUT", body: formData });
+
+  const response = await api<{ photos: PortfolioPhoto[] }>("/Master/portfolio-photos/add", {
+    method: "POST",
+    body: formData,
+  });
+
+  return response.photos;
 }
 
 export function getMasterById(masterId: number): Promise<PublicMasterProfile> {

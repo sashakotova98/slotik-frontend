@@ -29,7 +29,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
   }
 
   return (
-    <header className="relative z-30 bg-white text-black">
+    <header className="relative z-30 bg-surface text-text">
       <div className="relative mx-auto grid max-w-6xl grid-cols-[44px_1fr_44px] items-center gap-3 px-3 py-4 sm:px-6 sm:py-5">
         <div>
           {showBack ? (
@@ -38,7 +38,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
               onClick={handleBack}
               aria-label="Повернутися назад"
               title="Повернутися назад"
-              className="flex size-11 items-center justify-center rounded-lg text-neutral-500 hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="flex size-11 items-center justify-center rounded-lg text-copy-500 hover:bg-selected focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <ChevronLeft aria-hidden="true" className="size-6" />
             </button>
@@ -53,7 +53,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
           <img
             src={logo}
             alt="Slotik"
-            className="h-8 w-auto sm:h-10"
+            className="theme-ink h-8 w-auto sm:h-10"
           />
         </Link>
 
@@ -63,7 +63,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
             onClick={handleLogout}
             aria-label="Вийти з акаунта"
             title="Вийти з акаунта"
-            className="flex size-11 items-center justify-center rounded-lg hover:bg-black/5 focus-visible:outline-2"
+            className="flex size-11 items-center justify-center rounded-lg hover:bg-selected focus-visible:outline-2"
           >
             <LogOut aria-hidden="true" className="size-6" />
           </button>
@@ -71,7 +71,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
           <Link
             to="/login"
             aria-label="Увійти / зареєструватися"
-            className="flex size-11 items-center justify-center rounded-lg hover:bg-black/5 focus-visible:outline-2"
+            className="flex size-11 items-center justify-center rounded-lg hover:bg-selected focus-visible:outline-2"
           >
             <CircleUserRound aria-hidden="true" className="size-6" />
           </Link>
@@ -80,7 +80,7 @@ export default function Header({ menu, showBack = false, backFallback = "/home" 
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-full h-6 bg-linear-to-b from-white to-transparent"
+        className="pointer-events-none absolute inset-x-0 top-full h-6 bg-linear-to-b from-surface to-transparent"
       />
     </header>
   );

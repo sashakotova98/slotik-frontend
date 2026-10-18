@@ -79,8 +79,8 @@ export default function ConfirmEmailPage() {
           w-full max-w-82.5
           min-h-130
           rounded-3xl
-          border border-neutral-200
-          bg-white
+          border border-border
+          bg-surface
           px-7 py-6
           shadow-sm
           flex flex-col
@@ -90,20 +90,20 @@ export default function ConfirmEmailPage() {
         <div className="text-center">
           <div className="text-[18px] font-semibold tracking-[0.32em]">SLOTIK</div>
 
-          <div className="mt-1 text-[7px] tracking-[0.24em] text-neutral-400">КРАСА МАЄ СВІЙ ЧАС</div>
+          <div className="mt-1 text-[7px] tracking-[0.24em] text-copy-400">КРАСА МАЄ СВІЙ ЧАС</div>
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           {/* LOADING */}
           {status === "loading" && (
             <>
-              <div className="flex size-18 items-center justify-center rounded-full bg-neutral-100">
+              <div className="flex size-18 items-center justify-center rounded-full bg-panel-100">
                 <LoaderCircle size={34} strokeWidth={1.6} className="animate-spin" />
               </div>
 
               <h1 className="mt-6 text-[21px] font-semibold">Підтвердження email</h1>
 
-              <p className="mt-3 text-[14px] leading-6 text-neutral-600">Зачекайте, перевіряємо посилання...</p>
+              <p className="mt-3 text-[14px] leading-6 text-copy-600">Зачекайте, перевіряємо посилання...</p>
             </>
           )}
 
@@ -111,12 +111,12 @@ export default function ConfirmEmailPage() {
           {status === "success" && (
             <>
               <div className="flex size-18 items-center justify-center rounded-full bg-[#dcf8df]">
-                <Check size={36} strokeWidth={1.8} className="text-black" />
+                <Check size={36} strokeWidth={1.8} className="text-text" />
               </div>
 
               <h1 className="mt-6 text-[22px] font-semibold">Email підтверджено</h1>
 
-              <p className="mt-3 text-[14px] leading-6 text-neutral-600">
+              <p className="mt-3 text-[14px] leading-6 text-copy-600">
                 Акаунт створено.
                 <br />
                 Увійдіть, щоб продовжити.
@@ -142,13 +142,13 @@ export default function ConfirmEmailPage() {
           {/* ERROR */}
           {status === "error" && (
             <>
-              <div className="flex size-18 items-center justify-center rounded-full bg-neutral-100">
+              <div className="flex size-18 items-center justify-center rounded-full bg-panel-100">
                 <TriangleAlert size={36} strokeWidth={1.6} />
               </div>
 
               <h1 className="mt-6 text-[22px] font-semibold">Не вдалося підтвердити email</h1>
 
-              <p className="mt-3 text-[14px] leading-6 text-neutral-600">{message}</p>
+              <p className="mt-3 text-[14px] leading-6 text-copy-600">{message}</p>
 
               <button
                 type="button"
@@ -165,12 +165,12 @@ export default function ConfirmEmailPage() {
                 Перейти до входу
               </button>
 
-              <p className="mt-4 text-[11px] text-neutral-400">Якщо підтвердження не вдалося — зверніться до підтримки.</p>
+              <p className="mt-4 text-[11px] text-copy-400">Якщо підтвердження не вдалося — зверніться до підтримки.</p>
             </>
           )}
         </div>
 
-        <div className="text-center text-[7px] tracking-[0.24em] text-neutral-400">КРАСИВІ ЛЮДИ — БЛИЖЧЕ</div>
+        <div className="text-center text-[7px] tracking-[0.24em] text-copy-400">КРАСИВІ ЛЮДИ — БЛИЖЧЕ</div>
       </div>
     </div>
   );

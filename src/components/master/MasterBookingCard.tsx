@@ -97,7 +97,7 @@ export default function MasterBookingCard({ booking, currentTime, onChangeStatus
   const canCancel = booking.status === 0 || booking.status === 1;
 
   return (
-    <article aria-busy={saving} className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
+    <article aria-busy={saving} className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-semibold">
           {dateLabel}
@@ -107,9 +107,9 @@ export default function MasterBookingCard({ booking, currentTime, onChangeStatus
         <span className={`rounded-full px-3 py-1 text-xs ${statusStyles[booking.status]}`}>{statusLabels[booking.status]}</span>
       </div>
 
-      <p className="mt-3 text-sm text-neutral-700">{clientName}</p>
+      <p className="mt-3 text-sm text-copy-700">{clientName}</p>
 
-      <p className="mt-1 text-sm text-neutral-500">
+      <p className="mt-1 text-sm text-copy-500">
         {booking.serviceName} • {priceLabel} • {booking.durationMin} хв
       </p>
 
@@ -152,7 +152,7 @@ export default function MasterBookingCard({ booking, currentTime, onChangeStatus
                 !canComplete ? `completion-hint-${booking.id}` : undefined
               }
               onClick={() => void handleStatusChange(2)}
-              className="min-h-10 rounded-full bg-neutral-100 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              className="min-h-10 rounded-full bg-panel-100 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
             >
               Завершити
             </button>
@@ -170,7 +170,7 @@ export default function MasterBookingCard({ booking, currentTime, onChangeStatus
       {booking.status === 1 && !canComplete && (
         <p
           id={`completion-hint-${booking.id}`}
-          className="mt-2 text-right text-sm text-neutral-500"
+          className="mt-2 text-right text-sm text-copy-500"
         >
           {validEndDate
             ? "Завершення доступне після закінчення запису."
@@ -179,7 +179,7 @@ export default function MasterBookingCard({ booking, currentTime, onChangeStatus
       )}
 
       {saving && (
-        <p role="status" className="mt-2 text-sm text-neutral-500">
+        <p role="status" className="mt-2 text-sm text-copy-500">
           Зберігаємо…
         </p>
       )}

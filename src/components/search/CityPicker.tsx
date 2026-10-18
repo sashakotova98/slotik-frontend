@@ -66,22 +66,22 @@ export default function CityPicker({ cities, cityId, loading = false, error = ""
           onClick={() => {
             setCityOpen((open) => !open);
           }}
-          className="flex min-h-11 max-w-60 items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-1 text-2xl outline-none transition-colors hover:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-50 sm:text-3xl"
+          className="flex min-h-11 max-w-60 items-center gap-3 rounded-xl border-0 bg-transparent px-2 py-1 text-2xl outline-none transition-colors hover:bg-panel-100 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:opacity-50 sm:text-3xl"
         >
           <span className="truncate">
             {selectedCity?.name ?? "Оберіть місто"}
           </span>
           <ChevronDown
             aria-hidden="true"
-            className={`size-4 shrink-0 text-neutral-500 transition-transform ${cityOpen ? "rotate-180" : ""}`}
+            className={`size-4 shrink-0 text-copy-500 transition-transform ${cityOpen ? "rotate-180" : ""}`}
           />
         </button>
         {cityOpen && (
           <div
             id={listId}
-            className="absolute left-0 top-full z-40 mt-2 w-56 max-w-[calc(100vw-80px)] rounded-2xl border border-neutral-100 bg-white p-2 shadow-xl"
+            className="absolute left-0 top-full z-40 mt-2 w-56 max-w-[calc(100vw-80px)] rounded-2xl border border-border bg-surface p-2 shadow-xl"
           >
-            <p className="px-3 pb-2 pt-1 text-xs font-medium text-neutral-500">Оберіть місто</p>
+            <p className="px-3 pb-2 pt-1 text-xs font-medium text-copy-500">Оберіть місто</p>
             <ul aria-label="Міста" className="max-h-60 space-y-1 overflow-x-hidden overflow-y-auto overscroll-contain">
               {cities.map((city) => (
                 <li key={city.id}>
@@ -93,7 +93,7 @@ export default function CityPicker({ cities, cityId, loading = false, error = ""
                       setCityOpen(false);
                       cityButtonRef.current?.focus();
                     }}
-                    className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400 ${city.id === cityId ? "bg-blue-50 font-semibold text-blue-700" : "text-neutral-700 hover:bg-neutral-100"}`}
+                    className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400 ${city.id === cityId ? "bg-blue-50 font-semibold text-blue-700" : "text-neutral-700 hover:bg-panel-100"}`}
                   >
                     <span className="min-w-0 flex-1 wrap-anywhere leading-snug">{city.name}</span>
                     {city.id === cityId && <Check aria-hidden="true" className="size-4 shrink-0" />}

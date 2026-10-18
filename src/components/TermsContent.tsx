@@ -41,14 +41,14 @@ export default function TermsContent({ titleId }: { titleId: string }) {
           <h1 id={titleId} className="text-xl font-bold leading-tight sm:text-3xl">
             Умови користування та обробка персональних даних
           </h1>
-          <p className="mt-4 text-[11px] text-neutral-400 sm:text-sm">
+          <p className="mt-4 text-[11px] text-copy-400 sm:text-sm">
             Поточна дата: <time dateTime={dateTime}>{formattedDate}</time>
           </p>
           <div className="mt-4 space-y-4 sm:mt-6 sm:space-y-6">
             {sections.map(({ title, text }) => (
               <section key={title}>
                 <h2 className="text-sm font-bold sm:text-lg">{title}</h2>
-                <p className="mt-1 text-xs leading-snug text-neutral-600 sm:text-base sm:leading-relaxed">{text}</p>
+                <p className="mt-1 text-xs leading-snug text-copy-600 sm:text-base sm:leading-relaxed">{text}</p>
               </section>
             ))}
           </div>

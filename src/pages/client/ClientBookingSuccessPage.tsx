@@ -73,11 +73,11 @@ export default function ClientBookingSuccessPage() {
       : booking?.status === 2 ? "Дякуємо за ваш візит" : "Ви можете обрати іншу дату й час";
 
   return (
-    <main className="min-h-dvh bg-white px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] text-neutral-900 sm:px-4 sm:pt-4">
+    <main className="min-h-dvh bg-surface px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] text-copy-900 sm:px-4 sm:pt-4">
       <div className="mx-auto flex min-h-[calc(100dvh-1.5rem-env(safe-area-inset-bottom))] w-full max-w-md flex-col gap-3">
-        <section className="flex min-w-0 flex-1 flex-col rounded-[28px] border border-neutral-400 px-4 py-7 sm:px-5">
+        <section className="flex min-w-0 flex-1 flex-col rounded-[28px] border border-border px-4 py-7 sm:px-5">
           {loading ? (
-            <p role="status" className="text-center text-sm text-neutral-500">Завантаження запису…</p>
+            <p role="status" className="text-center text-sm text-copy-500">Завантаження запису…</p>
           ) : error ? (
             <p role="alert" className="text-center text-sm text-red-600">{error}</p>
           ) : booking && (
@@ -89,20 +89,20 @@ export default function ClientBookingSuccessPage() {
                   </div>
                 )}
                 <h1 className="mt-4 text-xl font-bold">{title}</h1>
-                <p role="status" className="mx-auto mt-4 max-w-60 text-sm leading-relaxed text-neutral-500">{subtitle}</p>
+                <p role="status" className="mx-auto mt-4 max-w-60 text-sm leading-relaxed text-copy-500">{subtitle}</p>
               </header>
 
-              <dl className="mt-8 space-y-3 rounded-2xl border border-neutral-300 p-4 text-sm">
+              <dl className="mt-8 space-y-3 rounded-2xl border border-border p-4 text-sm">
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-4">
-                  <dt className="text-neutral-600">Майстер</dt>
+                  <dt className="text-copy-600">Майстер</dt>
                   <dd className="text-right font-semibold wrap-anywhere">{masterName || "Майстер"}</dd>
                 </div>
                 <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-4">
-                  <dt className="text-neutral-600">Коли</dt>
+                  <dt className="text-copy-600">Коли</dt>
                   <dd className="text-right font-semibold">{dateLabel}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-neutral-600">Вартість</dt>
+                  <dt className="text-copy-600">Вартість</dt>
                   <dd className="text-right font-semibold">{price}</dd>
                 </div>
               </dl>
@@ -115,14 +115,14 @@ export default function ClientBookingSuccessPage() {
                   </h2>
                   <p className="mt-3 text-xs leading-relaxed">Онлайн-оплата поки недоступна. Можна розрахуватися на місці.</p>
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    <button type="button" disabled className="min-h-12 rounded-xl bg-neutral-300 px-2 py-2 text-xs font-semibold text-neutral-600 disabled:cursor-not-allowed">
+                    <button type="button" disabled className="min-h-12 rounded-xl bg-panel-300 px-2 py-2 text-xs font-semibold text-copy-600 disabled:cursor-not-allowed">
                       Оплати {price} • LiqPay
                     </button>
                     <button
                       type="button"
                       aria-pressed={payOnSite}
                       onClick={() => setPayOnSite(true)}
-                      className={`min-h-12 rounded-xl border px-2 py-2 text-xs font-semibold text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2 ${payOnSite ? "border-blue-700 bg-white ring-1 ring-blue-700" : "border-blue-300 hover:bg-white/50"}`}
+                      className={`min-h-12 rounded-xl border px-2 py-2 text-xs font-semibold text-copy-900 focus-visible:outline-2 focus-visible:outline-offset-2 ${payOnSite ? "border-blue-700 bg-surface ring-1 ring-blue-700" : "border-blue-300 hover:bg-surface/50"}`}
                     >
                       {payOnSite ? "✓ Оплата на місці" : "Оплачу на місці"}
                     </button>
@@ -130,9 +130,9 @@ export default function ClientBookingSuccessPage() {
                 </section>
               )}
 
-              <div className="mt-6 flex items-start gap-3 rounded-2xl border border-neutral-300 p-4">
+              <div className="mt-6 flex items-start gap-3 rounded-2xl border border-border p-4">
                 <Send aria-hidden="true" className="size-5 shrink-0 text-blue-400" />
-                <p className="text-sm leading-snug text-neutral-600">Нагадування в Telegram поки не підключені.</p>
+                <p className="text-sm leading-snug text-copy-600">Нагадування в Telegram поки не підключені.</p>
               </div>
             </>
           )}
@@ -147,7 +147,7 @@ export default function ClientBookingSuccessPage() {
             type="button"
             disabled={loading || !booking || !payOnSite}
             onClick={() => navigate("/client/bookings", { replace: true })}
-            className="min-h-12 w-full rounded-2xl border border-neutral-600 bg-black px-4 py-3 text-lg font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-neutral-300 disabled:text-neutral-600"
+            className="min-h-12 w-full rounded-2xl border border-border bg-black px-4 py-3 text-lg font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-panel-300 disabled:text-copy-600"
           >
             До моїх записів
           </button>

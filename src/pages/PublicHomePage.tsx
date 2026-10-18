@@ -168,14 +168,14 @@ export default function PublicHomePage() {
               <nav
                 id="home-menu"
                 aria-label="Головна навігація"
-                className="absolute left-3 top-full z-40 w-[calc(100%-24px)] max-w-72 rounded-b-4xl bg-[#f5f5f5] px-3 pb-4 shadow-[0_20px_30px_rgba(0,0,0,0.25)] lg:left-6 lg:max-w-80"
+                className="absolute left-3 top-full z-40 w-[calc(100%-24px)] max-w-72 rounded-b-4xl bg-soft px-3 pb-4 shadow-[0_20px_30px_rgba(0,0,0,0.25)] lg:left-6 lg:max-w-80"
               >
                 <ul className="divide-y divide-border">
                   <li>
                     <Link
                       to="/login"
                       onClick={() => setMenuOpen(false)}
-                      className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                      className="flex min-h-12 items-center px-3 py-3 text-sm text-text hover:bg-selected"
                     >
                       Увійти / зареєструватися
                     </Link>
@@ -191,7 +191,7 @@ export default function PublicHomePage() {
                       <a
                         href={href}
                         onClick={() => setMenuOpen(false)}
-                        className="flex min-h-12 items-center px-3 py-3 text-sm text-black hover:bg-black/5"
+                        className="flex min-h-12 items-center px-3 py-3 text-sm text-text hover:bg-selected"
                       >
                         {label}
                       </a>
@@ -205,7 +205,7 @@ export default function PublicHomePage() {
       />
 
       <main>
-        <section aria-labelledby="hero-title" className="px-4 pt-8 text-center text-black lg:pt-12">
+        <section aria-labelledby="hero-title" className="px-4 pt-8 text-center text-text lg:pt-12">
           <p className="text-[15px] italic leading-snug lg:text-xl">Знайдіть та забронюйте ваших</p>
 
           <h1 id="hero-title" className="mt-2 text-[28px] font-bold leading-tight lg:text-5xl">
@@ -221,7 +221,7 @@ export default function PublicHomePage() {
           <nav
             id="services"
             aria-label="Категорії послуг"
-            className="mx-auto -mt-7 w-[calc(100%-16px)] max-w-164 rounded-b-[36px] bg-[#f5f5f5] px-3 pb-8 pt-13 lg:px-6 lg:pb-10"
+            className="mx-auto -mt-7 w-[calc(100%-16px)] max-w-164 rounded-b-[36px] bg-soft px-3 pb-8 pt-13 lg:px-6 lg:pb-10"
           >
 
             {categoriesLoading && !categoriesError && (
@@ -232,10 +232,10 @@ export default function PublicHomePage() {
 
             {categoriesError && (
               <div className="flex flex-col items-center gap-3 px-2 py-4 text-center">
-                <CloudOff size={32} strokeWidth={1.5} aria-hidden="true" className="text-neutral-500" />
+                <CloudOff size={32} strokeWidth={1.5} aria-hidden="true" className="text-copy-500" />
                 <div role="alert">
-                  <p className="text-base font-semibold text-black">{categoriesError}</p>
-                  <p className="mt-2 max-w-sm text-sm text-neutral-600">
+                  <p className="text-base font-semibold text-text">{categoriesError}</p>
+                  <p className="mt-2 max-w-sm text-sm text-copy-600">
                     Перевірте з’єднання з інтернетом або спробуйте пізніше.
                   </p>
                 </div>
@@ -243,7 +243,7 @@ export default function PublicHomePage() {
                   type="button"
                   onClick={handleRetryCategories}
                   disabled={categoriesLoading}
-                  className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-wait disabled:opacity-60"
+                  className="mt-1 flex min-h-11 items-center justify-center gap-2 rounded-full bg-black px-5 py-3 text-sm text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text disabled:cursor-wait disabled:opacity-60"
                 >
                   <RefreshCw size={16} aria-hidden="true" className={categoriesLoading ? "animate-spin motion-reduce:animate-none" : ""} />
                   <span role="status">{categoriesLoading ? "Завантажуємо…" : "Спробувати ще раз"}</span>
@@ -267,27 +267,27 @@ export default function PublicHomePage() {
 
           <div className="relative z-10 grid w-full grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-x-1 rounded-3xl bg-surface px-3 py-4 shadow-[0_12px_24px_rgba(0,0,0,0.2)] lg:gap-x-4 lg:rounded-[40px] lg:px-8 lg:py-6">
             <div className="flex min-w-0 flex-col items-center gap-2">
-              <img src={chooseService} alt="picture chooseService" className="h-9 w-9 lg:h-12 lg:w-12" />
+              <img src={chooseService} alt="picture chooseService" className="theme-ink h-9 w-9 lg:h-12 lg:w-12" />
               <p className="text-center text-[10px] leading-tight text-text lg:text-base">1. Оберіть послугу</p>
             </div>
 
             <ChevronRight aria-hidden="true" className="h-5 w-5 self-start mt-2 text-blue-500 lg:mt-3 lg:h-6 lg:w-6" />
 
             <div className="flex min-w-0 flex-col items-center gap-2">
-              <img src={chooseTime} alt="" className="h-9 w-9 lg:h-12 lg:w-12" />
+              <img src={chooseTime} alt="" className="theme-ink h-9 w-9 lg:h-12 lg:w-12" />
               <p className="text-center text-[10px] leading-tight text-text lg:text-base">2. Оберіть час</p>
             </div>
 
             <ChevronRight aria-hidden="true" className="h-5 w-5 self-start mt-2 text-blue-500 lg:mt-3 lg:h-6 lg:w-6" />
 
             <div className="flex min-w-0 flex-col items-center gap-2">
-              <img src={chooseBook} alt="" className="h-9 w-9 lg:h-12 lg:w-12" />
+              <img src={chooseBook} alt="" className="theme-ink h-9 w-9 lg:h-12 lg:w-12" />
               <p className="text-center text-[10px] leading-tight text-text lg:text-base">3. Забронюйте</p>
             </div>
           </div>
         </section>
 
-        <section id="about" aria-labelledby="about-title" className="bg-white px-4 pb-8 pt-10 text-black lg:pb-12 lg:pt-14">
+        <section id="about" aria-labelledby="about-title" className="bg-surface px-4 pb-8 pt-10 text-text lg:pb-12 lg:pt-14">
           <div className="mx-auto max-w-2xl">
             <h2 id="about-title" className="text-center text-xl font-medium leading-tight lg:text-3xl">
               Що таке <span className="font-bold italic">Slotik</span>?
@@ -309,7 +309,7 @@ export default function PublicHomePage() {
 
         <section id="offers" aria-label="Пропозиція для майстрів" className="px-3 py-2 lg:pt-4 lg:pb-6">
           <div className="relative mx-auto max-w-2xl">
-            <div className="flex items-stretch rounded-[40px] bg-[#f5f5f5] px-4 py-3 text-black shadow-[0_16px_30px_rgba(0,0,0,0.25)] lg:rounded-[56px] lg:px-7 lg:py-5">
+            <div className="flex items-stretch rounded-[40px] bg-soft px-4 py-3 text-text shadow-[0_16px_30px_rgba(0,0,0,0.25)] lg:rounded-[56px] lg:px-7 lg:py-5">
               <div className="flex shrink-0 items-center border-r border-border pr-3 lg:pr-6">
                 <span className="text-[28px] font-medium leading-none lg:text-5xl">-100%</span>
               </div>
@@ -355,11 +355,11 @@ export default function PublicHomePage() {
             </Link>
           )}
         </div>
-        <section aria-labelledby="join-title" className="bg-linear-to-b from-transparent to-white px-2 lg:px-6 lg:pt-4">
+        <section aria-labelledby="join-title" className="bg-linear-to-b from-transparent to-surface px-2 lg:px-6 lg:pt-4">
           <div className="mx-auto grid min-h-45 w-full max-w-105 grid-cols-[minmax(0,1fr)_minmax(0,1.8fr)_minmax(0,1fr)] items-end gap-1 sm:gap-2 lg:min-h-75 lg:max-w-225 lg:grid-cols-[1fr_1.4fr_1fr] lg:gap-6">
             <img src={joinMasterLeft} alt="" className="block h-40 w-full object-contain object-bottom sm:h-45 lg:h-70" />
 
-            <div className="relative z-10 mb-9 min-w-0 rounded-xl bg-white px-2 py-3 text-black shadow-[0_12px_24px_rgba(0,0,0,0.25)] sm:px-3 lg:mb-16 lg:rounded-3xl lg:px-6 lg:py-7">
+            <div className="relative z-10 mb-9 min-w-0 rounded-xl bg-surface px-2 py-3 text-text shadow-[0_12px_24px_rgba(0,0,0,0.25)] sm:px-3 lg:mb-16 lg:rounded-3xl lg:px-6 lg:py-7">
               <h2 id="join-title" className="text-xs font-bold leading-snug sm:text-sm lg:text-xl">
                 Ви майстер?
               </h2>
@@ -381,7 +381,7 @@ export default function PublicHomePage() {
         </section>
       </main>
 
-      <footer id="socials" className="bg-white px-4 pb-6 pt-4 text-black lg:pb-10 lg:pt-6">
+      <footer id="socials" className="bg-surface px-4 pb-6 pt-4 text-text lg:pb-10 lg:pt-6">
         <nav aria-label="Посилання в підвалі">
           <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs lg:gap-x-8 lg:text-base">
             <li>
@@ -424,7 +424,7 @@ export default function PublicHomePage() {
               title={`${label} — незабаром`}
               className="flex h-11 w-11 items-center justify-center rounded-full disabled:cursor-not-allowed"
             >
-              <img src={icon} alt="" className="h-6 w-6 lg:h-7 lg:w-7" />
+              <img src={icon} alt="" className="theme-ink h-6 w-6 lg:h-7 lg:w-7" />
             </button>
           ))}
         </div>

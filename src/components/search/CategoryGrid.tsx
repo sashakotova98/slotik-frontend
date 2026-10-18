@@ -15,10 +15,10 @@ export default function CategoryGrid({ categories, cityId, districtId, selectedC
     <ul className="grid grid-cols-4 gap-x-2 gap-y-5 lg:gap-6">
       {categories.map((category) => {
         const selected = selectedCategoryId === category.id;
-        const className = "group flex h-full w-full flex-col items-center gap-2 rounded-xl text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black";
+        const className = "group flex h-full w-full flex-col items-center gap-2 rounded-xl text-text focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text";
         const content = <>
-          <span className={`flex h-14.5 w-14.5 items-center justify-center rounded-[17px] border border-border/11 transition-colors lg:h-20 lg:w-20 ${selected ? "bg-black" : "bg-[#f5f5f5] group-hover:bg-white"}`}>
-            <CategoryIcon name={category.icon} className={`h-9 w-9 object-contain lg:h-12 lg:w-12 ${selected ? "invert" : ""}`} />
+          <span className={`flex h-14.5 w-14.5 items-center justify-center rounded-[17px] border border-border/11 transition-colors lg:h-20 lg:w-20 ${selected ? "bg-black text-white" : "bg-soft group-hover:bg-surface"}`}>
+            <CategoryIcon name={category.icon} className={`h-9 w-9 object-contain lg:h-12 lg:w-12 ${selected ? "category-icon-selected" : ""}`} />
           </span>
           <span className="w-full wrap-anywhere text-center text-xs leading-snug lg:text-sm">{category.name}</span>
         </>;

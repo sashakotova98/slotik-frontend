@@ -278,7 +278,7 @@ export default function MasterPlansPage() {
   // }
 
   return (
-    <div className="flex min-h-screen flex-col bg-linear-to-br from-neutral-200 via-neutral-300 to-neutral-400 text-black">
+    <div className="flex min-h-screen flex-col bg-linear-to-br from-panel-100 via-panel-200 to-panel-300 text-text">
       <header className="flex justify-end px-6 py-4">
         <button
           type="button"
@@ -287,14 +287,14 @@ export default function MasterPlansPage() {
             logout();
             navigate("/login", { replace: true });
           }}
-          className="rounded-xl bg-white px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black disabled:opacity-50"
+          className="rounded-xl bg-surface px-4 py-2 text-sm font-medium shadow-sm transition hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text disabled:opacity-50"
         >
           Вийти
         </button>
       </header>
 
       <main className="flex flex-1 items-center justify-center px-4 pt-4 pb-10">
-        <div className="w-full max-w-sm rounded-[40px] bg-neutral-100 px-7 pt-8 pb-5 shadow-2xl">
+        <div className="w-full max-w-sm rounded-[40px] bg-panel-100 px-7 pt-8 pb-5 shadow-2xl">
           {/* Помилка профілю видима і при виборі тарифу, і в підсумку оплати. */}
           {profileError && (
             <p role="alert" className="mb-4 text-sm text-red-600">
@@ -303,7 +303,7 @@ export default function MasterPlansPage() {
           )}
 
           {subscriptionsLoading && (
-            <p role="status" className="mb-4 text-sm text-neutral-500">
+            <p role="status" className="mb-4 text-sm text-copy-500">
               Завантажуємо ваш тариф…
             </p>
           )}
@@ -339,26 +339,26 @@ export default function MasterPlansPage() {
                     type="button"
                     disabled={busy || subscriptionsLoading || Boolean(subscriptionsError)}
                     onClick={() => handleSelect(plan)}
-                    className="w-full rounded-xl border border-neutral-400 p-4 text-left transition hover:border-black hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+                    className="w-full rounded-xl border border-border p-4 text-left transition hover:border-black hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text"
                   >
                     <span className="flex items-start justify-between gap-3 font-semibold">
                       <span>{plan.name}</span>
                       <span className="shrink-0">{plan.price === 0 ? "0 ₴" : `${plan.price} ₴/міс`}</span>
                     </span>
 
-                    <span className="mt-2 block text-sm leading-5 text-neutral-600">{plan.description}</span>
+                    <span className="mt-2 block text-sm leading-5 text-copy-600">{plan.description}</span>
                   </button>
                 ))}
               </div>
 
               {savingFree && (
-                <p role="status" className="mt-4 text-sm text-neutral-500">
+                <p role="status" className="mt-4 text-sm text-copy-500">
                   Зберігаємо безкоштовний тариф…
                 </p>
               )}
 
               {message && (
-                <p role="status" className="mt-4 text-sm text-neutral-600">
+                <p role="status" className="mt-4 text-sm text-copy-600">
                   {message}
                 </p>
               )}
@@ -367,7 +367,7 @@ export default function MasterPlansPage() {
                 type="button"
                 disabled={busy}
                 onClick={() => navigate(isChangingPlan ? "/cabinet/account/tariff" : "/cabinet/setup")}
-                className="mt-4 w-full py-2 text-sm text-neutral-500 hover:text-black"
+                className="mt-4 w-full py-2 text-sm text-copy-500 hover:text-text"
               >
                 Назад
               </button>

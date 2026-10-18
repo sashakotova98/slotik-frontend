@@ -86,9 +86,9 @@ function SlotStepForm({ value, onSaved }: Props) {
 
 
   return (
-    <section className="border-b border-neutral-300 pb-3">
+    <section className="border-b border-border pb-3">
       <div className="flex min-h-12 items-center justify-between gap-4">
-        <span className="flex items-center gap-2 text-sm text-neutral-600">
+        <span className="flex items-center gap-2 text-sm text-copy-600">
           <CirclePause size={16} strokeWidth={1.5} aria-hidden="true" />
           Крок запису
         </span>
@@ -122,10 +122,10 @@ function SlotStepForm({ value, onSaved }: Props) {
                 setOpen(true);
               }
             }}
-            className="flex min-h-11 items-center gap-3 rounded-lg px-2 text-sm font-semibold text-neutral-900 focus-visible:outline-2 focus-visible:outline-black disabled:opacity-50"
+            className="flex min-h-11 items-center gap-3 rounded-lg px-2 text-sm font-semibold text-copy-900 focus-visible:outline-2 focus-visible:outline-text disabled:opacity-50"
           >
             {currentValue} хв
-            <ChevronDown size={14} aria-hidden="true" className={`text-neutral-400 transition-transform ${open ? "rotate-180" : ""}`} />
+            <ChevronDown size={14} aria-hidden="true" className={`text-copy-400 transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
 
           {open && (
@@ -133,7 +133,7 @@ function SlotStepForm({ value, onSaved }: Props) {
               id={menuId}
               role="listbox"
               aria-label="Крок запису у хвилинах"
-              className="absolute right-0 top-full z-30 mt-1 max-h-56 w-40 overflow-y-auto rounded-2xl bg-white p-1 shadow-lg scrollbar-thin [scrollbar-color:#999_transparent]"
+              className="absolute right-0 top-full z-30 mt-1 max-h-56 w-40 overflow-y-auto rounded-2xl bg-surface p-1 shadow-lg scrollbar-thin [scrollbar-color:#999_transparent]"
               onKeyDown={(event) => {
                 const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'));
                 const index = options.findIndex((option) => option === document.activeElement);
@@ -163,7 +163,7 @@ function SlotStepForm({ value, onSaved }: Props) {
                       setOpen(false);
                       triggerRef.current?.focus();
                     }}
-                    className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-neutral-400 ${selected ? "bg-neutral-100 text-black" : "text-neutral-600 hover:bg-neutral-50"}`}
+                    className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-left text-sm focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border ${selected ? "bg-panel-100 text-text" : "text-copy-600 hover:bg-panel-50"}`}
                   >
                     {minutes} хв
                     {selected && <Check size={16} strokeWidth={1.5} aria-hidden="true" />}

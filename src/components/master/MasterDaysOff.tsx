@@ -83,7 +83,7 @@ export default function MasterDaysOff() {
   }, []);
 
   if (loading) {
-    return <p role="status" className="py-3 text-sm text-neutral-500">Завантаження відпусток…</p>;
+    return <p role="status" className="py-3 text-sm text-copy-500">Завантаження відпусток…</p>;
   }
 
   if (error) {
@@ -204,7 +204,7 @@ export default function MasterDaysOff() {
 
   return (
     <section className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-4 pb-4 sm:gap-x-8">
-      <h2 className="flex min-h-11 items-center gap-2 text-sm font-medium text-neutral-600 sm:text-base">
+      <h2 className="flex min-h-11 items-center gap-2 text-sm font-medium text-copy-600 sm:text-base">
         <CirclePause size={16} strokeWidth={1.5} aria-hidden="true" />
         Відпустка
       </h2>
@@ -212,24 +212,24 @@ export default function MasterDaysOff() {
       <div className="min-w-0 space-y-4">
         {/* Показуємо всі періоди, збережені на бекенді. */}
         {daysOff.map((period) => (
-          <div key={period.id} className="border-b border-neutral-200 pb-2">
+          <div key={period.id} className="border-b border-border pb-2">
             <dl className="text-sm sm:text-base">
               <div className="flex min-h-11 items-center justify-between gap-2">
-                <dt className="text-neutral-600">Початок:</dt>
-                <dd className="font-medium text-black">{period.dateFrom.slice(2).split("-").reverse().join(".")}</dd>
+                <dt className="text-copy-600">Початок:</dt>
+                <dd className="font-medium text-text">{period.dateFrom.slice(2).split("-").reverse().join(".")}</dd>
               </div>
               <div className="flex min-h-11 items-center justify-between gap-2">
-                <dt className="text-neutral-600">Кінець:</dt>
-                <dd className="font-medium text-black">{period.dateTo.slice(2).split("-").reverse().join(".")}</dd>
+                <dt className="text-copy-600">Кінець:</dt>
+                <dd className="font-medium text-text">{period.dateTo.slice(2).split("-").reverse().join(".")}</dd>
               </div>
             </dl>
             <div className="flex flex-wrap justify-end gap-2">
               <button type="button" disabled={saving} onClick={() => handleEdit(period)}
-                className="flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 disabled:opacity-40">
+                className="flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs text-copy-600 hover:bg-panel-100 focus-visible:outline-2 disabled:opacity-40">
                 <SquarePen size={14} aria-hidden="true" />Редагувати
               </button>
               <button type="button" disabled={saving} onClick={() => handleDelete(period.id)}
-                className="flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs text-neutral-600 hover:bg-neutral-100 focus-visible:outline-2 disabled:opacity-40">
+                className="flex min-h-11 items-center gap-1 rounded-lg px-2 text-xs text-copy-600 hover:bg-panel-100 focus-visible:outline-2 disabled:opacity-40">
                 <Trash2 size={14} aria-hidden="true" />Видалити
               </button>
             </div>
@@ -239,7 +239,7 @@ export default function MasterDaysOff() {
         {/* Поля змінюють стан. Запит виконується лише після «Зберегти». */}
         <form onSubmit={(event) => { event.preventDefault(); handleSave(); }}>
           {daysOff.length > 0 && (
-            <p className="mb-2 text-sm font-medium text-neutral-600">
+            <p className="mb-2 text-sm font-medium text-copy-600">
               {editingId === null ? "Додати відпустку" : "Редагування відпустки"}
             </p>
           )}
@@ -247,19 +247,19 @@ export default function MasterDaysOff() {
             <button type="button" onClick={() => setOpenedCalendar("from")}
               aria-haspopup="dialog" aria-expanded={openedCalendar === "from"}
               className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg text-sm focus-visible:outline-2 disabled:opacity-50 sm:text-base">
-              <span className="text-neutral-600">Початок:</span>
+              <span className="text-copy-600">Початок:</span>
               <span className="flex items-center gap-2">
-                <span className={dateFrom ? "text-black" : "text-neutral-400"}>{dateFrom ? dateFrom.slice(2).split("-").reverse().join(".") : "Обрати дату"}</span>
-                <ChevronDown size={14} className="shrink-0 text-neutral-500" aria-hidden="true" />
+                <span className={dateFrom ? "text-text" : "text-copy-400"}>{dateFrom ? dateFrom.slice(2).split("-").reverse().join(".") : "Обрати дату"}</span>
+                <ChevronDown size={14} className="shrink-0 text-copy-500" aria-hidden="true" />
               </span>
             </button>
             <button type="button" onClick={() => setOpenedCalendar("to")}
               aria-haspopup="dialog" aria-expanded={openedCalendar === "to"}
               className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg text-sm focus-visible:outline-2 disabled:opacity-50 sm:text-base">
-              <span className="text-neutral-600">Кінець:</span>
+              <span className="text-copy-600">Кінець:</span>
               <span className="flex items-center gap-2">
-                <span className={dateTo ? "text-black" : "text-neutral-400"}>{dateTo ? dateTo.slice(2).split("-").reverse().join(".") : "Обрати дату"}</span>
-                <ChevronDown size={14} className="shrink-0 text-neutral-500" aria-hidden="true" />
+                <span className={dateTo ? "text-text" : "text-copy-400"}>{dateTo ? dateTo.slice(2).split("-").reverse().join(".") : "Обрати дату"}</span>
+                <ChevronDown size={14} className="shrink-0 text-copy-500" aria-hidden="true" />
               </span>
             </button>
             <button type="submit" disabled={!dateFrom || !dateTo}
@@ -268,7 +268,7 @@ export default function MasterDaysOff() {
             </button>
             {(dateFrom || dateTo || editingId !== null) && (
               <button type="button" onClick={resetForm}
-                className="mt-1 min-h-11 w-full rounded-lg text-sm text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2 disabled:opacity-40">
+                className="mt-1 min-h-11 w-full rounded-lg text-sm text-copy-500 hover:bg-panel-100 focus-visible:outline-2 disabled:opacity-40">
                 Скасувати зміни
               </button>
             )}
@@ -284,11 +284,11 @@ export default function MasterDaysOff() {
             const rect = event.currentTarget.getBoundingClientRect();
             if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) setOpenedCalendar(null);
           }}
-          className="fixed inset-0 m-auto max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-sm overflow-y-auto overscroll-contain rounded-3xl border-0 bg-white p-4 text-black shadow-xl backdrop:bg-black/40 sm:p-6">
+          className="fixed inset-0 m-auto max-h-[calc(100dvh-24px)] w-[calc(100%-24px)] max-w-sm overflow-y-auto overscroll-contain rounded-3xl border-0 bg-surface p-4 text-text shadow-xl backdrop:bg-black/40 sm:p-6">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h3 id={calendarTitleId} className="text-base font-semibold">{openedCalendar === "from" ? "Початок відпустки" : "Кінець відпустки"}</h3>
             <button type="button" onClick={() => setOpenedCalendar(null)} aria-label="Закрити календар"
-              className="flex size-11 shrink-0 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100 focus-visible:outline-2">
+              className="flex size-11 shrink-0 items-center justify-center rounded-full text-copy-500 hover:bg-panel-100 focus-visible:outline-2">
               <X size={20} aria-hidden="true" />
             </button>
           </div>
@@ -314,7 +314,7 @@ export default function MasterDaysOff() {
               setOpenedCalendar(null);
             }}
           />
-          <p className="mt-3 text-center text-xs text-neutral-500">Оберіть дату в календарі</p>
+          <p className="mt-3 text-center text-xs text-copy-500">Оберіть дату в календарі</p>
         </dialog>
       )}
     </section>

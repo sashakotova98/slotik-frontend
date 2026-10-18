@@ -4,7 +4,7 @@ import MasterBottomNav from "./MasterBottomNav";
 
 export default function MasterCabinetLayout() {
   return (
-    <div className="min-h-dvh bg-white text-neutral-900">
+    <div className="min-h-dvh bg-surface text-copy-900">
       {/* Залишаємо місце для нижньої панелі. */}
       <main className="mx-auto max-w-100 px-4 pt-6 pb-[calc(7rem+env(safe-area-inset-bottom))]">
         <Outlet />

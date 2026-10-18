@@ -43,7 +43,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
   }
   return (
     <article className="space-y-3">
-      <div className="space-y-3 rounded-2xl bg-white p-4 shadow-[0_4px_18px_rgba(0,0,0,0.12)]">
+      <div className="space-y-3 rounded-2xl bg-surface p-4 shadow-[0_4px_18px_rgba(0,0,0,0.12)]">
         <div className="flex flex-wrap items-center gap-3">
           {review.clientAvatarUrl ? (
             <img src={review.clientAvatarUrl} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
@@ -57,7 +57,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
           )}
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">{name}</p>
-            <p className="mt-1 inline-block rounded-lg bg-neutral-100 px-2 py-1 text-xs text-neutral-600">
+            <p className="mt-1 inline-block rounded-lg bg-panel-100 px-2 py-1 text-xs text-copy-600">
               {review.serviceName || "Послуга"}
               {review.durationMin != null && <> • {review.durationMin} хв</>}
               {review.price != null && <> • {review.price.toLocaleString("uk-UA")} ₴</>}
@@ -74,7 +74,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
           </div>
         </div>
         <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">{review.text}</p>
-        <div className="flex flex-wrap justify-between gap-2 text-xs text-neutral-500">
+        <div className="flex flex-wrap justify-between gap-2 text-xs text-copy-500">
           <span>{review.createdAt ? new Date(review.createdAt).toLocaleDateString("uk-UA", { timeZone: "Europe/Kyiv" }) : ""}</span>
           {review.startsAt && review.endsAt && (
             <span>
@@ -83,14 +83,14 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
           )}
         </div>
         {review.reply && (
-          <div className="rounded-xl bg-neutral-50 p-3">
-            <p className="mb-1 text-xs font-medium text-neutral-500">Відповідь майстра</p>
+          <div className="rounded-xl bg-panel-50 p-3">
+            <p className="mb-1 text-xs font-medium text-copy-500">Відповідь майстра</p>
             <p className="whitespace-pre-wrap wrap-break-word text-sm">{review.reply}</p>
           </div>
         )}
       </div>
       {editing ? (
-        <form onSubmit={submit} className="space-y-3 rounded-2xl border border-neutral-200 p-4">
+        <form onSubmit={submit} className="space-y-3 rounded-2xl border border-border p-4">
           <label htmlFor={`reply-${review.id}`} className="block text-sm font-medium">
             Ваша відповідь
           </label>
@@ -103,7 +103,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
             }}
             disabled={saving}
             rows={3}
-            className="w-full resize-y rounded-xl border border-neutral-300 p-3 text-sm focus:outline-2 focus:outline-black"
+            className="w-full resize-y rounded-xl border border-border p-3 text-sm focus:outline-2 focus:outline-text"
           />
           {error && (
             <p role="alert" className="text-sm text-red-600">
@@ -117,7 +117,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
               onClick={() => {
                 setEditing(false);
               }}
-              className="min-h-11 rounded-xl border border-neutral-300 px-4 text-sm disabled:opacity-50"
+              className="min-h-11 rounded-xl border border-border px-4 text-sm disabled:opacity-50"
             >
               Скасувати
             </button>
@@ -135,7 +135,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
               setError("");
               setEditing(true);
             }}
-            className="min-h-11 rounded-xl border border-neutral-400 px-5 text-sm text-neutral-700 transition hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="min-h-11 rounded-xl border border-border px-5 text-sm text-copy-700 transition hover:bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-2"
           >
             {review.reply ? "Редагувати відповідь" : "Відповісти"}
           </button>

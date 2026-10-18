@@ -110,7 +110,7 @@ export default function ClientBookingCard() {
 
   if (loading) {
     return (
-      <p role="status" className="text-sm text-neutral-500">
+      <p role="status" className="text-sm text-copy-500">
         Завантаження записів…
       </p>
     );
@@ -118,7 +118,7 @@ export default function ClientBookingCard() {
 
   if (error) {
     return (
-      <p role="alert" className="text-sm text-neutral-500">
+      <p role="alert" className="text-sm text-copy-500">
         {error}
       </p>
     );
@@ -134,9 +134,9 @@ export default function ClientBookingCard() {
           master={masters[nearestBooking.masterId]}
         />
       ) : (
-        <section className="rounded-3xl border border-neutral-100 bg-white p-5">
-          <h2 className="text-sm text-neutral-400">Найближчий запис</h2>
-          <p className="mt-2 text-sm text-neutral-500">Найближчих записів немає.</p>
+        <section className="rounded-3xl border border-border bg-surface p-5">
+          <h2 className="text-sm text-copy-400">Найближчий запис</h2>
+          <p className="mt-2 text-sm text-copy-500">Найближчих записів немає.</p>
         </section>
       )}
 
@@ -145,7 +145,7 @@ export default function ClientBookingCard() {
           Активні записи
         </h2>
         {activeBookings.length === 0 ? (
-          <p className="mt-3 text-sm text-neutral-500">Активних записів поки немає.</p>
+          <p className="mt-3 text-sm text-copy-500">Активних записів поки немає.</p>
         ) : (
           <div className="mt-4 space-y-4">
             {/* Кожна картка отримує свій запис і відповідний профіль майстра. */}
@@ -162,7 +162,7 @@ export default function ClientBookingCard() {
 
       {/* Відсутність профілю майстра не приховує самі записи. */}
       {mastersError && (
-        <p role="status" className="text-xs text-neutral-500">{mastersError}</p>
+        <p role="status" className="text-xs text-copy-500">{mastersError}</p>
       )}
     </div>
   );
