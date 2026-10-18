@@ -238,9 +238,15 @@ function ServiceDetailsContent({ slug, serviceId }: { slug: string; serviceId: n
               Що входить у послугу
             </h2>
 
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-neutral-600 wrap-break-word">
-              {service.included?.trim() || "Майстер ще не вказав, що входить у послугу."}
-            </p>
+            {service.included?.trim() ? (
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-neutral-600 wrap-break-word">
+                {service.included.split(/\r?\n/).map((item) => item.trim()).filter(Boolean).map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-sm leading-relaxed text-neutral-600">Майстер ще не вказав, що входить у послугу.</p>
+            )}
           </section>
         </article>
 

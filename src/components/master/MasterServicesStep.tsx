@@ -16,6 +16,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [duration, setDuration] = useState("");
+  const [description, setDescription] = useState("");
+  const [included, setIncluded] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -37,16 +39,28 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   const totalPhotoCount = savedPhotoCount + files.length;
   // Заповнена форма редагування ще не означає зміни.
   const hasChanges = editingService
-    ? name.trim() !== editingService.name || price.trim() === "" ||
-    Number(price) !== editingService.price || duration.trim() === "" ||
-    Number(duration) !== editingService.durationMin || files.length > 0
-    : name !== "" || price !== "" || duration !== "" || files.length > 0;
+    ? name.trim() !== editingService.name ||
+    price.trim() === "" ||
+    Number(price) !== editingService.price ||
+    duration.trim() === "" ||
+    Number(duration) !== editingService.durationMin ||
+    description !== (editingService.description ?? "") ||
+    included !== (editingService.included ?? "") ||
+    files.length > 0
+    : name !== "" ||
+    price !== "" ||
+    duration !== "" ||
+    description !== "" ||
+    included !== "" ||
+    files.length > 0;
 
   const resetForm = () => {
     setEditingService(null);
     setName("");
     setPrice("");
     setDuration("");
+    setDescription("");
+    setIncluded("");
     setFiles([]);
     setSaveError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -59,6 +73,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
     setName(service.name);
     setPrice(String(service.price));
     setDuration(String(service.durationMin));
+    setDescription(service.description ?? "");
+    setIncluded(service.included ?? "");
     setFiles([]);
     setSaveError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -168,6 +184,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
         name: name.trim(),
         price: servicePrice,
         durationMin: serviceDuration,
+        description: description.trim(),
+        included: included.trim(),
       };
       const saved = editingService
         ? await updateService(editingService.id, {
@@ -291,6 +309,35 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
               </span>
             </label>
           </div>
+
+          {/* Обидва поля необов’язкові та зберігаються незалежно. */}
+          <label className="block text-lg text-neutral-600">
+            Опис процедури
+            <span className="ml-2 text-sm text-neutral-400">(необов’язково)</span>
+            <textarea
+              name="description"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={4}
+              placeholder="Розкажіть, як проходить процедура"
+              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-neutral-400 bg-transparent px-4 py-3 text-base text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
+            />
+          </label>
+
+          <label className="block text-lg text-neutral-600">
+            Що входить у послугу
+            <span className="ml-2 text-sm text-neutral-400">(необов’язково)</span>
+            <textarea
+              name="included"
+              value={included}
+              onChange={(event) => setIncluded(event.target.value)}
+              rows={4}
+              placeholder={"Зняття покриття\nОбробка кутикули\nПокриття гель-лаком"}
+              aria-describedby="service-included-help"
+              className="mt-1.5 block w-full min-w-0 resize-y rounded-[14px] border border-neutral-400 bg-transparent px-4 py-3 text-base text-neutral-600 outline-none placeholder:text-neutral-400 focus-visible:ring-2 focus-visible:ring-neutral-300"
+            />
+            <span id="service-included-help" className="mt-1 block text-xs text-neutral-400">Кожен пункт — з нового рядка.</span>
+          </label>
 
           <div>
             <p id="service-photos-label" className="mb-2 text-lg text-neutral-600">Фото робіт <span className="text-sm text-neutral-400">{editingService ? `(збережено ${savedPhotoCount}, нових ${files.length}; разом до 3)` : "(від 1 до 3 фото)"}</span></p>
