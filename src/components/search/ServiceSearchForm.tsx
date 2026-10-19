@@ -33,6 +33,7 @@ export default function ServiceSearchForm({ defaultValue = "", onSearch, onClear
         name="search"
         autoComplete={autoComplete}
         type="search"
+        enterKeyHint="search"
         onFocus={onOpenCategories}
         onClick={onOpenCategories}
         aria-expanded={categoriesOpen}

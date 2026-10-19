@@ -52,3 +52,11 @@ export async function saveReviewReply(reviewId: number, text: string): Promise<R
   });
 }
 
+
+// Створення або оновлення відгуку на власний завершений запис.
+export function saveClientReview(bookingId: number, data: { rating: number; text: string }) {
+  return api<{ text: string; rating: number; price: number; durationMin: number }>(`/Review/booking/${bookingId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
