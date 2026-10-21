@@ -10,6 +10,7 @@ export type Service = {
   description: string | null;
   included: string | null;
   groupId: number | null;
+  groupName?: string | null;
   isPopular: boolean;
   sortOrder: number;
 };
@@ -19,6 +20,8 @@ export function getServicesByMasterId(masterId: number): Promise<Service[]> {
 }
 
 export type CreateServiceData = {
+  groupId: number | null;
+  isPopular: boolean;
   description?: string | null;
   included?: string | null;
   masterId: number;
@@ -34,6 +37,8 @@ export async function createService(data: CreateServiceData, files: File[]): Pro
   formData.append("Name", data.name);
   formData.append("Price", String(data.price));
   formData.append("DurationMin", String(data.durationMin));
+  if (data.groupId !== null) formData.append("GroupId", String(data.groupId));
+  formData.append("IsPopular", String(data.isPopular));
   // Порожній текст у PUT очищає збережене значення.
   formData.append("Description", data.description?.trim() ?? "");
   formData.append("Included", data.included?.trim() ?? "");
@@ -61,7 +66,7 @@ export function updateService(id: number, data: UpdateServiceData, files: File[]
   formData.append("Description", data.description?.trim() ?? "");
   formData.append("Included", data.included?.trim() ?? "");
 
-  // Зберігаємо налаштування, яких немає у формі.
+  // Відсутній GroupId очищає групу; IsPopular надсилаємо також для false.
   if (data.groupId !== null) formData.append("GroupId", String(data.groupId));
   formData.append("IsPopular", String(data.isPopular));
   formData.append("SortOrder", String(data.sortOrder));

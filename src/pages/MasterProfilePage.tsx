@@ -1,6 +1,6 @@
 import { ApiError } from "../api/api";
-import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, EllipsisVertical, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { type PublicMasterProfile, type PortfolioPhoto, getMasterBySlug, getMasterPortfolio } from "../api/masters";
 
@@ -27,12 +27,34 @@ function MasterProfileContent({ slug }: { slug: string }) {
     (["/catalog", "/client/search"].some((path) => catalogPath === path || catalogPath.startsWith(`${path}?`)))
     ? catalogPath
     : "/home";
-  const serviceListRef = useRef<HTMLUListElement>(null);
+  const [servicePage, setServicePage] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState<"all" | "popular" | number>("all");
   const [shareOpen, setShareOpen] = useState(false);
 
 
   const [masterProfile, setMasterProfile] = useState<PublicMasterProfile | null>(null);
   const [services, setServices] = useState<Service[]>([]);
+  const availableGroups = Array.from(
+    new Map(services.flatMap((service) =>
+      service.groupId !== null && service.groupName
+        ? [[service.groupId, service.groupName] as const] : [],
+    )),
+    ([id, name]) => ({ id, name }),
+  );
+  const hasPopular = services.some((service) => service.isPopular);
+  const filteredServices = services.filter((service) =>
+    selectedGroup === "all" ? true
+      : selectedGroup === "popular" ? service.isPopular
+        : service.groupId === selectedGroup,
+  );
+  function selectGroup(group: "all" | "popular" | number) {
+    setSelectedGroup(group);
+    setServicePage(0);
+    document.getElementById("master-services-list")?.scrollTo({ top: 0, left: 0 });
+  }
+  const servicesPerPage = 3;
+  const servicePageCount = Math.ceil(filteredServices.length / servicesPerPage);
+  const currentServicePage = Math.min(servicePage, Math.max(0, servicePageCount - 1));
   const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -192,37 +214,56 @@ function MasterProfileContent({ slug }: { slug: string }) {
               <h2 id="services-title" className="text-2xl font-medium text-copy-600 lg:text-lg lg:text-text">
                 Послуги
               </h2>
-              <div className="mb-4 mt-4 lg:hidden">
-                <span className="inline-flex rounded-full bg-black px-3 py-1 text-sm text-white">Усі послуги</span>
+              <div role="group" aria-label="Фільтр послуг" className="mb-4 mt-4 flex gap-2 overflow-x-auto pb-2">
+                {[
+                  { id: "all" as const, name: "Усі послуги" },
+                  ...availableGroups,
+                  ...(hasPopular ? [{ id: "popular" as const, name: "Популярні" }] : []),
+                ].map((group) => (
+                  <button key={group.id} type="button" aria-pressed={selectedGroup === group.id}
+                    onClick={() => selectGroup(group.id)}
+                    className={`min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${selectedGroup === group.id ? "border-text bg-text text-bg" : "border-border bg-surface text-copy-600"}`}>
+                    {group.name}
+                  </button>
+                ))}
               </div>
 
               {services.length === 0 ? (
                 <p className="rounded-2xl bg-surface p-5 text-sm text-copy-500">Майстер ще не додав послуг.</p>
+              ) : filteredServices.length === 0 ? (
+                <p role="status" className="rounded-2xl bg-surface p-5 text-sm text-copy-500">У цій групі поки немає послуг.</p>
               ) : (
                 <>
                   <div className="mb-3 hidden items-center justify-end gap-2 lg:flex">
-                    <span className="mr-3 text-xs text-copy-500">Послуг: {services.length}</span>
-                    <button type="button" aria-label="Попередні послуги" onClick={() => serviceListRef.current?.scrollBy({ left: -serviceListRef.current.clientWidth, behavior: "smooth" })} className="flex size-9 items-center justify-center rounded-full border border-border hover:bg-panel-100 focus-visible:outline-2"><ChevronLeft size={18} aria-hidden="true" /></button>
-                    <button type="button" aria-label="Наступні послуги" onClick={() => serviceListRef.current?.scrollBy({ left: serviceListRef.current.clientWidth, behavior: "smooth" })} className="flex size-9 items-center justify-center rounded-full bg-black text-white focus-visible:outline-2"><ChevronRight size={18} aria-hidden="true" /></button>
+                    <span className="mr-3 text-xs text-copy-500">Послуг: {filteredServices.length}</span>
+                    {servicePageCount > 1 && (
+                      <nav aria-label="Сторінки послуг" className="flex items-center gap-2">
+                        <button type="button" aria-label="Попередня сторінка послуг" aria-controls="master-services-list"
+                          disabled={currentServicePage === 0} onClick={() => setServicePage(currentServicePage - 1)}
+                          className="flex size-11 items-center justify-center rounded-full border border-border hover:bg-panel-100 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40">
+                          <ChevronLeft size={18} aria-hidden="true" />
+                        </button>
+                        <span role="status" aria-live="polite" className="min-w-24 text-center text-sm text-copy-500">
+                          {currentServicePage + 1} з {servicePageCount}
+                        </span>
+                        <button type="button" aria-label="Наступна сторінка послуг" aria-controls="master-services-list"
+                          disabled={currentServicePage === servicePageCount - 1} onClick={() => setServicePage(currentServicePage + 1)}
+                          className="flex size-11 items-center justify-center rounded-full bg-black text-white focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40">
+                          <ChevronRight size={18} aria-hidden="true" />
+                        </button>
+                      </nav>
+                    )}
                   </div>
                   <ul
-                    ref={serviceListRef}
+                    id="master-services-list"
                     aria-label="Послуги майстра"
                     tabIndex={0}
-                    className="max-h-105 space-y-3 overflow-y-auto rounded-2xl pb-4 pl-1 pr-3 pt-1 sm:max-h-130 lg:grid lg:max-h-none lg:auto-cols-[calc((100%-2rem)/3)] lg:grid-flow-col lg:gap-4 lg:space-y-0 lg:overflow-x-auto lg:overflow-y-hidden lg:rounded-none lg:px-1 lg:pb-5 lg:pt-2 scrollbar-thin focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
+                    className="max-h-105 space-y-3 overflow-y-auto rounded-2xl pb-4 pl-1 pr-3 pt-1 sm:max-h-130 lg:grid lg:max-h-none lg:grid-cols-3 lg:gap-4 lg:space-y-0 lg:overflow-visible lg:rounded-none lg:px-1 lg:pb-5 lg:pt-2 scrollbar-thin focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-text"
                   >
-                    {services.map((service) => (
-                      <li key={service.id} className="rounded-3xl bg-surface px-5 py-4 shadow-[0_5px_12px_rgba(0,0,0,0.14)] lg:flex lg:min-h-56 lg:flex-col lg:rounded-xl lg:px-4 lg:shadow-[0_3px_10px_rgba(0,0,0,0.08)]">
+                    {filteredServices.map((service, index) => (
+                      <li key={service.id} className={`rounded-3xl bg-surface px-5 py-4 shadow-[0_5px_12px_rgba(0,0,0,0.14)] lg:min-h-56 lg:min-w-0 lg:flex-col lg:rounded-xl lg:px-4 lg:shadow-[0_3px_10px_rgba(0,0,0,0.08)] ${Math.floor(index / servicesPerPage) === currentServicePage ? "lg:flex" : "lg:hidden"}`}>
                         <div className="flex items-start justify-between gap-3">
                           <h3 className="min-w-0 wrap-break-word text-base font-medium leading-snug">{service.name}</h3>
-                          <button
-                            type="button"
-                            disabled
-                            aria-label="Подробиці послуги поки недоступні"
-                            className="-mr-2 -mt-2 flex size-9 shrink-0 cursor-not-allowed items-center justify-center rounded-full text-copy-400"
-                          >
-                            <EllipsisVertical size={20} aria-hidden="true" />
-                          </button>
                         </div>
                         <p className="mt-1 text-sm text-copy-600">{service.durationMin} хв</p>
                         <div className="mt-2 flex items-center justify-between gap-3 lg:flex-1 lg:flex-col lg:items-stretch lg:justify-between">

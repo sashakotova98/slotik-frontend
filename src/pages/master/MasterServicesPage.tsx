@@ -7,6 +7,7 @@ export default function MasterServicesPage() {
   const navigate = useNavigate();
 
   const [masterId, setMasterId] = useState<number | null>(null);
+  const [categoryName, setCategoryName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -30,6 +31,7 @@ export default function MasterServicesPage() {
         }
 
         setMasterId(profile.master.id);
+        setCategoryName(profile.master.categoryName?.trim() || null);
       } catch {
         if (active) {
           setError("Не вдалося завантажити профіль.");
@@ -75,7 +77,12 @@ export default function MasterServicesPage() {
   return (
     <div className="mx-auto w-full max-w-xl space-y-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Мої послуги</h1>
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold">Мої послуги</h1>
+          {categoryName && (
+            <p className="mt-1 wrap-break-word text-sm text-copy-500">Категорія: {categoryName}</p>
+          )}
+        </div>
 
         <button
           type="button"
