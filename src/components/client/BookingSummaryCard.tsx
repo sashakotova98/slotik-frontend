@@ -1,4 +1,4 @@
-import { Bell, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import type { ClientBooking } from "../../api/bookings";
 import type { PublicMasterProfile } from "../../api/masters";
 
@@ -39,11 +39,11 @@ export default function BookingSummaryCard({ booking, master, title, onDetails, 
       {(title || onDetails) && (
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-normal text-copy-400">{title}</h2>
-          {onDetails ? (
+          {onDetails && (
             <button type="button" onClick={onDetails} aria-label="Деталі запису" className="-my-2 -mr-2 flex size-11 items-center justify-center rounded-full text-muted hover:bg-panel-100 focus-visible:outline-2">
               <MoreVertical aria-hidden="true" size={20} />
             </button>
-          ) : <Bell aria-hidden="true" className="size-5 shrink-0 text-copy-400" />}
+          )}
         </div>
       )}
 
