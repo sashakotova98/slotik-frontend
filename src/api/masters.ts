@@ -1,5 +1,7 @@
 import { api } from "./api";
 
+export type MasterTariff = "none" | "free" | "basic" | "pro";
+
 export type Master = {
   id: number;
   firstName: string;
@@ -8,7 +10,7 @@ export type Master = {
   city: string;
   status: "active" | "blocked";
   subscriptionUntil: string | null;
-  tariff: "free" | "basic" | "pro";
+  tariff: MasterTariff;
   isBlocked: boolean;
   avatarUrl: string | null;
   districtName: string;
@@ -37,12 +39,12 @@ export type MasterDetails = Master & {
   slug: string;
   email: string;
   phone: string;
-  tariffPrice: number | null;
+  tariffPrice: number;
   currency: string;
   billingPeriod: string | null;
   nextPaymentAt: string | null;
-  bookingsCount: number | null;
-  payments: Payment[] | null;
+  bookingsCount: number;
+  payments: Payment[];
 };
 
 export function getMasterDetails(id: number): Promise<MasterDetails> {
@@ -61,9 +63,15 @@ export function toggleMasterBlock(id: number): Promise<BlockMasterResponse> {
 }
 
 export function isSubscriptionExpiring(master: Master, now: number): boolean {
-  if (master.isBlocked || master.tariff === "free" || !master.subscriptionUntil) return false;
+  const hasPaidTariff = master.tariff === "basic" || master.tariff === "pro";
+
+  if (master.isBlocked || !hasPaidTariff || !master.subscriptionUntil) {
+    return false;
+  }
+
   const expiresAt = new Date(master.subscriptionUntil).getTime();
-  return expiresAt > now && expiresAt <= now + 27 * 60 * 60 * 1000;
+
+  return Number.isFinite(expiresAt) && expiresAt > now && expiresAt <= now + 27 * 60 * 60 * 1000;
 }
 
 export type SubscriptionPlan = 0 | 1 | 2;

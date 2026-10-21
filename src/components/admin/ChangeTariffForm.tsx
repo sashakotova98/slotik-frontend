@@ -10,22 +10,21 @@ type Props = {
   onSubmit: (plan: SubscriptionPlan) => Promise<void>;
 };
 
-const planValues: Record<Master["tariff"], SubscriptionPlan> = {
+const planValues: Record<Master["tariff"], SubscriptionPlan | null> = {
+  none: null,
   free: 0,
   basic: 1,
   pro: 2,
 };
 
-export function ChangeTariffForm({
-  currentTariff,
-  saving,
-  error,
-  onBack,
-  onSubmit,
-}: Props) {
-  const [plan, setPlan] = useState<SubscriptionPlan>(planValues[currentTariff]);
+export function ChangeTariffForm({ currentTariff, saving, error, onBack, onSubmit }: Props) {
+  const currentPlan = planValues[currentTariff];
 
-  const unchanged = plan === planValues[currentTariff];
+  const [plan, setPlan] = useState<SubscriptionPlan>(
+    currentPlan ?? 0,
+  );
+
+  const unchanged = currentPlan !== null && plan === currentPlan;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,8 +66,10 @@ export function ChangeTariffForm({
 
       <p className="text-sm text-muted">
         {plan === 0
-          ? "Платну підписку буде припинено. Безкоштовний тариф не має строку дії."
-          : currentTariff === "free"
+          ? currentTariff === "none" || currentTariff === "free"
+            ? "Буде призначено безкоштовний тариф без строку дії."
+            : "Платну підписку буде припинено. Безкоштовний тариф не має строку дії."
+          : currentTariff === "free" || currentTariff === "none"
             ? "Тариф буде призначено на 30 днів."
             : "Дата завершення підписки залишиться без змін."}
       </p>

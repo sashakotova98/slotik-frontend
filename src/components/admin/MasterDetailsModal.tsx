@@ -2,7 +2,7 @@ import { ApiError } from "../../api/api";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { X, FileText } from "lucide-react";
-import { type Master, type MasterDetails, getMasterDetails, toggleMasterBlock, } from "../../api/masters";
+import { type Master, type MasterDetails, getMasterDetails, toggleMasterBlock } from "../../api/masters";
 import { ExtendSubscriptionForm } from "./ExtendSubscriptionForm";
 import { updateMasterSubscription } from "../../api/masters";
 import { ChangeTariffForm } from "./ChangeTariffForm";
@@ -15,7 +15,8 @@ type Props = {
   onBlockChange: (id: number, isBlocked: boolean) => void;
 };
 
-const tariffLabels: Record<"free" | "basic" | "pro", string> = {
+const tariffLabels: Record<Master["tariff"], string> = {
+  none: "Немає активного тарифу",
   free: "Безкоштовний",
   basic: "Базовий",
   pro: "Професійний",
@@ -28,7 +29,6 @@ const paymentStatusLabels: Record<0 | 1 | 2, string> = {
 };
 
 export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpdated }: Props) {
-
   const [masterDetails, setMasterDetails] = useState<MasterDetails | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(true);
   const [detailsError, setDetailsError] = useState("");
@@ -44,7 +44,6 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
   const [error, setError] = useState("");
 
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
-
 
   useEffect(() => {
     async function fetchDetails() {
@@ -66,7 +65,6 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
     void fetchDetails();
   }, [master.id]);
 
-
   function handleBlockMaster() {
     setBlockError("");
     setShowBlockConfirm(true);
@@ -82,9 +80,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
       const result = await toggleMasterBlock(master.id);
 
       setMasterDetails((previous) =>
-        previous
-          ? { ...previous, isBlocked: result.isBlocked, status: result.isBlocked ? "blocked" : "active" }
-          : previous
+        previous ? { ...previous, isBlocked: result.isBlocked, status: result.isBlocked ? "blocked" : "active" } : previous,
       );
 
       onBlockChange(master.id, result.isBlocked);
@@ -106,7 +102,13 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
     try {
       await updateMasterSubscription(master.id, { days });
     } catch (error) {
-      setError(error instanceof ApiError ? error.message : "Не вдалося продовжити підписку.");
+      setError(
+        error instanceof ApiError && error.code === "managed_entitlement"
+          ? "Цю підписку не можна продовжити вручну в адмінпанелі. Майстер може оплатити продовження у своєму кабінеті."
+          : error instanceof ApiError
+            ? error.message
+            : "Не вдалося продовжити підписку.",
+      );
       setSaving(false);
       return;
     }
@@ -120,9 +122,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
       setMasterDetails(updatedMaster);
       onMasterUpdated(updatedMaster);
     } catch {
-      setDetailsError(
-        "Підписку продовжено, але не вдалося оновити дані. Відкрийте вікно повторно.",
-      );
+      setDetailsError("Підписку продовжено, але не вдалося оновити дані. Відкрийте вікно повторно.");
     } finally {
       setDetailsLoading(false);
       setSaving(false);
@@ -152,21 +152,16 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
       setMasterDetails(updatedMaster);
       onMasterUpdated(updatedMaster);
     } catch {
-      setDetailsError(
-        "Тариф змінено, але не вдалося оновити дані. Відкрийте вікно повторно.",
-      );
+      setDetailsError("Тариф змінено, але не вдалося оновити дані. Відкрийте вікно повторно.");
     } finally {
       setDetailsLoading(false);
       setSaving(false);
     }
-
-
   }
 
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  const initials =
-    `${master.firstName.charAt(0)}${master.lastName.charAt(0)}`.toUpperCase();
+  const initials = `${master.firstName.charAt(0)}${master.lastName.charAt(0)}`.toUpperCase();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -185,21 +180,21 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
   const currentMaster = masterDetails ?? master;
 
   // Якщо в подробицях немає фото, беремо його зі списку.
-  const avatarUrl =
-    masterDetails?.avatarUrl?.trim() ||
-    master.avatarUrl?.trim() ||
-    null;
+  const avatarUrl = masterDetails?.avatarUrl?.trim() || master.avatarUrl?.trim() || null;
 
-  // Сортуємо копію масиву: нові платежі першими.
-  const payments = masterDetails?.payments
-    ? [...masterDetails.payments].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() -
-        new Date(a.createdAt).getTime(),
+  // Бекенд уже сортує за paidAt ?? createdAt, від нових до старих.
+  const payments = masterDetails
+    ? masterDetails.payments.filter(
+      (payment) =>
+        payment.status === 1 &&
+        payment.providerStatus !== "reversed",
     )
     : null;
 
   const isFree = currentMaster.tariff === "free";
+  const hasNoTariff = currentMaster.tariff === "none";
+  const hasPaidTariff = currentMaster.tariff === "basic" || currentMaster.tariff === "pro";
+
   const isBlocked = currentMaster.isBlocked;
 
   function formatDate(value: string | null | undefined): string {
@@ -218,7 +213,15 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
     <dialog
       ref={dialogRef}
       aria-label={!showBlockConfirm && view === "extend" ? "Продовжити підписку" : undefined}
-      aria-labelledby={showBlockConfirm ? "block-confirm-title" : view === "extend" ? undefined : view === "changeTariff" ? "change-tariff-title" : "master-details-title"}
+      aria-labelledby={
+        showBlockConfirm
+          ? "block-confirm-title"
+          : view === "extend"
+            ? undefined
+            : view === "changeTariff"
+              ? "change-tariff-title"
+              : "master-details-title"
+      }
       onCancel={(event) => {
         event.preventDefault();
         if (savingBlock || saving) return;
@@ -245,9 +248,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
           </div>
 
           <h2 id="block-confirm-title" className="text-lg font-medium">
-            {isBlocked
-              ? "Ви точно хочете розблокувати майстра?"
-              : "Ви точно хочете заблокувати майстра?"}
+            {isBlocked ? "Ви точно хочете розблокувати майстра?" : "Ви точно хочете заблокувати майстра?"}
           </h2>
 
           {blockError && (
@@ -262,11 +263,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
             disabled={savingBlock}
             className="mt-5 min-h-12 w-full rounded-2xl border border-border bg-selected px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {savingBlock
-              ? "Збереження…"
-              : isBlocked
-                ? "Так, розблокувати"
-                : "Так, заблокувати"}
+            {savingBlock ? "Збереження…" : isBlocked ? "Так, розблокувати" : "Так, заблокувати"}
           </button>
         </>
       ) : view === "extend" ? (
@@ -309,43 +306,27 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
               className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-selected text-2xl text-muted"
             >
               {avatarUrl && avatarUrl !== failedAvatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  onError={() => setFailedAvatarUrl(avatarUrl)}
-                />
+                <img src={avatarUrl} alt="" className="h-full w-full object-cover" onError={() => setFailedAvatarUrl(avatarUrl)} />
               ) : (
                 initials
               )}
             </div>
 
             <div className="min-w-0 flex-1">
-              <h2
-                id="master-details-title"
-                className="wrap-break-word text-base font-medium"
-              >
+              <h2 id="master-details-title" className="wrap-break-word text-base font-medium">
                 {currentMaster.firstName} {currentMaster.lastName}
               </h2>
               <div className="mt-1 flex w-full items-center justify-between gap-2">
-                <p className="min-w-0 rounded-full bg-selected px-2 py-0.5 text-xs">
-                  {currentMaster.category}
-                </p>
+                <p className="min-w-0 rounded-full bg-selected px-2 py-0.5 text-xs">{currentMaster.category}</p>
 
                 <span
-                  className={`inline-block shrink-0 rounded-full px-3 py-0.5 text-xs ${isBlocked
-                    ? "bg-[#e8e8e8] text-[#666666]"
-                    : "bg-[#d5edce] text-[#47783b]"
+                  className={`inline-block shrink-0 rounded-full px-3 py-0.5 text-xs ${isBlocked ? "bg-[#e8e8e8] text-[#666666]" : "bg-[#d5edce] text-[#47783b]"
                     }`}
                 >
-                  {isBlocked
-                    ? "Заблокований"
-                    : "Активний"}
+                  {isBlocked ? "Заблокований" : "Активний"}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-muted">
-                На платформі з {formatDate(currentMaster.createdAt)}
-              </p>
+              <p className="mt-1 text-sm text-muted">На платформі з {formatDate(currentMaster.createdAt)}</p>
             </div>
           </div>
 
@@ -364,108 +345,106 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
           {masterDetails && (
             <dl className="mt-6 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-3 rounded-2xl border border-border p-4 text-sm">
               <dt className="text-muted">Email</dt>
-              <dd className="wrap-break-word text-right">
-                {masterDetails.email || "Не вказано"}
-              </dd>
+              <dd className="wrap-break-word text-right">{masterDetails.email || "Не вказано"}</dd>
 
               <dt className="text-muted">Телефон</dt>
-              <dd className="wrap-break-word text-right">
-                {masterDetails.phone || "Не вказано"}
-              </dd>
+              <dd className="wrap-break-word text-right">{masterDetails.phone || "Не вказано"}</dd>
               <dt className="text-muted">Тариф</dt>
               <dd className="wrap-break-word text-right">
                 {tariffLabels[masterDetails.tariff]}
 
-                {!isFree && masterDetails.tariffPrice != null && (
+                {!hasNoTariff && (
                   <span>
-                    {" "}• {masterDetails.tariffPrice} ₴
+                    {" "}•{" "}
+                    {new Intl.NumberFormat("uk-UA", {
+                      style: "currency",
+                      currency: masterDetails.currency || "UAH",
+                    }).format(masterDetails.tariffPrice)}
                     {masterDetails.billingPeriod === "month" ? "/міс" : ""}
                   </span>
                 )}
               </dd>
 
               <dt className="text-muted">
-                {isFree ? "Термін" : "Діє до"}
+                {hasPaidTariff ? "Діє до" : "Термін"}
               </dt>
-
               <dd className="text-right">
-                {isFree
-                  ? "Безстроково"
-                  : formatDate(currentMaster.subscriptionUntil)}
+                {hasNoTariff
+                  ? "Не застосовується"
+                  : isFree
+                    ? "Безстроково"
+                    : formatDate(masterDetails.subscriptionUntil)}
+              </dd>
+
+              <dt className="text-muted">Наступне списання</dt>
+              <dd className="text-right">
+                {masterDetails.nextPaymentAt
+                  ? formatDate(masterDetails.nextPaymentAt)
+                  : "Не заплановано"}
               </dd>
 
               <dt className="text-muted">Записів за весь час</dt>
               <dd className="text-right">
-                {masterDetails.bookingsCount ?? "Не вказано"}
+                {masterDetails.bookingsCount}
               </dd>
             </dl>
           )}
 
-
           <section className="mt-4" aria-label="Історія оплат">
-            <h3 className="text-sm text-muted">
-              Історія оплат
-            </h3>
+            <h3 className="text-sm text-muted">Історія оплат</h3>
 
-            {
-              detailsLoading ? (
-                <p className="mt-3 text-sm text-muted" role="status">
-                  Завантаження історії…
-                </p>
-              ) : payments === null ? (
-                <p className="mt-3 text-sm text-muted">
-                  Історія оплат поки недоступна.
-                </p>
-              ) : payments.length === 0 ? (
-                <div className="mt-3 flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-border p-4 text-muted">
-                  <FileText size={24} strokeWidth={1.5} aria-hidden="true" />
-                  <p className="text-sm">Оплат ще немає</p>
-                </div>
-              ) : (
-                <div className="mt-3 rounded-2xl border border-border px-3 py-1">
-                  {payments.map((payment) => (
-                    <div
-                      key={payment.id}
-                      className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
-                    >
-                      <div className="min-w-0">
-                        <p>{formatDate(payment.paidAt ?? payment.createdAt)}</p>
-                        <p
-                          className={`mt-1 text-xs ${
-                            payment.providerStatus === "reversed"
-                              ? "text-muted"
-                              : payment.status === 1
-                                ? "text-green-700"
-                                : payment.status === 2
-                                  ? "text-red-600"
-                                  : "text-muted"
+            {detailsLoading ? (
+              <p className="mt-3 text-sm text-muted" role="status">
+                Завантаження історії…
+              </p>
+            ) : payments === null ? (
+              <p className="mt-3 text-sm text-muted">Історія оплат поки недоступна.</p>
+            ) : payments.length === 0 ? (
+              <div className="mt-3 flex min-h-24 flex-col items-center justify-center gap-2 rounded-2xl border border-border p-4 text-muted">
+                <FileText size={24} strokeWidth={1.5} aria-hidden="true" />
+                <p className="text-sm">Успішних оплат ще немає</p>
+              </div>
+            ) : (
+              <div className="mt-3 rounded-2xl border border-border px-3 py-1">
+                {payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between gap-4 border-b border-border px-2 py-2 text-sm last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p>{formatDate(payment.paidAt ?? payment.createdAt)}</p>
+                      <p
+                        className={`mt-1 text-xs ${payment.providerStatus === "reversed"
+                          ? "text-muted"
+                          : payment.status === 1
+                            ? "text-green-700"
+                            : payment.status === 2
+                              ? "text-red-600"
+                              : "text-muted"
                           }`}
-                        >
-                          {payment.providerStatus === "reversed"
-                            ? "Повернено"
-                            : paymentStatusLabels[payment.status] ?? "Невідомий статус"}
-                          {payment.providerStatus === "sandbox" && " • Тестова оплата"}
-                        </p>
-                      </div>
-
-                      <span className="shrink-0 font-medium">
-                        {new Intl.NumberFormat("uk-UA", {
-                          style: "currency",
-                          currency: payment.currency || "UAH",
-                        }).format(payment.amount)}
-                      </span>
+                      >
+                        {payment.providerStatus === "reversed" ? "Повернено" : (paymentStatusLabels[payment.status] ?? "Невідомий статус")}
+                        {payment.providerStatus === "sandbox" && " • Тестова оплата"}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )
-            }
+
+                    <span className="shrink-0 font-medium">
+                      {new Intl.NumberFormat("uk-UA", {
+                        style: "currency",
+                        currency: payment.currency || "UAH",
+                      }).format(payment.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            {!isFree && (
+            {hasPaidTariff && (
               <button
                 type="button"
-                disabled={detailsLoading || Boolean(detailsError) || isFree}
+                disabled={detailsLoading || Boolean(detailsError) || saving}
                 onClick={() => {
                   setError("");
                   setView("extend");
@@ -483,8 +462,7 @@ export function MasterDetailsModal({ master, onClose, onBlockChange, onMasterUpd
                 setError("");
                 setView("changeTariff");
               }}
-              className={`min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50 ${isFree ? "col-span-2" : ""
-                }`}
+              className={`min-h-14 rounded-2xl border border-border px-3 py-2 text-sm text-text disabled:cursor-not-allowed disabled:opacity-50${!hasPaidTariff ? " col-span-2" : ""}`}
             >
               Змінити тариф
             </button>

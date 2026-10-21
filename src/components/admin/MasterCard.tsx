@@ -11,12 +11,14 @@ type Props = {
 };
 
 const tariffLabels: Record<Master["tariff"], string> = {
+  none: "Немає активного тарифу",
   free: "БЕЗК",
   basic: "БАЗ",
   pro: "ПРО",
 };
 
 const tariffStyles: Record<Master["tariff"], string> = {
+  none: "bg-selected text-muted",
   free: "bg-[#e8e8e8] text-[#666666]",
   basic: "bg-[#e0ecff] text-[#355b91]",
   pro: "bg-[#fffbd0] text-[#998a19]",
@@ -136,7 +138,7 @@ export function MasterCard({ master, onOpen, showCreatedAt = false, showExpirati
 
       {showExpirationDate &&
         expirationDate &&
-        master.tariff !== "free" &&
+        (master.tariff === "basic" || master.tariff === "pro") &&
         !master.isBlocked && (
           <span
             className={`absolute -bottom-2 rounded-full bg-surface px-3 py-0.5 text-[11px] text-muted shadow-[0_3px_8px_rgba(0,0,0,0.20)] ${onOpen ? "right-12" : "right-3"
