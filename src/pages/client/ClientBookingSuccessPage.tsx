@@ -139,17 +139,17 @@ export default function ClientBookingSuccessPage() {
         </section>
 
         {!loading && (error || !isActive) ? (
-          <Link to="/client/bookings" replace className="flex min-h-12 items-center justify-center rounded-2xl bg-black px-4 py-3 text-lg font-semibold text-white">
-            До моїх записів
+          <Link to="/client/account/bookings" replace className="flex min-h-12 items-center justify-center rounded-2xl bg-black px-4 py-3 text-lg font-semibold text-white">
+            До всіх записів
           </Link>
         ) : (
           <button
             type="button"
-            disabled={loading || !booking || !payOnSite}
-            onClick={() => navigate("/client/bookings", { replace: true })}
+            disabled={loading || !booking}
+            onClick={() => navigate("/client/account/bookings", { replace: true })}
             className="min-h-12 w-full rounded-2xl border border-border bg-black px-4 py-3 text-lg font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:bg-panel-300 disabled:text-copy-600"
           >
-            До моїх записів
+            До всіх записів
           </button>
         )}
       </div>

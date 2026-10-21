@@ -11,19 +11,25 @@ type Props = {
   initialReview?: boolean;
   onClose: () => void;
   onCancelled: (id: number) => void;
+  onReviewSaved: () => void;
 };
 
-export default function ClientBookingDetailsModal({ booking, master, initialReview = false, onClose, onCancelled }: Props) {
+export default function ClientBookingDetailsModal({ booking, master, initialReview = false, onClose, onCancelled, onReviewSaved }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const busyRef = useRef(false);
   const titleId = useId();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(initialReview && booking.status === 2);
-  const [rating, setRating] = useState(0);
-  const [text, setText] = useState("");
+  const hasSavedReview = Boolean(booking.review);
+  const [rating, setRating] = useState(
+    booking.review?.rating ?? 0,
+  );
+
+  const [text, setText] = useState(
+    booking.review?.text ?? "",
+  );
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -39,6 +45,13 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
   }, []);
 
   const completed = booking.status === 2;
+  const cancellable = booking.status === 0 || booking.status === 1;
+  const status = [
+    { label: "Очікує підтвердження", color: "bg-amber-100 text-amber-800" },
+    { label: "Підтверджено", color: "bg-[#ccebc7] text-green-800" },
+    { label: "Завершено", color: "bg-orange-200 text-orange-900" },
+    { label: "Скасовано", color: "bg-red-100 text-red-800" },
+  ][booking.status];
   const name = master ? [master.firstName, master.lastName].filter(Boolean).join(" ") : "Майстер недоступний";
   const date = new Date(booking.startsAt);
   const day = new Intl.DateTimeFormat("uk-UA", { timeZone: "Europe/Kyiv", weekday: "short", day: "numeric", month: "long" }).format(date);
@@ -55,7 +68,7 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
   }
 
   async function cancel() {
-    if (busyRef.current) return;
+    if (busyRef.current || !cancellable) return;
     busyRef.current = true;
     setBusy(true);
     setError("");
@@ -72,15 +85,13 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
 
   async function submitReview(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busyRef.current || rating < 1 || !text.trim()) return;
+    if (busyRef.current || rating < 1 || rating > 5 || !text.trim()) return;
     busyRef.current = true;
     setBusy(true);
     setError("");
-    setMessage("");
     try {
       await saveClientReview(booking.id, { rating, text: text.trim() });
-      setMessage("Відгук збережено. Дякуємо!");
-      setReviewOpen(false);
+      onReviewSaved();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Не вдалося зберегти відгук.");
     } finally {
@@ -101,7 +112,7 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
       {reviewOpen ? (
         <div className="px-1 pt-2 sm:px-3">
           <header className="flex items-start justify-between gap-3">
-            <h2 id={titleId} className="pt-1 text-2xl font-bold leading-tight">Як пройшов візит?</h2>
+            <h2 id={titleId} className="pt-1 text-2xl font-bold leading-tight">{hasSavedReview ? "Редагувати відгук" : "Як пройшов візит?"}</h2>
             <button type="button" autoFocus disabled={busy} onClick={close} aria-label="Закрити відгук"
               className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-muted hover:bg-panel-100 disabled:opacity-50">
               <X aria-hidden="true" size={25} />
@@ -112,41 +123,40 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
         </div>
       ) : (
         <>
-      <header className="flex items-center gap-2">
-        <button type="button" autoFocus onClick={close} disabled={busy} aria-label="Закрити деталі запису" className="-ml-2 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-panel-100 disabled:opacity-50">
-          <ArrowLeft size={21} />
-        </button>
-        <h2 id={titleId} className="flex-1 text-base font-semibold">Деталі запису</h2>
-        <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${completed ? "bg-orange-200 text-orange-900" : "bg-[#ccebc7] text-green-800"}`}>{completed ? "Завершено" : "Підтверджено"}</span>
-      </header>
+          <header className="flex items-center gap-2">
+            <button type="button" autoFocus onClick={close} disabled={busy} aria-label="Закрити деталі запису" className="-ml-2 flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-panel-100 disabled:opacity-50">
+              <ArrowLeft size={21} />
+            </button>
+            <h2 id={titleId} className="flex-1 text-base font-semibold">Деталі запису</h2>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${status.color}`}>{status.label}</span>
+          </header>
 
-      <p className="my-5 text-center text-lg font-bold">{day} • {time}</p>
-      <div className="flex items-center gap-3 rounded-2xl border border-border p-3">
-        {master?.avatarUrl
-          ? <img src={master.avatarUrl} alt="" className="size-12 shrink-0 rounded-full object-cover" />
-          : <div aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full bg-panel-100">{name.slice(0, 1)}</div>}
-        <div className="min-w-0">
-          <p className="text-sm font-semibold wrap-anywhere">{name}</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted wrap-anywhere">{booking.serviceName} • {booking.price.toLocaleString("uk-UA")} ₴ • {booking.durationMin} хв</p>
-        </div>
-      </div>
-      <div className="mt-2 space-y-3 rounded-2xl border border-border p-3 text-xs text-copy-600">
-        <div className="flex items-start gap-2">
-          <MapPin aria-hidden="true" size={16} className="shrink-0" />
-          <p className="min-w-0 flex-1 wrap-anywhere">{[master?.cityName, master?.address, master?.districtName].filter(Boolean).join(", ") || "Адреса недоступна"}</p>
-          {directions && <a href={directions} target="_blank" rel="noopener noreferrer" className="shrink-0 text-blue-500 underline">Маршрут</a>}
-        </div>
-        <div className="flex items-start gap-2">
-          <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
-          <p className="whitespace-pre-wrap wrap-anywhere">{booking.comment ? `Ваш коментар: ${booking.comment}` : "Коментар не додано"}</p>
-        </div>
-      </div>
+          <p className="my-5 text-center text-lg font-bold">{day} • {time}</p>
+          <div className="flex items-center gap-3 rounded-2xl border border-border p-3">
+            {master?.avatarUrl
+              ? <img src={master.avatarUrl} alt="" className="size-12 shrink-0 rounded-full object-cover" />
+              : <div aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full bg-panel-100">{name.slice(0, 1)}</div>}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold wrap-anywhere">{name}</p>
+              <p className="mt-1 text-xs leading-relaxed text-muted wrap-anywhere">{booking.serviceName} • {booking.price.toLocaleString("uk-UA")} ₴ • {booking.durationMin} хв</p>
+            </div>
+          </div>
+          <div className="mt-2 space-y-3 rounded-2xl border border-border p-3 text-xs text-copy-600">
+            <div className="flex items-start gap-2">
+              <MapPin aria-hidden="true" size={16} className="shrink-0" />
+              <p className="min-w-0 flex-1 wrap-anywhere">{[master?.cityName, master?.address, master?.districtName].filter(Boolean).join(", ") || "Адреса недоступна"}</p>
+              {directions && <a href={directions} target="_blank" rel="noopener noreferrer" className="shrink-0 text-blue-500 underline">Маршрут</a>}
+            </div>
+            <div className="flex items-start gap-2">
+              <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
+              <p className="whitespace-pre-wrap wrap-anywhere">{booking.comment ? `Ваш коментар: ${booking.comment}` : "Коментар не додано"}</p>
+            </div>
+          </div>
 
         </>
       )}
 
       {error && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
-      {message && <p role="status" className="mt-3 text-sm text-text">{message}</p>}
 
       {reviewOpen ? (
         <form onSubmit={submitReview} className="px-1 pb-2 sm:px-3">
@@ -177,18 +187,18 @@ export default function ClientBookingDetailsModal({ booking, master, initialRevi
           <p id={`${titleId}-photos`} className="mt-1 text-xs text-muted">Додавання фото до відгуку поки недоступне.</p>
           <button type="submit" disabled={busy || rating === 0 || !text.trim()}
             className="mt-4 min-h-12 w-full rounded-2xl bg-black px-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:bg-panel-300 disabled:text-copy-600">
-            {busy ? "Надсилання…" : "Надіслати відгук"}
+            {busy ? "Збереження…" : hasSavedReview ? "Зберегти зміни" : "Надіслати відгук"}
           </button>
           <p className="mt-4 text-center text-sm text-muted">Відгук з’явиться у профілі майстра</p>
-          <p className="mt-2 text-center text-xs leading-relaxed text-muted">Якщо відгук на цей запис уже є, його текст та оцінка будуть оновлені.</p>
+          {hasSavedReview && <p className="mt-2 text-center text-xs leading-relaxed text-muted">Зміни оновлять текст та оцінку вашого відгуку.</p>}
         </form>
       ) : completed ? (
         <div className="mt-4 grid grid-cols-2 gap-3">
           {bookAgain ? <Link to={bookAgain} className="flex min-h-12 items-center justify-center rounded-xl border border-border px-2 text-center text-xs font-medium">Записатися знову</Link>
             : <button disabled className="min-h-12 rounded-xl bg-panel-100 px-2 text-xs text-muted">Повторний запис недоступний</button>}
-          <button type="button" onClick={() => { setError(""); setReviewOpen(true); }} className="min-h-12 rounded-xl bg-orange-200 px-2 text-xs font-medium text-orange-900">Залишити відгук</button>
+          <button type="button" onClick={() => { setError(""); setReviewOpen(true); }} className="min-h-12 rounded-xl bg-orange-200 px-2 text-xs font-medium text-orange-900">{hasSavedReview ? "Редагувати відгук" : "Залишити відгук"}</button>
         </div>
-      ) : confirmCancel ? (
+      ) : !cancellable ? null : confirmCancel ? (
         <div className="mt-4 space-y-3">
           <p className="text-sm">Скасувати цей запис?</p>
           <div className="grid grid-cols-2 gap-3">

@@ -36,6 +36,7 @@ import ClientHomePage from "./pages/client/ClientHomePage";
 import ClientSearchPage from "./pages/client/ClientSearchPage";
 import ClientBookingsPage from "./pages/client/ClientBookingsPage";
 import ClientAccountPage from "./pages/client/ClientAccountPage";
+import ClientAllBookingsPage from "./pages/client/ClientAllBookingsPage";
 import ClientBookingDatePage from "./pages/client/ClientBookingDatePage";
 import ClientBookingConfirmPage from "./pages/client/ClientBookingConfirmPage";
 import ClientBookingSuccessPage from "./pages/client/ClientBookingSuccessPage";
@@ -138,6 +139,7 @@ function App() {
           <Route path="search" element={<ClientSearchPage />} />
           <Route path="bookings" element={<ClientBookingsPage />} />
           <Route path="account" element={<ClientAccountPage />} />
+          <Route path="account/bookings" element={<ClientAllBookingsPage />} />
         </Route>
 
         <Route

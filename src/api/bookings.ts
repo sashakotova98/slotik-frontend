@@ -36,6 +36,12 @@ export function changeBookingStatus(id: number, status: BookingStatus) {
   });
 }
 
+export type ClientBookingReview = {
+  id: number;
+  rating: number;
+  text: string;
+};
+
 export type ClientBooking = {
   id: number;
   startsAt: string;
@@ -49,6 +55,7 @@ export type ClientBooking = {
   durationMin: number;
   price: number;
   masterId: number;
+  review: ClientBookingReview | null;
 };
 
 export function getClientBookings() {

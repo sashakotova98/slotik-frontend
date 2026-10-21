@@ -368,10 +368,16 @@ export default function ClientBookingsPage() {
             )}
           </p>
           {booking.status === 2 ? (
+            booking.review ? (
+              <span className="shrink-0 rounded-full bg-orange-200 px-3 py-1 text-xs text-orange-900">
+                Відгук залишено · {booking.review.rating}/5
+              </span>
+            ) : (
             <button type="button" onClick={() => setDetails({ booking, review: true })}
               className={`min-h-11 shrink-0 rounded-full px-3 text-xs font-medium focus-visible:outline-2 ${status.className}`}>
               {status.label}
             </button>
+            )
           ) : (
             <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-medium leading-tight sm:text-xs ${status.className}`}>
               {status.label}
@@ -392,6 +398,10 @@ export default function ClientBookingsPage() {
           master={masters[details.booking.masterId]}
           initialReview={details.review}
           onClose={() => setDetails(null)}
+          onReviewSaved={() => {
+            setDetails(null);
+            setRevision((value) => value + 1);
+          }}
           onCancelled={(id) => {
             setBookings((current) => current.map((booking) =>
               booking.id === id ? { ...booking, status: 3 } : booking,
