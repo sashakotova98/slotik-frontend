@@ -4,6 +4,12 @@ import { api } from "./api";
 //GET /api/Review/master/900032 для публічного перегляду відгуків конкретного майстра
 
 // Один відгук у відповіді бека.
+
+export type ReviewPhoto = {
+  id: number;
+  photoUrl: string;
+};
+
 export type MasterReview = {
   id: number;
   rating: number;
@@ -17,6 +23,7 @@ export type MasterReview = {
   startsAt: string | null;
   endsAt: string | null;
   reply: string | null;
+  photos: ReviewPhoto[];
 };
 
 // Список відгуків разом із загальною оцінкою.
@@ -71,6 +78,7 @@ type SaveClientReviewResponse = {
   rating: number;
   price: number;
   durationMin: number;
+  photos: ReviewPhoto[];
 };
 
 export function saveClientReview(bookingId: number, data: SaveClientReviewData) {

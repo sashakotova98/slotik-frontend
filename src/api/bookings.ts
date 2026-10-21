@@ -1,6 +1,7 @@
 //GET /api/Booking/master/me
 
 import { api } from "./api";
+import type { ReviewPhoto } from "./reviews";
 
 export type BookingStatus =
   | 0 // Очікує підтвердження — Pending
@@ -40,7 +41,9 @@ export type ClientBookingReview = {
   id: number;
   rating: number;
   text: string;
+  photos: ReviewPhoto[];
 };
+
 
 export type ClientBooking = {
   id: number;
