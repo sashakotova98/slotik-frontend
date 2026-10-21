@@ -1,5 +1,9 @@
 import { api } from "./api";
 
+export function apiDeletePhoto() {
+  return api<{ message: string }>("/Photo/delete", { method: "DELETE" });
+}
+
 export type UploadedPhoto = {
   url: string;
   publicId: string;

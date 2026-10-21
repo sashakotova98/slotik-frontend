@@ -52,11 +52,39 @@ export async function saveReviewReply(reviewId: number, text: string): Promise<R
   });
 }
 
-
 // Створення або оновлення відгуку на власний завершений запис.
-export function saveClientReview(bookingId: number, data: { rating: number; text: string }) {
-  return api<{ text: string; rating: number; price: number; durationMin: number }>(`/Review/booking/${bookingId}`, {
+// export function saveClientReview(bookingId: number, data: { rating: number; text: string }) {
+//   return api<{ text: string; rating: number; price: number; durationMin: number }>(`/Review/booking/${bookingId}`, {
+//     method: "PUT",
+//     body: JSON.stringify(data),
+//   });
+// }
+
+type SaveClientReviewData = {
+  rating: number;
+  text: string;
+  files?: File[];
+};
+
+type SaveClientReviewResponse = {
+  text: string;
+  rating: number;
+  price: number;
+  durationMin: number;
+};
+
+export function saveClientReview(bookingId: number, data: SaveClientReviewData) {
+  const formData = new FormData();
+
+  formData.append("rating", String(data.rating));
+  formData.append("text", data.text.trim());
+
+  for (const file of data.files ?? []) {
+    formData.append("files", file);
+  }
+
+  return api<SaveClientReviewResponse>(`/Review/booking/${bookingId}`, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: formData,
   });
 }
