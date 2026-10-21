@@ -1,4 +1,4 @@
-import { useEffect, useState, startTransition } from "react";
+import { useEffect, useState, useRef, startTransition, type ChangeEvent } from "react";
 // import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, CreditCard, CalendarDays, HelpCircle, LogOut, Users, MapPin, Images, Scissors } from "lucide-react";
@@ -6,6 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { ApiError } from "../../api/api";
 import { getOwnProfile, type UserProfile } from "../../api/users";
 import ProfileShareCard from "../../components/master/ProfileShareCard";
+import { apiDeletePhoto, apiUploadPhoto } from "../../api/photos";
 
 const menuItems = [
   {
@@ -54,6 +55,59 @@ export default function MasterAccountPage() {
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [failedAvatar, setFailedAvatar] = useState<string | null>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const photoInFlight = useRef(false);
+  const [photoAction, setPhotoAction] = useState<"upload" | "delete" | null>(null);
+  const [photoError, setPhotoError] = useState("");
+  const [photoMessage, setPhotoMessage] = useState("");
+
+  async function handlePhotoChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file || !profile || photoInFlight.current) return;
+    setPhotoError("");
+    setPhotoMessage("");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setPhotoError("Оберіть фото у форматі JPG, PNG або WebP.");
+      return;
+    }
+    if (file.size === 0 || file.size > 5 * 1024 * 1024) {
+      setPhotoError("Фото має бути непорожнім і не перевищувати 5 МБ.");
+      return;
+    }
+    photoInFlight.current = true;
+    setPhotoAction("upload");
+    try {
+      const result = await apiUploadPhoto(file);
+      setProfile((current) => current ? { ...current, avatarUrl: result.url } : current);
+      setFailedAvatar(null);
+      setPhotoMessage("Фото збережено.");
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Не вдалося завантажити фото.");
+    } finally {
+      photoInFlight.current = false;
+      setPhotoAction(null);
+    }
+  }
+
+  async function handleDeletePhoto() {
+    if (!profile?.avatarUrl || photoInFlight.current) return;
+    photoInFlight.current = true;
+    setPhotoAction("delete");
+    setPhotoError("");
+    setPhotoMessage("");
+    try {
+      await apiDeletePhoto();
+      setProfile((current) => current ? { ...current, avatarUrl: null } : current);
+      setFailedAvatar(null);
+      setPhotoMessage("Фото видалено.");
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Не вдалося видалити фото.");
+    } finally {
+      photoInFlight.current = false;
+      setPhotoAction(null);
+    }
+  }
 
   useEffect(() => {
     let active = true;
@@ -93,6 +147,7 @@ export default function MasterAccountPage() {
   }, [token, retry]);
 
   function handleLogout() {
+    if (photoInFlight.current) return;
     startTransition(() => {
       logout();
       navigate("/home", { replace: true });
@@ -137,7 +192,12 @@ export default function MasterAccountPage() {
         ) : profile ? (
           <>
             <header className="mb-5 flex items-center gap-3">
-              <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-panel-100">
+              <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp"
+                aria-label="Оберіть фото профілю" className="hidden" disabled={photoAction !== null}
+                onChange={(event) => void handlePhotoChange(event)} />
+              <button type="button" aria-label={avatarUrl ? "Змінити фото профілю" : "Додати фото профілю"}
+                disabled={photoAction !== null} onClick={() => photoInput.current?.click()}
+                className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-panel-100 focus-visible:outline-2 focus-visible:outline-offset-4 disabled:opacity-50">
                 {avatarUrl && failedAvatar !== avatarUrl ? (
                   <img
                     src={avatarUrl}
@@ -148,7 +208,7 @@ export default function MasterAccountPage() {
                 ) : (
                   <span className="text-lg font-semibold text-copy-500">{initials || "М"}</span>
                 )}
-              </div>
+              </button>
 
               <div className="min-w-0 flex-1">
                 <h2 className="wrap-break-word font-semibold">{fullName || "Ім’я не вказано"}</h2>
@@ -160,8 +220,23 @@ export default function MasterAccountPage() {
                 ) : (
                   <p className="mt-1 text-sm text-copy-400">Телефон не вказано</p>
                 )}
+                <div className="mt-1 flex flex-wrap gap-x-4">
+                  <button type="button" disabled={photoAction !== null} onClick={() => photoInput.current?.click()}
+                    className="min-h-11 text-sm text-blue-600 underline disabled:opacity-50">
+                    {avatarUrl ? "Змінити фото" : "Додати фото"}
+                  </button>
+                  {avatarUrl && (
+                    <button type="button" disabled={photoAction !== null} onClick={() => void handleDeletePhoto()}
+                      className="min-h-11 text-sm text-danger underline disabled:opacity-50">Видалити фото</button>
+                  )}
+                </div>
               </div>
             </header>
+
+            {photoError && <p role="alert" className="mb-3 text-sm text-danger">{photoError}</p>}
+            <p role="status" className="mb-3 text-sm text-copy-500">
+              {photoAction === "upload" ? "Завантаження фото…" : photoAction === "delete" ? "Видалення фото…" : photoMessage}
+            </p>
 
             {profileUrl ? (
               <div className="mb-5">

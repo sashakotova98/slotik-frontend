@@ -15,8 +15,12 @@ export type Master = {
   createdAt: string;
 };
 
+// export function getMasters(): Promise<Master[]> {
+//   return api<Master[]>("/Master");
+// }
+
 export function getMasters(): Promise<Master[]> {
-  return api<Master[]>("/Master");
+  return api<Master[]>("/Master/admin");
 }
 
 export type Payment = {
