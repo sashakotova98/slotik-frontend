@@ -7,6 +7,7 @@ import { ApiError } from "../../api/api";
 import { getOwnProfile, type UserProfile } from "../../api/users";
 import ProfileShareCard from "../../components/master/ProfileShareCard";
 import { apiDeletePhoto, apiUploadPhoto } from "../../api/photos";
+import TelegramBinding from "../../components/TelegramBinding";
 
 const menuItems = [
   {
@@ -249,6 +250,10 @@ export default function MasterAccountPage() {
         ) : null}
 
         <nav aria-label="Налаштування акаунта" className="divide-y divide-border border-t border-border">
+          <TelegramBinding
+            key={token}
+            description="Підключіть Telegram, щоб отримувати повідомлення про нові записи клієнтів."
+          />
           {menuItems.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className="flex min-h-14 items-center gap-3 py-3 hover:text-blue-600">
               <Icon size={20} aria-hidden="true" />

@@ -1,9 +1,10 @@
 import { startTransition, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { CalendarDays, Camera, ChevronRight, HelpCircle, LoaderCircle, LogOut, Send, UserRound, Users } from "lucide-react";
+import { CalendarDays, Camera, ChevronRight, HelpCircle, LoaderCircle, LogOut, UserRound, Users } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { getOwnProfile, type UserProfile } from "../../api/users";
 import { apiDeletePhoto, apiUploadPhoto } from "../../api/photos";
+import TelegramBinding from "../../components/TelegramBinding";
 
 const menuItems = [
   { to: "/client/account/bookings", label: "Ваші записи", icon: CalendarDays },
@@ -120,25 +121,25 @@ export default function ClientAccountPage() {
       </h1>
       <div className="flex min-h-24 items-center gap-3 py-4">
         <div className="relative shrink-0">
-        <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
-          aria-label="Оберіть фото профілю" onChange={(event) => void handlePhotoChange(event)} disabled={uploading || deleting || !profile} />
-        <button type="button" onClick={() => photoInput.current?.click()} disabled={uploading || deleting || !profile}
-          aria-label={uploading ? "Завантаження фото" : "Змінити фото профілю"}
-          title="Змінити фото — JPG, PNG або WebP до 5 МБ"
-          className="relative block rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed">
-        <span className="flex size-14 items-center justify-center overflow-hidden rounded-full bg-panel-200 text-lg font-semibold text-copy-700">
-          {avatar && failedAvatar !== avatar ? (
-            <img src={avatar} alt="" onError={() => setFailedAvatar(avatar)} className="size-full object-cover" />
-          ) : initials ? (
-            initials
-          ) : (
-            <UserRound aria-hidden="true" size={26} />
-          )}
-        </span>
-        <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-surface bg-accent text-on-accent">
-          {uploading ? <LoaderCircle aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" /> : <Camera aria-hidden="true" size={15} />}
-        </span>
-        </button>
+          <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden"
+            aria-label="Оберіть фото профілю" onChange={(event) => void handlePhotoChange(event)} disabled={uploading || deleting || !profile} />
+          <button type="button" onClick={() => photoInput.current?.click()} disabled={uploading || deleting || !profile}
+            aria-label={uploading ? "Завантаження фото" : "Змінити фото профілю"}
+            title="Змінити фото — JPG, PNG або WebP до 5 МБ"
+            className="relative block rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed">
+            <span className="flex size-14 items-center justify-center overflow-hidden rounded-full bg-panel-200 text-lg font-semibold text-copy-700">
+              {avatar && failedAvatar !== avatar ? (
+                <img src={avatar} alt="" onError={() => setFailedAvatar(avatar)} className="size-full object-cover" />
+              ) : initials ? (
+                initials
+              ) : (
+                <UserRound aria-hidden="true" size={26} />
+              )}
+            </span>
+            <span className="absolute -right-1 -bottom-1 flex size-7 items-center justify-center rounded-full border-2 border-surface bg-accent text-on-accent">
+              {uploading ? <LoaderCircle aria-hidden="true" size={15} className="animate-spin motion-reduce:animate-none" /> : <Camera aria-hidden="true" size={15} />}
+            </span>
+          </button>
         </div>
         <div className="min-w-0 flex-1">
           {loading ? (
@@ -178,11 +179,7 @@ export default function ClientAccountPage() {
         {uploading ? "Завантаження фото…" : deleting ? "Видалення фото…" : photoMessage}
       </p>
       <div className="divide-y divide-border border-t border-border">
-        <button type="button" disabled className="flex min-h-16 w-full cursor-not-allowed items-center gap-3 py-3 text-left text-muted">
-          <Send aria-hidden="true" size={19} className="shrink-0" />
-          <span className="flex-1 text-sm">Нагадування в Telegram</span>
-          <span className="rounded-full bg-panel-100 px-2 py-1 text-[10px]">Незабаром</span>
-        </button>
+        <TelegramBinding key={token} />
         {menuItems.map(({ to, label, icon: Icon }) => (
           <Link
             key={to}
