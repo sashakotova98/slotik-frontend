@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import ReviewPhotos from "./ReviewPhotos";
 import {
   getPublicMasterReviews,
   type ReviewsResponse,
@@ -189,6 +190,7 @@ export default function PublicMasterReviews({ masterId }: Props) {
             <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
               {review.text}
             </p>
+            <ReviewPhotos photos={review.photos ?? []} />
 
             <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 border-t border-border pt-2 text-[11px] tabular-nums text-copy-500 sm:text-xs">
               <span>

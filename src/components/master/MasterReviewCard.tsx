@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from "react";
 import { saveReviewReply, type MasterReview } from "../../api/reviews";
+import ReviewPhotos from "../rewiews/ReviewPhotos";
 
 type Props = {
   review: MasterReview;
@@ -74,6 +75,7 @@ export default function MasterReviewCard({ review, onReplySaved }: Props) {
           </div>
         </div>
         <p className="whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">{review.text}</p>
+        <ReviewPhotos photos={review.photos ?? []} />
         <div className="flex flex-wrap justify-between gap-2 text-xs text-copy-500">
           <span>{review.createdAt ? new Date(review.createdAt).toLocaleDateString("uk-UA", { timeZone: "Europe/Kyiv" }) : ""}</span>
           {review.startsAt && review.endsAt && (
