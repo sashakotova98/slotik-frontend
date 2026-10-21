@@ -6,7 +6,7 @@ import ServiceSearchForm from "../../components/search/ServiceSearchForm";
 import CatalogMasterCard from "../../components/catalog/CatalogMasterCard";
 import { getCities, type City } from "../../api/cities";
 import { getCatalogMasters, type CatalogMaster } from "../../api/catalogMasters";
-import { getFavorites, type Favorite } from "../../api/favorites";
+import { getFavorites, createFavorite, deleteFavorite, type Favorite } from "../../api/favorites";
 import { getPublicMasterReviews } from "../../api/reviews";
 
 import CategoryGrid from "../../components/search/CategoryGrid";
@@ -27,6 +27,13 @@ export default function ClientSearchPage() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [favoritesLoading, setFavoritesLoading] = useState(true);
   const [favoritesError, setFavoritesError] = useState("");
+
+  const [favoriteActionError, setFavoriteActionError] = useState("");
+  const [pendingFavoriteIds, setPendingFavoriteIds] = useState<Set<number>>(() => new Set());
+
+  // Захист від повторного натискання до оновлення React-стану.
+  const favoriteRequestsRef = useRef(new Set<number>());
+
   const [masters, setMasters] = useState<CatalogMaster[]>([]);
   const [mastersLoading, setMastersLoading] = useState(false);
   const [mastersError, setMastersError] = useState("");
@@ -105,17 +112,17 @@ export default function ClientSearchPage() {
         const visibleMasters = data.filter((master) => !master.isBlocked);
 
         // Додаємо оцінку з відгуків, якщо її немає у відповіді списку.
-        const results = await Promise.allSettled(visibleMasters.map(async (master) => {
-          if (master.rating !== null) return master;
-          const reviews = await getPublicMasterReviews(master.id);
-          return { ...master, rating: reviews.totalCount > 0 ? reviews.averageRating : null };
-        }));
+        const results = await Promise.allSettled(
+          visibleMasters.map(async (master) => {
+            if (master.rating !== null) return master;
+            const reviews = await getPublicMasterReviews(master.id);
+            return { ...master, rating: reviews.totalCount > 0 ? reviews.averageRating : null };
+          }),
+        );
         if (!active) return;
 
         // Якщо відгуки не завантажились, сам майстер залишається у списку.
-        setMasters(results.map((result, index) =>
-          result.status === "fulfilled" ? result.value : visibleMasters[index],
-        ));
+        setMasters(results.map((result, index) => (result.status === "fulfilled" ? result.value : visibleMasters[index])));
         if (results.some((result) => result.status === "rejected")) {
           setRatingsError("Частину оцінок не вдалося завантажити.");
         }
@@ -128,9 +135,10 @@ export default function ClientSearchPage() {
 
     void loadMasters();
     // Не записуємо відповідь старого запиту після зміни фільтрів.
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [cityId, districtId, categoryId, search, citiesLoading, citiesError, invalidFilters]);
-
 
   function changeCity(id: number) {
     const params = new URLSearchParams(searchParams);
@@ -193,16 +201,61 @@ export default function ClientSearchPage() {
   const canShowResults = !citiesLoading && !mastersLoading && !citiesError && !invalidFilters && !mastersError && cityId !== null;
   const noteClass = "rounded-2xl bg-panel-50 px-4 py-4 text-sm leading-relaxed text-copy-500";
 
+  async function handleToggleFavorite(masterId: number) {
+    if (favoritesLoading || favoritesError || favoriteRequestsRef.current.has(masterId)) {
+      return;
+    }
+
+    favoriteRequestsRef.current.add(masterId);
+    setPendingFavoriteIds(new Set(favoriteRequestsRef.current));
+    setFavoriteActionError("");
+
+    const existingFavorite = favorites.find((favorite) => favorite.masterId === masterId);
+
+    try {
+      if (existingFavorite) {
+        // Передаємо ID запису обраного, а не ID майстра.
+        await deleteFavorite(existingFavorite.id);
+
+        setFavorites((previous) => previous.filter((favorite) => favorite.id !== existingFavorite.id));
+      } else {
+        const savedFavorite = await createFavorite({ masterId });
+
+        // Сервер може повернути вже наявний запис.
+        setFavorites((previous) => [...previous.filter((favorite) => favorite.masterId !== savedFavorite.masterId), savedFavorite]);
+      }
+    } catch {
+      setFavoriteActionError(
+        existingFavorite
+          ? "Не вдалося прибрати майстра з обраного. Спробуйте ще раз."
+          : "Не вдалося додати майстра до обраного. Спробуйте ще раз.",
+      );
+    } finally {
+      favoriteRequestsRef.current.delete(masterId);
+      setPendingFavoriteIds(new Set(favoriteRequestsRef.current));
+    }
+  }
+
   function renderCard(master: CatalogMaster) {
+    const favoriteLoading = pendingFavoriteIds.has(master.id);
+
     return (
       <CatalogMasterCard
         key={master.id}
         master={master}
         isFavorite={favoriteIds.has(master.id)}
-        favoriteDisabled
-        favoriteHint="Зміна обраного поки недоступна"
-        // POST і DELETE поки дозволені лише адміністратору. Кнопка заблокована.
-        onToggleFavorite={() => { }}
+        favoriteLoading={favoriteLoading}
+        favoriteDisabled={favoritesLoading || Boolean(favoritesError)}
+        favoriteHint={
+          favoritesError
+            ? "Не вдалося завантажити обране. Оновіть сторінку."
+            : favoriteLoading
+              ? "Збереження…"
+              : undefined
+        }
+        onToggleFavorite={() => {
+          void handleToggleFavorite(master.id);
+        }}
       />
     );
   }
@@ -297,6 +350,12 @@ export default function ClientSearchPage() {
         </p>
       )}
 
+      {favoriteActionError && (
+        <p role="alert" className={`mt-4 ${noteClass}`}>
+          {favoriteActionError}
+        </p>
+      )}
+
       <section className="mt-7" aria-labelledby="for-you-title">
         <h2 id="for-you-title" className="text-lg font-semibold sm:text-xl">
           Для Вас
@@ -344,7 +403,7 @@ export default function ClientSearchPage() {
             </button>
           </div>
         </div>
-        <p className="mt-2 text-xs leading-relaxed text-copy-500">Зміна обраного поки недоступна.</p>
+
         {ratingsError && (
           <p role="status" className="mt-2 text-xs text-copy-500">
             {ratingsError}
@@ -366,4 +425,3 @@ export default function ClientSearchPage() {
   );
 }
 
-// добавить favorite
