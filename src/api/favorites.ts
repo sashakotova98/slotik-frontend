@@ -17,7 +17,6 @@ export function getFavoriteById(id: number): Promise<Favorite> {
 }
 
 export type CreateFavoriteData = {
-  userId: number;
   masterId: number;
 };
 
