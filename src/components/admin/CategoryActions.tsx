@@ -1,19 +1,30 @@
-import { SquarePen, EyeOff, Trash2 } from "lucide-react";
+import { SquarePen, EyeOff, Trash2, List } from "lucide-react";
 
 type Props = {
   onRename: () => void;
+  onGroups: () => void;
   onHide?: () => void; //undefined
   onDelete: () => void;
   disabled?: boolean; //отключить кнопки на время удаления. 
   deleteDisabled?: boolean; //олько удаление, например если у категории есть мастера.
 };
 
-export function CategoryActions({ onRename, onHide, onDelete, disabled = false, deleteDisabled = false, }: Props) {
+export function CategoryActions({ onRename, onGroups, onHide, onDelete, disabled = false, deleteDisabled = false, }: Props) {
   const buttonClasses =
     "flex min-h-14 w-full items-center gap-4 px-5 py-3 text-left text-sm transition-colors hover:bg-selected disabled:cursor-not-allowed disabled:opacity-50 sm:text-base";
 
   return (
     <div className="mt-3 overflow-hidden rounded-b-xl border-t border-border">
+      <button
+        type="button"
+        onClick={onGroups}
+        disabled={disabled}
+        className={`${buttonClasses} border-b border-border text-text`}
+      >
+        <List size={20} strokeWidth={1.5} aria-hidden="true" />
+        Групи послуг
+      </button>
+
       <button
         type="button"
         onClick={onRename}

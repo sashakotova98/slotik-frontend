@@ -2,6 +2,8 @@ import { ApiError } from "../../api/api";
 import { useState, useEffect } from "react";
 import { EllipsisVertical, Plus } from "lucide-react";
 
+import { ServiceGroupsModal } from "../../components/admin/ServiceGroupsModal";
+
 import AdminLayout from "../../components/admin/AdminLayout";
 import { CategoryModal } from "../../components/admin/CategoryModal";
 import { CategoryIcon } from "../../components/categories/CategoryIcon";
@@ -23,6 +25,8 @@ export default function AdminCategoriesPage() {
   const [actionError, setActionError] = useState("");
 
   const [savingVisibility, setSavingVisibility] = useState(false);
+
+  const [groupsCategory, setGroupsCategory] = useState<Category | null>(null);
 
 
   useEffect(() => {
@@ -201,6 +205,10 @@ export default function AdminCategoriesPage() {
                   <CategoryActions
                     disabled={deleting}
                     deleteDisabled={category.mastersCount > 0}
+                    onGroups={() => {
+                      setGroupsCategory(category);
+                      setOpenedCategoryId(null);
+                    }}
                     onRename={() => handleRename(category)}
                     onDelete={() => handleDelete(category)}
                     onHide={category.isHiddenFromCatalog || category.mastersCount === 0
@@ -237,6 +245,14 @@ export default function AdminCategoriesPage() {
             setEditingCategory(null);
           }}
           onSaved={refreshCategoriesAfterSave}
+        />
+      )}
+
+      {groupsCategory && (
+        <ServiceGroupsModal
+          key={groupsCategory.id}
+          category={groupsCategory}
+          onClose={() => setGroupsCategory(null)}
         />
       )}
     </AdminLayout>
