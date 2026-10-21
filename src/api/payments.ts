@@ -31,11 +31,14 @@ export type PaymentResult = {
   paidAt: string | null;
 };
 
-// Створює платіж і повертає дані для переходу до LiqPay.
-export async function apiCreateCheckout(plan: PaidPlanId): Promise<CreateCheckoutResponse> {
+// Створює платіж і повертає дані для переходу до LiqPay. огбордінг false в кабінеті майстра true
+export async function apiCreateCheckout(plan: PaidPlanId, isPlanChange = false): Promise<CreateCheckoutResponse> {
   return api<CreateCheckoutResponse>("/Payment/checkout", {
     method: "POST",
-    body: JSON.stringify({ plan: planCodes[plan] }), //"basic" в число 1
+    body: JSON.stringify({
+      plan: planCodes[plan],
+      isPlanChange,
+    }),
   });
 }
 

@@ -23,6 +23,7 @@ export type UserProfile = {
   id: number;
   firstName: string;
   lastName: string;
+  email: string;
   phone: string | null;
   avatarUrl: string | null;
   master: {
@@ -60,6 +61,7 @@ export async function getOwnProfile(token: string): Promise<UserProfile> {
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
+    email: user.email,
     phone: user.phone,
     avatarUrl: user.avatarUrl,
     master,

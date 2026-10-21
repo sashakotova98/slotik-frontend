@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CircleAlert, Clock } from "lucide-react";
@@ -20,6 +20,11 @@ export default function PaymentResultPage() {
   //http://localhost:5173/payment/result?paymentId=13
   const [searchParams] = useSearchParams();
   const paymentId = Number(searchParams.get("paymentId"));
+  const isChangingPlan = searchParams.get("mode") === "change";
+
+  const plansPath = isChangingPlan
+    ? "/cabinet/plans?mode=change"
+    : "/cabinet/plans";
   //для кнопки «Перевірити статус» или «Спробувати знову» Збільшує лічильник, що спричиняє повторне виконання fetchPayment () другим useEffect. 
   const [retry, setRetry] = useState(0); // нову оплату не створюємо
 
@@ -58,7 +63,7 @@ export default function PaymentResultPage() {
 
   useEffect(() => {
     // Завантажуємо профіль лише після успішної оплати отримуємо slug майстра.
-    if (!token || payment?.status !== 1) return;
+    if (!token || isChangingPlan || payment?.id !== paymentId || payment?.status !== 1) return;
 
     let active = true;
 
@@ -90,7 +95,7 @@ export default function PaymentResultPage() {
     return () => {
       active = false;
     };
-  }, [token, payment?.status, profileRetry]);
+  }, [token, isChangingPlan, paymentId, payment?.id, payment?.status, profileRetry]);
 
 
 
@@ -203,7 +208,7 @@ export default function PaymentResultPage() {
 
   // Перевірка завершення onboarding майстра.
   useEffect(() => {
-    if (payment?.status !== 1) return;
+    if (isChangingPlan || payment?.id !== paymentId || payment?.status !== 1) return;
 
     let active = true; // запуск useeffect ще актуальний але false якщо компонент демонтується покидаємо сторінку
 
@@ -232,12 +237,19 @@ export default function PaymentResultPage() {
     return () => {
       active = false; //якщо покидаємо сторінку, більше не оновлюємо старий стан компонента
     };
-  }, [payment?.id, payment?.status, onboardingRetry]);
+  }, [isChangingPlan, paymentId, payment?.id, payment?.status, onboardingRetry]);
 
-
+  if (
+    !error &&
+    payment?.id === paymentId &&
+    payment.status === 1 &&
+    isChangingPlan
+  ) {
+    return <Navigate to="/cabinet/account/tariff" replace />;
+  }
 
   // Успіх показуємо лише після підтвердження від бекенда.
-  if (!error && payment?.status === 1) {
+  if (!error && payment?.id === paymentId && payment.status === 1) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-linear-to-br from-neutral-200 to-neutral-400 px-4 py-10">
         {/* Оплата вже успішна. Помилка Auth/Me не змінює цей результат. */}
@@ -313,8 +325,8 @@ export default function PaymentResultPage() {
               </p>
 
               {errorAction === "back" ? (
-                <Link to="/cabinet" className="mt-auto rounded-full border border-border px-5 py-3">
-                  Повернутися до кабінету
+                <Link to={isChangingPlan ? "/cabinet/account/tariff" : "/cabinet"} className="mt-auto rounded-full border border-border px-5 py-3">
+                  {isChangingPlan ? "Повернутися до вашого тарифу" : "Повернутися до кабінету"}
                 </Link>
               ) : (
                 <button
@@ -326,7 +338,7 @@ export default function PaymentResultPage() {
                 </button>
               )}
             </>
-          ) : !payment || checking || payment.status === 0 ? (
+          ) : !payment || payment.id !== paymentId || checking || payment.status === 0 ? (
             <>
               {/* Початкова перевірка або очікування підтвердження. */}
               <Clock
@@ -409,7 +421,7 @@ export default function PaymentResultPage() {
               </p>
 
               <Link
-                to="/cabinet/plans"
+                to={plansPath}
                 className="mt-auto rounded-full bg-black px-5 py-3 font-medium text-white"
               >
                 Повернутися до тарифів

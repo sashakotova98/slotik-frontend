@@ -307,6 +307,11 @@ export default function MasterCabinetPage() {
             ? `Вітаємо, ${profile.firstName}!`
             : "Кабінет майстра"}
         </h1>
+        {profile?.email && (
+          <p className="mt-1 break-all text-sm text-copy-500">
+            {profile.email}
+          </p>
+        )}
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className="text-sm capitalize text-copy-500">{monthLabel}</p>
           <button

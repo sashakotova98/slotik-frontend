@@ -8,7 +8,7 @@ import { getOwnProfile } from "../../api/users";
 
 import { apiGetMe } from "../../api/auth";
 import { ApiError } from "../../api/api";
-import { activateFreePlan, getOwnSubscriptions, type Subscription } from "../../api/subscriptions";
+import { activateFreePlan, getOwnSubscriptions, getProTrialAvailability, activateProTrial, type Subscription, type ProTrialAvailability } from "../../api/subscriptions";
 
 const planCodes: Record<Plan["id"], Subscription["plan"]> = {
   free: 0,
@@ -67,7 +67,61 @@ export default function MasterPlansPage() {
   const [savingFree, setSavingFree] = useState(false); //true, showing «Зберігаємо…»
   const freeInFlight = useRef(false); //protection against repeated requests
 
-  const busy = paying || savingFree; //Blocks the button both during the start of the paid plan and while maintaining the free plan.
+  const [trialAvailability, setTrialAvailability] = useState<ProTrialAvailability | null>(null);
+  const [trialLoading, setTrialLoading] = useState(true);
+  const [trialError, setTrialError] = useState("");
+  const [trialRetry, setTrialRetry] = useState(0);
+  const [activatingTrial, setActivatingTrial] = useState(false);
+  const [trialActivated, setTrialActivated] = useState(false);
+  const trialInFlight = useRef(false);
+  const trialActivationSucceeded = useRef(false);
+  const busy = paying || savingFree || activatingTrial;
+
+  useEffect(() => {
+    let active = true;
+    async function loadTrial() {
+      setTrialLoading(true);
+      setTrialError("");
+      setTrialAvailability(null);
+      try {
+        const result = await getProTrialAvailability();
+        if (active) setTrialAvailability(result);
+      } catch (error) {
+        if (active) setTrialError(error instanceof Error ? error.message : "Не вдалося перевірити доступність пробного Pro.");
+      } finally {
+        if (active) setTrialLoading(false);
+      }
+    }
+    void loadTrial();
+    return () => { active = false; };
+  }, [token, trialRetry]);
+
+  async function handleActivateTrial() {
+    if (trialInFlight.current || paymentInFlight.current || freeInFlight.current) return;
+    if (!trialActivationSucceeded.current && !trialAvailability?.canStartProTrial) return;
+    trialInFlight.current = true;
+    setActivatingTrial(true);
+    setTrialError("");
+    try {
+      // Після успішного POST повторюємо лише GET профілю.
+      if (!trialActivationSucceeded.current) {
+        await activateProTrial();
+        trialActivationSucceeded.current = true;
+        setTrialActivated(true);
+      }
+      const me = await apiGetMe();
+      navigate(me.isOnboardingCompleted
+        ? isChangingPlan ? "/cabinet/account/tariff" : "/cabinet/created"
+        : "/cabinet/setup", { replace: true });
+    } catch (error) {
+      setTrialError(trialActivationSucceeded.current
+        ? "Pro вже активовано. Не вдалося перевірити профіль. Натисніть «Продовжити», щоб повторити перевірку."
+        : error instanceof Error ? error.message : "Не вдалося активувати пробний Pro.");
+    } finally {
+      trialInFlight.current = false;
+      setActivatingTrial(false);
+    }
+  }
 
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
@@ -175,7 +229,7 @@ export default function MasterPlansPage() {
   }
 
   const handlePay = async () => {
-    if (!selectedPlan || paymentInFlight.current || freeInFlight.current) return;
+    if (!selectedPlan || paymentInFlight.current || freeInFlight.current || trialInFlight.current || trialActivationSucceeded.current) return;
     // Без даних підписок не можемо показати коректні умови зміни тарифу.
     if (subscriptionsLoading || subscriptionsError) return;
 
@@ -184,7 +238,10 @@ export default function MasterPlansPage() {
     setPaymentError("");
 
     try {
-      const result = await apiCreateCheckout(selectedPlan.id); // створємо платіж
+      const result = await apiCreateCheckout(
+        selectedPlan.id,
+        isChangingPlan,
+      );
       openLiqPay(result.checkout); // відкриваємо отриманні дані на liqpay
     } catch (error) {
       setPaymentError(error instanceof Error ? error.message : "Не вдалося відкрити оплату. Спробуйте пізніше.");
@@ -195,7 +252,7 @@ export default function MasterPlansPage() {
   };
 
   const handleSelect = async (plan: Plan) => {
-    if (paymentInFlight.current || freeInFlight.current) return;
+    if (paymentInFlight.current || freeInFlight.current || trialInFlight.current || trialActivationSucceeded.current) return;
     if (subscriptionsLoading || subscriptionsError) return;
 
     setMessage("");
@@ -332,12 +389,49 @@ export default function MasterPlansPage() {
             <>
               <h1 className="mb-5 text-lg font-semibold">Тарифи</h1>
 
+              <section aria-label="Пробний Pro" className="mb-4 rounded-xl border border-border bg-surface p-4">
+                {trialActivated ? (
+                  <p role="status" className="font-semibold">Пробний Pro активовано</p>
+                ) : trialLoading ? (
+                  <p role="status" className="text-sm text-copy-600">Перевіряємо доступність пробного Pro…</p>
+                ) : trialAvailability?.canStartProTrial ? (
+                  <>
+                    <div className="flex justify-between gap-3 font-semibold">
+                      <h2>Pro на {trialAvailability.trialDays} днів</h2>
+                      <span>0 ₴</span>
+                    </div>
+                    <p className="mt-2 text-sm text-copy-600">Спробуйте можливості Pro. Доступно один раз. Без автоматичного списання.</p>
+                  </>
+                ) : trialAvailability && (
+                  <p className="text-sm text-copy-600">
+                    {activeTrial
+                      ? `Пробний Pro активний до ${new Date(activeTrial.expiresAt).toLocaleDateString("uk-UA")}.`
+                      : trialAvailability.reason === "trial_already_used"
+                        ? "Ви вже використали пробний період Pro."
+                        : trialAvailability.reason === "active_pro_exists"
+                          ? "У вас уже діє тариф Pro."
+                          : "Пробний Pro зараз недоступний."}
+                  </p>
+                )}
+                {(trialActivated || trialAvailability?.canStartProTrial) && (
+                  <button type="button" disabled={busy} onClick={() => void handleActivateTrial()}
+                    className="mt-4 min-h-11 w-full rounded-xl bg-text px-4 py-3 text-bg disabled:opacity-50">
+                    {activatingTrial ? "Перевіряємо…" : trialActivated ? "Продовжити" : "Активувати безкоштовно"}
+                  </button>
+                )}
+                {trialError && <p role="alert" className="mt-3 text-sm text-red-600">{trialError}</p>}
+                {trialError && !trialAvailability && !trialActivated && (
+                  <button type="button" disabled={busy || trialLoading} onClick={() => setTrialRetry((value) => value + 1)}
+                    className="mt-3 min-h-11 text-sm underline disabled:opacity-50">Повторити перевірку</button>
+                )}
+              </section>
+
               <div className="space-y-4">
                 {plans.map((plan) => (
                   <button
                     key={plan.id}
                     type="button"
-                    disabled={busy || subscriptionsLoading || Boolean(subscriptionsError)}
+                    disabled={busy || trialActivated || subscriptionsLoading || Boolean(subscriptionsError)}
                     onClick={() => handleSelect(plan)}
                     className="w-full rounded-xl border border-border p-4 text-left transition hover:border-black hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-text"
                   >
