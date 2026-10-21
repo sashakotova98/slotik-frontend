@@ -211,6 +211,7 @@ export type UserMe = {
 
 type MasterProfileResponse = MasterProfileData & {
   id: number;
+  categoryName: string | null;
 };
 
 //// Об'єднані дані для MasterOnboardingPage.

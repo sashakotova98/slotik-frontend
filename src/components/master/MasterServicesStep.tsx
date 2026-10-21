@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createService, getServicesByMasterId, updateService, type Service } from "../../api/services";
 import { deleteServicePhoto, getServicePhotosByMasterId, type ServicePhoto } from "../../api/servicePhotos";
 import { ApiError } from "../../api/api";
+import { getMasterById } from "../../api/masters";
+import { getServiceGroups, type ServiceGroup } from "../../api/serviceGroups";
 
 type Props = {
   masterId: number;
@@ -18,6 +20,12 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   const [duration, setDuration] = useState("");
   const [description, setDescription] = useState("");
   const [included, setIncluded] = useState("");
+  const [groupId, setGroupId] = useState<number | null>(null);
+  const [isPopular, setIsPopular] = useState(false);
+  const [groups, setGroups] = useState<ServiceGroup[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(true);
+  const [groupsError, setGroupsError] = useState("");
+  const [groupsRetry, setGroupsRetry] = useState(0);
   const [files, setFiles] = useState<File[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -46,12 +54,15 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
     Number(duration) !== editingService.durationMin ||
     description !== (editingService.description ?? "") ||
     included !== (editingService.included ?? "") ||
+    groupId !== editingService.groupId ||
+    isPopular !== editingService.isPopular ||
     files.length > 0
     : name !== "" ||
     price !== "" ||
     duration !== "" ||
     description !== "" ||
     included !== "" ||
+    groupId !== null || isPopular ||
     files.length > 0;
 
   const resetForm = () => {
@@ -61,6 +72,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
     setDuration("");
     setDescription("");
     setIncluded("");
+    setGroupId(null);
+    setIsPopular(false);
     setFiles([]);
     setSaveError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -75,6 +88,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
     setDuration(String(service.durationMin));
     setDescription(service.description ?? "");
     setIncluded(service.included ?? "");
+    setGroupId(service.groupId);
+    setIsPopular(service.isPopular);
     setFiles([]);
     setSaveError("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -85,6 +100,25 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
   useEffect(() => {
     onFormStateChange(hasChanges, busy);
   }, [hasChanges, busy, onFormStateChange]);
+
+  useEffect(() => {
+    let active = true;
+    async function loadGroups() {
+      setGroupsLoading(true);
+      setGroupsError("");
+      try {
+        const master = await getMasterById(masterId);
+        const result = await getServiceGroups(master.categoryId);
+        if (active) setGroups(result);
+      } catch {
+        if (active) setGroupsError("Не вдалося завантажити групи. Збережена група залишиться без змін.");
+      } finally {
+        if (active) setGroupsLoading(false);
+      }
+    }
+    void loadGroups();
+    return () => { active = false; };
+  }, [masterId, groupsRetry]);
 
   useEffect(() => {
     let active = true;
@@ -186,12 +220,12 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
         durationMin: serviceDuration,
         description: description.trim(),
         included: included.trim(),
+        groupId,
+        isPopular,
       };
       const saved = editingService
         ? await updateService(editingService.id, {
           ...data,
-          groupId: editingService.groupId,
-          isPopular: editingService.isPopular,
           sortOrder: editingService.sortOrder,
         }, files)
         : await createService(data, files);
@@ -200,6 +234,8 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
         throw new Error("API не повернув коректний ID послуги. Потрібна перевірка бекенда.");
       }
 
+      saved.groupName = groups.find((group) => group.id === saved.groupId)?.name
+        ?? (saved.groupId === editingService?.groupId ? editingService.groupName : null);
       setServices((previous) => editingService
         ? previous.map((service) => service.id === editingService.id ? saved : service)
         : [...previous, saved]);
@@ -251,6 +287,11 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
               <div className="min-w-0 flex-1">
                 <p className="wrap-break-word text-lg font-semibold leading-snug">{service.name}</p>
                 <p className="mt-1 text-base leading-snug text-copy-400">{service.price} ₴ • {service.durationMin} хв • {servicePhotos.length} фото</p>
+                {(service.groupName || service.isPopular) && (
+                  <p className="mt-1 text-sm text-copy-500">
+                    {[service.groupName, service.isPopular ? "Популярна" : null].filter(Boolean).join(" • ")}
+                  </p>
+                )}
               </div>
               <button type="button" disabled={busy} onClick={() => handleEdit(service)} aria-label={`Редагувати послугу «${service.name}»`} title="Редагувати послугу" className="flex size-9 shrink-0 items-center justify-center text-copy-500 hover:text-text disabled:cursor-wait disabled:opacity-50">
                 <SquarePen size={22} strokeWidth={1.5} aria-hidden="true" />
@@ -288,6 +329,32 @@ export default function MasterServicesStep({ masterId, onFormStateChange }: Prop
       <form ref={formRef} onSubmit={handleSubmit}>
         <fieldset disabled={busy} aria-labelledby="new-service-title" className="m-0 min-w-0 space-y-5 rounded-2xl border border-dashed border-border p-4 sm:p-5">
           <h3 id="new-service-title" className="text-xl font-semibold">{editingService ? "Редагування послуги" : "+ Нова послуга"}</h3>
+          <label className="block text-lg text-copy-600">
+            Група послуги
+            <select value={groupId ?? ""} disabled={groupsLoading || Boolean(groupsError)}
+              onChange={(event) => setGroupId(event.target.value === "" ? null : Number(event.target.value))}
+              className={`${inputClass} mt-1.5 disabled:opacity-50`}>
+              <option value="">Без групи</option>
+              {groupId !== null && !groups.some((group) => group.id === groupId) && (
+                <option value={groupId}>{editingService?.groupName || "Поточна група"}</option>
+              )}
+              {groups.map((group) => <option key={group.id} value={group.id}>{group.name}</option>)}
+            </select>
+          </label>
+          {groupsLoading && <p role="status" className="text-sm text-copy-500">Завантаження груп…</p>}
+          {groupsError && (
+            <div role="alert" className="text-sm text-danger">
+              <p>{groupsError}</p>
+              <button type="button" onClick={() => setGroupsRetry((value) => value + 1)} className="min-h-11 underline">Повторити</button>
+            </div>
+          )}
+          {!groupsLoading && !groupsError && groups.length === 0 && (
+            <p className="text-sm text-copy-500">Для вашої категорії групи ще не додані. Можна зберегти послугу без групи.</p>
+          )}
+          <label className="flex min-h-11 items-center gap-3 text-base text-copy-600">
+            <input type="checkbox" checked={isPopular} onChange={(event) => setIsPopular(event.target.checked)} className="size-5 accent-black" />
+            Популярна послуга
+          </label>
           <label className="block text-lg text-copy-600">
             Назва
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Назва послуги" required className={inputClass + " mt-1.5"} />
