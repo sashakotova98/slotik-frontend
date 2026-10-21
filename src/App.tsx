@@ -91,7 +91,10 @@ function App() {
             )
           }
         />
-        <Route path="/home" element={<PublicHomePage />} />
+        <Route
+          path="/home"
+          element={token && role === "Client" ? <Navigate to="/client" replace /> : <PublicHomePage />}
+        />
         <Route path="/catalog" element={<CatalogPage />} />
 
         <Route path="/terms" element={<TermsPage />} />

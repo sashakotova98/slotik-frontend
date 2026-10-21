@@ -98,3 +98,9 @@ export function createBooking(data: CreateBookingData) {
     body: JSON.stringify(data),
   });
 }
+// Скасування власного запису клієнтом.
+export function cancelClientBooking(id: number) {
+  return api<{ id: number; status: BookingStatus }>(`/Booking/me/${id}/cancel`, {
+    method: "PATCH",
+  });
+}
